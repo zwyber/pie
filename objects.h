@@ -5,51 +5,89 @@
 #ifndef PIE_GITHUB_OBJECTS_H
 #define PIE_GITHUB_OBJECTS_H
 
-#include<vector>
-#include<array>
-#include<iostream>
+// Type definitions
+typedef unsigned id_type;
 
+// Initial class definitions
 class Universe;
 class Object;
 
+// Definition of Object class
 class Object {
+
 private:
+    // Position array of two doubles [m]
     std::array<double, 2> position = {{ 0 }};
+    // Velocity array of two doubles [m/s]
     std::array<double, 2> velocity = {{ 0 }};
-    int id = -1;
+    // Mass of object [kg]
+    double mass = 0;
+    // Radius of object [m]
+    double radius = 1;
+
+    // Identification number definitions
+    id_type id = 0;
+    bool id_set = false; // Toggle for allowing a new id to be generated or not.
 
 public:
-    int get_id();
-    void set_id(Universe universe);
+    // Return the id of the object, return 0 if undefined
+    id_type get_id();
+    // Set to the id given. Advised to use Universe::give_new_object_id()
+    void set_id(id_type &new_id);
 
+    // Get and setters for the position
     void set_position(double new_x, double new_y);
     std::array<double, 2> get_position ();
 
+    // Get and setters for the velocity
     void set_velocity(double new_vx, double new_vy);
     std::array<double, 2> get_velocity ();
+
+    // Get and setters for the mass, cannot be negative
+
+    // Get and setters for the radius, cannot be negative
+
 };
 
+
+
+
+// Definition of Universe class
 class Universe {
 
 private:
-    int new_object_id = 0;
-    std::vector<Object> objects = {};
+    // To keep track of what the next available object_id is
+    id_type new_object_id = 1;
 
 public:
-    std::vector<Object> get_objects();
+    // Constructor function, currently not really used
+    Universe();
 
-    void add_object (Object &obj, Universe &me);
+    // A vector of objects. This contains the objects in the world!
+    std::vector<Object> objects = {};
+
+    // Add a new object, return the new id of the object
+    id_type add_object (Object &obj);
+
+    // Remove objects, either by id or by index
+    void remove_object_by_index(int obj_index);
+    void remove_object_by_id(id_type id);
+
+    // Get objects, either by id or by index
     Object* get_object_by_index(int index);
-    void remove_object (int obj_index);
+    Object* get_object_by_id(int id);
 
-    void debug_display_world ();
+    // Give out a new unique id for objects
+    id_type give_new_object_id();
 
-    int give_new_object_id();
+    // Function to update the mapping of id to object.
+    // MUST BE CALLED EVERY TIME THE UNIVERSE OBJECTS LIST CHANGES!
+    void update_id_to_object_map();
+
+    // Map for getting an object given the id
+    std::map<id_type, Object*> id_to_object_map;
 };
 
-const Universe* THIS_UNIVERSE;
-
-class Player;
 
 
 #include "objects.cpp"
