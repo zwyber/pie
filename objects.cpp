@@ -4,12 +4,16 @@
 
 #include "objects.h"
 
+Universe::Universe() {
 
-std::vector<Object> Universe::get_objects() {
-    return objects;
 }
 
-void Universe::add_object (Object &obj, Universe &me) {
+// This stuff is broken real bad, so I just made the objects public.
+/*std::vector<Object>* Universe::get_objects() {
+    return &objects;
+}*/
+
+id_type Universe::add_object (Object &obj, Universe &me) {
     // Add a copy of the object to the vector of objects in the universe.
     objects.push_back(obj);
 
@@ -18,32 +22,47 @@ void Universe::add_object (Object &obj, Universe &me) {
 
     // Give the object a unique ID
     new_obj->set_id(me);
+
+    // Update the id to object mapping
+    this->update_id_to_object_map();
+
+    // Return the new object's id
+    return new_obj->get_id();
 }
 
-void Universe::remove_object(int obj_index) {
+void Universe::remove_object_by_index(int obj_index) {
     objects.erase(objects.begin() + obj_index);
 }
 
-void Universe::debug_display_world () {
-    // Iterate over all objects
-    for(int ii = 0; ii < objects.size(); ii++) {
-        std::array<double, 2> pos = objects[ii].get_position();
-        std::array<double, 2> vel = objects[ii].get_velocity();
 
-        std::cout << "Object " << ii << " at position (" << pos[0] << ", " << pos[1] << ") and velocity (";
-        std::cout << vel[0] << ", " << vel[1] << ")." << std::endl;
-    }
-}
-
-int Universe::give_new_object_id() {
+id_type Universe::give_new_object_id() {
     new_object_id++;
     return new_object_id - 1;
 }
+
+
 
 Object* Universe::get_object_by_index(int index) {
     return &objects[index];
 }
 
+Object* Universe::get_object_by_id(int id) {
+    return id_to_object_map[id];
+}
+
+
+
+
+void Universe::update_id_to_object_map() {
+    // Clear the current mapping
+    id_to_object_map = {};
+
+    // Loop through all objects stored in the universe
+    for (int ii = 0; ii < objects.size(); ii++) {
+        // Create a mapping from the object id to the object pointer
+        id_to_object_map[ objects[ii].get_id() ] = &objects[ii];
+    }
+}
 
 
 
@@ -77,10 +96,10 @@ std::array<double, 2> Object::get_velocity () {
     return velocity;
 }
 
-void Object::set_id(Universe universe) {
+void Object::set_id(Universe &universe) {
     id = universe.give_new_object_id();
 }
 
-int Object::get_id() {
+id_type Object::get_id() {
     return id;
 }
