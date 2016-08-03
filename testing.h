@@ -17,6 +17,7 @@ void debug_display_id_to_object_mapping (Universe &universe);
 
 // Testing scripts
 void test_00();
+void test_01();
 
 #include "testing.cpp"
 
