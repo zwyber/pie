@@ -7,8 +7,8 @@
 void debug_display_world (Universe &universe) {
     // Iterate over all objects
     for(int ii = 0; ii < universe.objects.size(); ++ii) {
-        std::array<double, 2> pos = universe.objects[ii].get_position();
-        std::array<double, 2> vel = universe.objects[ii].get_velocity();
+        vec2d pos = universe.objects[ii].get_position();
+        vec2d vel = universe.objects[ii].get_velocity();
         int id = universe.objects[ii].get_id();
 
         std::cout << "Object ID " << id << ", index " << ii << ", at position (" << pos[0] << ", " << pos[1] << ") and velocity (";

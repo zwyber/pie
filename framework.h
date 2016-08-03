@@ -11,6 +11,10 @@
 #include<iostream>
 #include<map>
 
+// Type definitions
+typedef unsigned id_type;
+typedef std::array<double, 2> vec2d;
+
 // Own libraries
 #include "objects.h"
 

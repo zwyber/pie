@@ -174,7 +174,7 @@ void Object::set_position(double new_x, double new_y) {
  *
  * Gets the position of the object, returns array of two doubles.
  */
-std::array<double, 2> Object::get_position () {
+vec2d Object::get_position () {
     return position;
 }
 
@@ -194,7 +194,7 @@ void Object::set_velocity(double new_vx, double new_vy) {
  *
  * Returns the object's velocity as an array of two doubles
  */
-std::array<double, 2> Object::get_velocity () {
+vec2d Object::get_velocity () {
     return velocity;
 }
 

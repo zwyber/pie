@@ -2,11 +2,14 @@
 // Created by paul on 8/1/16.
 //
 
+#ifndef PIE_GITHUB_FRAMEWORK_H
+
+#include "framework.h"
+
+#endif
+
 #ifndef PIE_GITHUB_OBJECTS_H
 #define PIE_GITHUB_OBJECTS_H
-
-// Type definitions
-typedef unsigned id_type;
 
 // Initial class definitions
 class Universe;
@@ -17,9 +20,9 @@ class Object {
 
 private:
     // Position array of two doubles [m]
-    std::array<double, 2> position = {{ 0 }};
+    vec2d position = {{ 0 }};
     // Velocity array of two doubles [m/s]
-    std::array<double, 2> velocity = {{ 0 }};
+    vec2d velocity = {{ 0 }};
     // Mass of object [kg]
     double mass = 0;
     // Radius of object [m]
@@ -37,11 +40,11 @@ public:
 
     // Get and setters for the position
     void set_position(double new_x, double new_y);
-    std::array<double, 2> get_position ();
+    vec2d get_position ();
 
     // Get and setters for the velocity
     void set_velocity(double new_vx, double new_vy);
-    std::array<double, 2> get_velocity ();
+    vec2d get_velocity ();
 
     // Get and setters for the mass, cannot be negative
 
