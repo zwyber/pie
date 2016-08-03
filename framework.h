@@ -10,12 +10,14 @@
 #include<array>
 #include<iostream>
 #include<map>
+#include<cmath>
 
 // Type definitions
 typedef unsigned id_type;
 typedef std::array<double, 2> vec2d;
 
 // Own libraries
+#include "math.h"
 #include "objects.h"
 
 

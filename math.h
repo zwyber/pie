@@ -11,9 +11,14 @@
 #ifndef PIE_GITHUB_MATH_H
 #define PIE_GITHUB_MATH_H
 
+// Vector functions
 double dot (vec2d a, vec2d b);
 vec2d sub (vec2d a, vec2d b);
 vec2d add (vec2d a, vec2d b);
+vec2d cmult (vec2d v, double c);
+double len (vec2d a, vec2d b);
+double len_squared (vec2d a, vec2d b);
+
 
 
 #endif //PIE_GITHUB_MATH_H
