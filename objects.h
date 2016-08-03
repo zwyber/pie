@@ -71,7 +71,7 @@ public:
 
     // Remove objects, either by id or by index
     void remove_object_by_index(int obj_index);
-    void remove_object_by_id(id_type id);
+    bool remove_object_by_id(id_type id);
 
     // Get objects, either by id or by index
     Object* get_object_by_index(int index);
