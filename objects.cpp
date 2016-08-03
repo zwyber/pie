@@ -236,7 +236,42 @@ void Object::set_mass(double m) {
     mass = m;
 }
 
-void Object::resolve_collision(Object* A, Object* B) {
+double Object::get_radius() {
+    return radius;
+}
+
+void Object::set_radius(double r){
+    if(r>0){
+        radius = r;
+    } else{
+        std::cerr << "[WARN] Tried to set radius of object #" << id << " to invalid value" << r << std::endl;
+    }
+}
+
+
+bool Universe::check_collision(Object* A, Object* B) {
+    vec2d A_v = A->get_velocity();
+    vec2d A_x = A->get_position();
+
+    vec2d B_v = B->get_velocity();
+    vec2d B_x = B->get_position();
+
+    double A_m = A->get_mass();
+    double B_m = B->get_mass();
+
+    double A_r = A->get_radius();
+    double B_r = B->get_radius();
+
+    // Check if objects are overlapping and moving aay from each other
+
+    if(len(sub(A_x,B_x)) < (A_r+B_r) &&  dot(sub(A_v,B_v),sub(B_x,A_x)) > 0){
+        return true;
+    } else{
+        return false;
+    }
+}
+
+void Universe::resolve_collision(Object* A, Object* B) {
     // Using the math from Wikipedia: https://en.wikipedia.org/wiki/Elastic_collision
     vec2d A_v = A->get_velocity();
     vec2d A_x = A->get_position();
@@ -244,8 +279,8 @@ void Object::resolve_collision(Object* A, Object* B) {
     vec2d B_v = B->get_velocity();
     vec2d B_x = B->get_position();
 
-    vec2d A_m = A->get_mass();
-    vec2d B_m = B->get_mass();
+    double A_m = A->get_mass();
+    double B_m = B->get_mass();
 
     // Horrible long expression which calculates the new position! It is the equation on Wikipedia for the
     // vector notation of resolving a collision.
