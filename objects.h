@@ -57,7 +57,7 @@ class Universe {
 
 private:
     // To keep track of what the next available object_id is
-    id_type new_object_id = 1;
+    id_type new_object_id = 0;
 
 public:
     // Constructor function, currently not really used
@@ -75,7 +75,7 @@ public:
 
     // Get objects, either by id or by index
     Object* get_object_by_index(int index);
-    Object* get_object_by_id(int id);
+    Object* get_object_by_id(id_type id);
 
     // Give out a new unique id for objects
     id_type give_new_object_id();
