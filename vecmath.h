@@ -19,6 +19,6 @@ vec2d cmult (vec2d v, double c);
 double len (vec2d a);
 double len_squared (vec2d a);
 
-
+#include "vecmath.cpp"
 
 #endif //PIE_GITHUB_MATH_H

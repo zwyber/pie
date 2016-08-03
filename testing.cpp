@@ -107,3 +107,11 @@ void test_00 () {
     universe.remove_object_by_id(B_id);
     debug_display_world(universe);
 }
+
+void test_02 () {
+
+    std::array<int, 4> list = 0;
+
+
+
+}

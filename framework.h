@@ -17,7 +17,7 @@ typedef unsigned id_type;
 typedef std::array<double, 2> vec2d;
 
 // Own libraries
-#include "math.h"
+#include "vecmath.h"
 #include "objects.h"
 
 

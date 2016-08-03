@@ -2,7 +2,7 @@
 // Created by paul on 8/3/16.
 //
 
-#include "math.h"
+#include "vecmath.h"
 
 double dot (vec2d a, vec2d b) {
     return (a[0] * a[1] + b[0] * b[1]);
