@@ -109,5 +109,33 @@ void test_00 () {
 }
 
 void test_01() {
+    // Test collision detection
+    std::cout << "Running test_01..." << std::endl << std::endl;
+
+    // Generate a few objects
+    Object A;
+    Object B;
+    // Set positions and velocities
+    A.set_position(50, 20);
+    B.set_position(49.2, 19.2);
+
+    A.set_velocity(-2,-1);
+    B.set_velocity(1,1);
+
+    // Generate a universe
+    Universe universe;
+    // Make some id_tag duplicates
+    id_type A_id;
+    id_type B_id;
+    // Add the objects to the universe
+    A_id = universe.add_object(A);
+    B_id = universe.add_object(B);
+    // Get the pointers of the representative objects in the universe
+    Object* pA = universe.get_object_by_id(A_id);
+    Object* pB = universe.get_object_by_id(B_id);
+    // Print initial conditions
+    debug_display_world(universe);
+
+    std::cout << "Collision between object A and B is: " << universe.check_collision(pA, pB) << std::endl;
 
 }

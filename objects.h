@@ -52,7 +52,8 @@ public:
     double get_mass();
 
     // Get and setters for the radius, cannot be negative
-
+    void set_radius(double r);
+    double get_radius();
 };
 
 
@@ -93,6 +94,8 @@ public:
     // Map for getting an object given the id
     std::map<id_type, Object*> id_to_object_map;
 
+    // Check collisions beteen objects
+    bool check_collision (Object* A, Object* B);
     // Resolve object collision between two objects
     void resolve_collision (Object* A, Object* B);
 };
