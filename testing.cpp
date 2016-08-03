@@ -75,7 +75,7 @@ void test_00 () {
     // So to update the position you have to do this
     A->set_position(2, 2);
     A->set_velocity(3, 1);
-    // hi
+
     B->set_position(-2, -2);
     B->set_velocity(-1, -2);
 

@@ -44,9 +44,12 @@ public:
 
     // Get and setters for the velocity
     void set_velocity(double new_vx, double new_vy);
+    void set_velocity(vec2d new_v);
     vec2d get_velocity ();
 
     // Get and setters for the mass, cannot be negative
+    void set_mass(double m);
+    double get_mass();
 
     // Get and setters for the radius, cannot be negative
 
@@ -89,6 +92,9 @@ public:
 
     // Map for getting an object given the id
     std::map<id_type, Object*> id_to_object_map;
+
+    // Resolve object collision between two objects
+    void resolve_collision (Object* A, Object* B);
 };
 
 

@@ -188,6 +188,9 @@ void Object::set_velocity(double new_vx, double new_vy) {
     velocity[0] = new_vx;
     velocity[1] = new_vy;
 }
+void Object::set_velocity(vec2d new_v) {
+    velocity = new_v;
+}
 
 /*
  * get_velocity()
@@ -223,4 +226,34 @@ void Object::set_id(id_type &new_id) {
  */
 id_type Object::get_id() {
     return id;
+}
+
+double Object::get_mass() {
+    return mass;
+}
+
+void Object::set_mass(double m) {
+    mass = m;
+}
+
+void Object::resolve_collision(Object* A, Object* B) {
+    // Using the math from Wikipedia: https://en.wikipedia.org/wiki/Elastic_collision
+    vec2d A_v = A->get_velocity();
+    vec2d A_x = A->get_position();
+
+    vec2d B_v = B->get_velocity();
+    vec2d B_x = B->get_position();
+
+    vec2d A_m = A->get_mass();
+    vec2d B_m = B->get_mass();
+
+    // Horrible long expression which calculates the new position! It is the equation on Wikipedia for the
+    // vector notation of resolving a collision.
+    vec2d A_v_new = sub(A_v, cmult(sub(A_x, B_x), (2*B_m/(A_m + B_m))*dot(sub(A_v, B_v), sub(A_x, B_x)) / len_squared(sub(A_x, B_x))));
+    vec2d B_v_new = sub(B_v, cmult(sub(B_x, A_x), (2*A_m/(A_m + B_m))*dot(sub(B_v, A_v), sub(B_x, A_x)) / len_squared(sub(B_x, A_x))));
+
+    // Push these new vectors to the objects
+    A->set_velocity(A_v_new);
+    B->set_velocity(B_v_new);
+
 }

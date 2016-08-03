@@ -16,8 +16,8 @@ double dot (vec2d a, vec2d b);
 vec2d sub (vec2d a, vec2d b);
 vec2d add (vec2d a, vec2d b);
 vec2d cmult (vec2d v, double c);
-double len (vec2d a, vec2d b);
-double len_squared (vec2d a, vec2d b);
+double len (vec2d a);
+double len_squared (vec2d a);
 
 
 
