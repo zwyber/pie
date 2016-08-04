@@ -40,6 +40,7 @@ public:
 
     // Get and setters for the position
     void set_position(double new_x, double new_y);
+    void set_position(vec2d new_pos);
     vec2d get_position ();
 
     // Get and setters for the velocity
@@ -54,6 +55,9 @@ public:
     // Get and setters for the radius, cannot be negative
     void set_radius(double r);
     double get_radius();
+
+    // Calculate new position and velocity function
+    std::array<vec2d, 2> calc_new_pos_vel(std::vector<Object> &objects);
 };
 
 
@@ -83,6 +87,7 @@ public:
     // Get objects, either by id or by index
     Object* get_object_by_index(int index);
     Object* get_object_by_id(id_type id);
+    std::vector<Object> get_all_objects ();
 
     // Give out a new unique id for objects
     id_type give_new_object_id();
@@ -98,6 +103,10 @@ public:
     bool check_collision (Object* A, Object* B);
     // Resolve object collision between two objects
     void resolve_collision (Object* A, Object* B);
+
+    // Physics engine
+    void physics_runtime_iteration ();
+
 };
 
 

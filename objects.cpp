@@ -129,6 +129,15 @@ Object* Universe::get_object_by_id(id_type id) {
 }
 
 /*
+ * get_all_objects()
+ *
+ * Returns the vector of all objects in the universe.
+ */
+std::vector<Object> Universe::get_all_objects() {
+    return objects;
+}
+
+/*
  * update_id_to_object_map()
  *
  * Generates a mapping from id to object pointer. Not a very quick function,
@@ -167,6 +176,10 @@ void Object::set_position(double new_x, double new_y) {
     // IMPLEMENT INPUT SANITATION CHECKS HERE?
     position[0] = new_x;
     position[1] = new_y;
+}
+
+void Object::set_position(vec2d new_pos) {
+    position = new_pos;
 }
 
 /*
@@ -263,8 +276,7 @@ bool Universe::check_collision(Object* A, Object* B) {
     double B_r = B->get_radius();
 
     // Check if objects are overlapping and moving aay from each other
-
-    if(len(sub(A_x,B_x)) < (A_r+B_r) &&  dot(sub(A_v,B_v),sub(B_x,A_x)) > 0){
+    if(len(sub(A_x,B_x)) < (A_r+B_r) && dot(sub(A_v,B_v),sub(B_x,A_x)) > 0){
         return true;
     } else{
         return false;
@@ -292,3 +304,43 @@ void Universe::resolve_collision(Object* A, Object* B) {
     B->set_velocity(B_v_new);
 
 }
+
+/*
+ * physics_runtime_iteration()
+ *
+ * Call this function to do an update of position and velocity of all objects in this universe.
+ * The idea is that the main runtime can call this function to perform the subset of functions
+ * which is needed to do the physics engine.
+ */
+void Universe::physics_runtime_iteration () {
+    // Temporary result storage
+    std::map<Object*,std::array<vec2d, 2>> new_pos_vel_universe;
+
+    // Iterate over all objects
+    for (int ii = 0; ii < objects.size(); ++ii) {
+        std::array<vec2d, 2> new_pos_vel = objects[ii].calc_new_pos_vel(objects);
+        new_pos_vel_universe[&objects[ii]] = new_pos_vel;
+    }
+
+    // Now update the positions and velocities of all objects
+    for (int ii = 0; ii < objects.size(); ++ii) {
+        objects[ii].set_position(new_pos_vel_universe[&objects[ii]][0]);
+        objects[ii].set_velocity(new_pos_vel_universe[&objects[ii]][1]);
+    }
+
+
+
+}
+
+/*
+ * calc_new_pos_vel()
+ *
+ * Calculate the new position of the object by doing a Euler algorithm timestep.
+ */
+std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects) {
+    // Do things here, right now it just adds one
+    ved2d one = 1;
+
+    position = add(position, one);
+    velocity = add(velocity, one);
+};
