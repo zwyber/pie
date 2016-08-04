@@ -24,7 +24,7 @@ private:
     // Velocity array of two doubles [m/s]
     vec2d velocity = {{ 0 }};
     // Mass of object [kg]
-    double mass = 0;
+    double mass = 1;
     // Radius of object [m]
     double radius = 1;
 

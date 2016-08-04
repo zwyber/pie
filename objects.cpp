@@ -339,9 +339,7 @@ void Universe::physics_runtime_iteration () {
  */
 std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects) {
     // Do things here, right now it just adds one
-    vec2d one;
-    one[0] = 1;
-    one[1] = 1;
+    vec2d one = {1, 1};
 
     std::array<vec2d, 2> new_pos_vel;
 

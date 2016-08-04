@@ -185,11 +185,11 @@ void test_02() {
     // Create a universe
     Universe universe;
 
-    // Add an object to the center;
-    id_type A_id;
-    {
-        Object A;
-        A_id = universe.add_object(A);
+    // Add a bunch of objects
+    Object A;
+    for ( int ii = 0; ii < 10; ++ii) {
+        A.set_position(ii, ii);
+        universe.add_object(A);
     }
 
     std::cout << "Initial conditions: \n";
