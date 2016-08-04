@@ -134,8 +134,28 @@ void test_01() {
     Object* pA = universe.get_object_by_id(A_id);
     Object* pB = universe.get_object_by_id(B_id);
     // Print initial conditions
+    std::cout << "Scenario 1:" << std::endl;
     debug_display_world(universe);
+    // Collision of objects moving toward each other and overlapping
+    std::cout << "Collision between object A and B is: " << universe.check_collision(pA, pB) <<"\n" << std::endl;
 
-    std::cout << "Collision between object A and B is: " << universe.check_collision(pA, pB) << std::endl;
+    pA->set_velocity(2,-1);
+    pB->set_velocity(1,1);
+
+    std::cout << "Scenario 2:" << std::endl;
+    debug_display_world(universe);
+    // Collision of objects moving just away from each other and overlapping
+    std::cout << "Collision between object A and B is: " << universe.check_collision(pA, pB) <<"\n" << std::endl;
+
+    pA->set_velocity(-2,-1);
+    pB->set_velocity(1,1);
+
+    pA->set_position(50,20);
+    pB->set_position(48,18);
+
+    std::cout << "Scenario 3:" << std::endl;
+    debug_display_world(universe);
+    // Collision of objects moving just toward from each other and not overlapping
+    std::cout << "Collision between object A and B is: " << universe.check_collision(pA, pB) <<"\n" << std::endl;
 
 }
