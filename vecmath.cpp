@@ -5,7 +5,7 @@
 #include "vecmath.h"
 
 double dot (vec2d a, vec2d b) {
-    return (a[0] * a[1] + b[0] * b[1]);
+    return (a[0] * b[0] + a[1] * b[1]);
 }
 
 vec2d sub (vec2d a, vec2d b) {

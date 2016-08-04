@@ -296,6 +296,7 @@ void Universe::resolve_collision(Object* A, Object* B) {
 
     // Horrible long expression which calculates the new position! It is the equation on Wikipedia for the
     // vector notation of resolving a collision.
+
     vec2d A_v_new = sub(A_v, cmult(sub(A_x, B_x), (2*B_m/(A_m + B_m))*dot(sub(A_v, B_v), sub(A_x, B_x)) / len_squared(sub(A_x, B_x))));
     vec2d B_v_new = sub(B_v, cmult(sub(B_x, A_x), (2*A_m/(A_m + B_m))*dot(sub(B_v, A_v), sub(B_x, A_x)) / len_squared(sub(B_x, A_x))));
 

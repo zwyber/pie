@@ -172,7 +172,7 @@ void test_01() {
     debug_display_world(universe);
 
     if(universe.check_collision(pA,pB)){
-        std::cout << "Collision between object A and B is: " << universe.check_collision(pA, pB) <<". Resolving collision..." << std::endl;
+        std::cout << "Collision between object A and B is: " << true <<". Resolving collision..." << std::endl;
         universe.resolve_collision(pA,pB);
         std::cout << "Scenario after collision: " << std::endl;
         debug_display_world(universe);
