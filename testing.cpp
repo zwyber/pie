@@ -238,7 +238,7 @@ void test_03 () {
     outputfile.open("test_03.csv");
 
     // Start to iterate 10000 cycles
-    for (int ii = 0; ii < 10000; ++ii) {
+    for (int ii = 0; ii < 1000; ++ii) {
         // Output the positions of the two objects to a file
         vec2d posA = Ap->get_position();
         vec2d posB = Bp->get_position();
