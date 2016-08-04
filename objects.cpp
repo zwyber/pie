@@ -400,11 +400,26 @@ void Universe::physics_runtime_iteration () {
  * Calculate the new position of the object by doing a Euler algorithm time step.
  */
 std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, double &timestep) {
-    // Without acceleration
+    // Initialize the result array
     std::array<vec2d, 2> new_pos_vel;
 
+    // Calculate the acceleration
+    vec2d acceleration = {0,0};
+    // Loop through all objects
+    for (int ii = 0; ii < objects.size(); ++ii ) {
+        // Make sure you are not calculating yourself
+        if ( objects[ii]->get_id() == this->get_id()) {
+            // This is myself, skip this loop iteration
+            continue;
+        }
+
+        vec2d this_acc = {0,0};
+        // Here add up the contribution to the acceleration
+        acceleration = add(acceleration, this_acc);
+    }
+
     new_pos_vel[0] = add(position, cmult(velocity, timestep));
-    new_pos_vel[1] = velocity;
+    new_pos_vel[1] = add(velocity, cmult(acceleration, timestep));
 
     return new_pos_vel;
 };
