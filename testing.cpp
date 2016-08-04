@@ -179,3 +179,28 @@ void test_01() {
 
     }
 }
+
+void test_02() {
+
+    // Create a universe
+    Universe universe;
+
+    // Add an object to the center;
+    id_type A_id;
+    {
+        Object A;
+        A_id = universe.add_object(A);
+    }
+
+    std::cout << "Initial conditions: \n";
+    debug_display_world(universe);
+
+    // Iterate the engine a few times
+    for (int ii = 0; ii < 5; ++ii) {
+        universe.physics_runtime_iteration();
+
+        std::cout << "\nIteration " << ii << ":\n";
+        debug_display_world(universe);
+    }
+
+}
