@@ -69,10 +69,16 @@ class Universe {
 private:
     // To keep track of what the next available object_id is
     id_type new_object_id = 0;
+    double _Height;
+    double _Width;
 
 public:
     // Constructor function, currently not really used
     Universe();
+    Universe(double Width, double Height);
+
+    const double &height;
+    const double &width;
 
     // A vector of objects. This contains the objects in the world!
     std::vector<Object> objects = {};

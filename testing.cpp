@@ -124,7 +124,9 @@ void test_01() {
     B.set_velocity(1,1);
 
     // Generate a universe
-    Universe universe;
+    Universe universe(720.0, 480.0);
+    // check if size print worked.
+    std::cout << "Universe size: " << universe.width << "x" << universe.height << std::endl;
     // Make some id_tag duplicates
     id_type A_id;
     id_type B_id;

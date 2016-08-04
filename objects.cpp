@@ -15,8 +15,14 @@
  */
 
 // Constructor, currently not used
-Universe::Universe() {
+Universe::Universe() : height(_Height), width(_Width) {
+    this->_Width = 640;
+    this->_Height = 480;
+}
 
+Universe::Universe(double Width, double Height) : height(_Height), width(_Width){
+    this->_Width = Width;
+    this->_Height = Height;
 }
 
 /*
