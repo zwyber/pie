@@ -14,7 +14,44 @@
  *
  */
 
-// Constructor, currently not used
+// Constructors
+
+/*
+ * Note on how the constructors are used: We implemented a code sequence to get "read-only" paremeters.
+ * The idea is that you can access properties like they are public (read them), but cannot change their
+ * value, unless you are a member function of the class. See the example at http://www.cplusplus.com/forum/articles/36872/
+ * or copied here below:
+ *
+ * class A
+ * {
+ *     int _x; // Private variable, it can modify in this class directly
+ * public:
+ *     A() : x(_x) // Bind reference variable x to _x
+ *     {
+ *     }
+ *
+ *     void setX(int x)
+ *     {
+ *         this->_x = x;
+ *     }
+ *
+ *     const int &x; // Constant variable
+ * };
+ *
+ * // Usage:
+ *
+ * int main()
+ * {
+ *     A a;
+ *
+ *     a.setX(50);
+ *
+ *     cout << a.x << endl; // Correct
+ *     a.x = 12; // Error !
+ *
+ *     return 0;
+ * }
+ */
 Universe::Universe() : height(_Height), width(_Width) {
     this->_Width = 640;
     this->_Height = 480;
