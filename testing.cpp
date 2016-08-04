@@ -143,7 +143,7 @@ void test_01() {
     // Collision of objects moving toward each other and overlapping
     std::cout << "Collision between object A and B is: " << universe.check_collision(pA, pB) <<"\n" << std::endl;
 
-    pA->set_velocity(2,-1);
+    pA->set_velocity(2,2);
     pB->set_velocity(1,1);
 
     std::cout << "Collision detection scenario 2:" << std::endl;
