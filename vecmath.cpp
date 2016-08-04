@@ -37,5 +37,5 @@ double len (vec2d a) {
 }
 
 double len_squared (vec2d a) {
-    return ( (a[0] - b[0])*(a[0] - b[0]) + (a[1] - b[1])*(a[1] - b[1]) );
+    return ( a[0]*a[0] + a[1]*a[1] );
 }
