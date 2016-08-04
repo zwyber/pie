@@ -408,7 +408,7 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, doub
     // Loop through all objects
     for (int ii = 0; ii < objects.size(); ++ii ) {
         // Make sure you are not calculating yourself
-        if ( objects[ii]->get_id() == this->get_id()) {
+        if ( objects[ii].get_id() == this->get_id()) {
             // This is myself, skip this loop iteration
             continue;
         }
