@@ -14,7 +14,44 @@
  *
  */
 
-// Constructor, currently not used
+// Constructors
+
+/*
+ * Note on how the constructors are used: We implemented a code sequence to get "read-only" paremeters.
+ * The idea is that you can access properties like they are public (read them), but cannot change their
+ * value, unless you are a member function of the class. See the example at http://www.cplusplus.com/forum/articles/36872/
+ * or copied here below:
+ *
+ * class A
+ * {
+ *     int _x; // Private variable, it can modify in this class directly
+ * public:
+ *     A() : x(_x) // Bind reference variable x to _x
+ *     {
+ *     }
+ *
+ *     void setX(int x)
+ *     {
+ *         this->_x = x;
+ *     }
+ *
+ *     const int &x; // Constant variable
+ * };
+ *
+ * // Usage:
+ *
+ * int main()
+ * {
+ *     A a;
+ *
+ *     a.setX(50);
+ *
+ *     cout << a.x << endl; // Correct
+ *     a.x = 12; // Error !
+ *
+ *     return 0;
+ * }
+ */
 Universe::Universe() : height(_Height), width(_Width) {
     this->_Width = 640;
     this->_Height = 480;
@@ -363,11 +400,26 @@ void Universe::physics_runtime_iteration () {
  * Calculate the new position of the object by doing a Euler algorithm time step.
  */
 std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, double &timestep) {
-    // Without acceleration
+    // Initialize the result array
     std::array<vec2d, 2> new_pos_vel;
 
+    // Calculate the acceleration
+    vec2d acceleration = {0,0};
+    // Loop through all objects
+    for (int ii = 0; ii < objects.size(); ++ii ) {
+        // Make sure you are not calculating yourself
+        if ( objects[ii].get_id() == this->get_id()) {
+            // This is myself, skip this loop iteration
+            continue;
+        }
+
+        vec2d this_acc = {0,0};
+        // Here add up the contribution to the acceleration
+        acceleration = add(acceleration, this_acc);
+    }
+
     new_pos_vel[0] = add(position, cmult(velocity, timestep));
-    new_pos_vel[1] = velocity;
+    new_pos_vel[1] = add(velocity, cmult(acceleration, timestep));
 
     return new_pos_vel;
 };
