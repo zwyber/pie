@@ -11,6 +11,7 @@
 #include<iostream>
 #include<map>
 #include<cmath>
+#include<fstream>
 
 // Type definitions
 typedef unsigned id_type;

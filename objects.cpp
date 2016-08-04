@@ -334,7 +334,19 @@ void Universe::physics_runtime_iteration () {
         objects[ii].set_velocity(new_pos_vel_universe[&objects[ii]][1]);
     }
 
-
+    // Check for collisions
+    for (int ii = 0; ii < objects.size(); ++ii) {
+        for (int jj = 0; jj < objects.size(); ++jj) {
+            // Do not check yourself
+            if (ii != jj) {
+                // Check for a collision
+                if ( check_collision(&objects[ii], &objects[jj]) ) {
+                    // If that is the case, go fix it!
+                    this->resolve_collision(&objects[ii], &objects[jj]);
+                }
+            }
+        }
+    }
 
 }
 

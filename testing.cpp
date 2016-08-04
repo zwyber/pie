@@ -205,3 +205,45 @@ void test_02() {
     }
 
 }
+
+void test_03 () {
+
+    // Create a universe
+    Universe universe;
+
+    // Create two objects
+    Object A;
+    Object B;
+
+    // Set them apart, and on a collision course
+    A.set_position(2, 0);
+    A.set_velocity(-1, 0);
+    A.set_radius(1);
+
+    B.set_position(-2, 0);
+    B.set_velocity(1, 0.1);
+    B.set_radius(2);
+
+    // Add them to the universe
+    id_type A_id = universe.add_object(A);
+    id_type B_id = universe.add_object(B);
+
+    Object* Ap = universe.get_object_by_id(A_id);
+    Object* Bp = universe.get_object_by_id(B_id);
+
+    // Open a file
+    std::ofstream outputfile;
+    outputfile.open("test_03.csv");
+
+    // Start to iterate 10000 cycles
+    for (int ii = 0; ii < 10000; ++ii) {
+        // Output the positions of the two objects to a file
+        vec2d posA = Ap->get_position();
+        vec2d posB = Bp->get_position();
+        outputfile << posA[0] << "," << posA[1] << "," << posB[0] << "," << posB[1] << ";" << std::endl;
+
+        // Iterate the physics
+        universe.physics_runtime_iteration();
+    }
+
+}
