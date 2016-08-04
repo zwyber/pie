@@ -87,6 +87,7 @@ bool Universe::remove_object_by_id(id_type id) {
             // We found the correct one! Store the index
             found_it = true;
             delete_index = ii;
+            break;
         }
     }
 
@@ -359,7 +360,7 @@ void Universe::physics_runtime_iteration () {
 /*
  * calc_new_pos_vel()
  *
- * Calculate the new position of the object by doing a Euler algorithm timestep.
+ * Calculate the new position of the object by doing a Euler algorithm time step.
  */
 std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, double &timestep) {
     // Without acceleration
@@ -370,3 +371,11 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, doub
 
     return new_pos_vel;
 };
+
+
+double Universe::distance_between(Object* A, Object* B) {
+    vec2d pos_A = A-> get_position();
+    vec2d pos_B = B-> get_position();
+    double dist = std::sqrt(((pos_B[0]-pos_A[0])*(pos_B[0]-pos_A[0]))+((pos_B[1]-pos_A[1])*(pos_B[1]*pos_A[1])));
+    return dist;
+}
