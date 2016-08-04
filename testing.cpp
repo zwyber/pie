@@ -187,6 +187,7 @@ void test_02() {
 
     // Add a bunch of objects
     Object A;
+    A.set_velocity(0, 1);
     for ( int ii = 0; ii < 10; ++ii) {
         A.set_position(ii, ii);
         universe.add_object(A);

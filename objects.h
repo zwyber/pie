@@ -57,7 +57,7 @@ public:
     double get_radius();
 
     // Calculate new position and velocity function
-    std::array<vec2d, 2> calc_new_pos_vel(std::vector<Object> &objects);
+    std::array<vec2d, 2> calc_new_pos_vel(std::vector<Object> &objects, double &timestep);
 };
 
 
@@ -99,13 +99,15 @@ public:
     // Map for getting an object given the id
     std::map<id_type, Object*> id_to_object_map;
 
-    // Check collisions beteen objects
+    // Check collisions between objects
     bool check_collision (Object* A, Object* B);
-    // Resolve object collision between two objects
+    // Resolve object collision between two objects, i.e. change their velocities
     void resolve_collision (Object* A, Object* B);
 
     // Physics engine
     void physics_runtime_iteration ();
+
+    double timestep = 0.01;
 
 };
 

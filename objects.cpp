@@ -246,7 +246,12 @@ double Object::get_mass() {
 }
 
 void Object::set_mass(double m) {
-    mass = m;
+    if ( m > 0 ) {
+        mass = m;
+    }
+    else{
+        std::cout << "Attempting to set the mass of an object <= 0!";
+    }
 }
 
 double Object::get_radius() {
@@ -254,7 +259,7 @@ double Object::get_radius() {
 }
 
 void Object::set_radius(double r){
-    if(r>0){
+    if( r > 0 ){
         radius = r;
     } else{
         std::cerr << "[WARN] Tried to set radius of object #" << id << " to invalid value" << r << std::endl;
@@ -319,7 +324,7 @@ void Universe::physics_runtime_iteration () {
 
     // Iterate over all objects
     for (int ii = 0; ii < objects.size(); ++ii) {
-        std::array<vec2d, 2> new_pos_vel = objects[ii].calc_new_pos_vel(objects);
+        std::array<vec2d, 2> new_pos_vel = objects[ii].calc_new_pos_vel(objects, this->timestep);
         new_pos_vel_universe[&objects[ii]] = new_pos_vel;
     }
 
@@ -338,14 +343,12 @@ void Universe::physics_runtime_iteration () {
  *
  * Calculate the new position of the object by doing a Euler algorithm timestep.
  */
-std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects) {
-    // Do things here, right now it just adds one
-    vec2d one = {1, 1};
-
+std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, double &timestep) {
+    // Without acceleration
     std::array<vec2d, 2> new_pos_vel;
 
-    new_pos_vel[0] = add(position, one);
-    new_pos_vel[1] = add(velocity, one);
+    new_pos_vel[0] = add(position, cmult(velocity, timestep));
+    new_pos_vel[1] = velocity;
 
     return new_pos_vel;
 };
