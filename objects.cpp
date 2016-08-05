@@ -408,10 +408,12 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, doub
     // Loop through all objects
     for (int ii = 0; ii < objects.size(); ++ii ) {
         // Make sure you are not calculating yourself
-        if ( objects[ii].get_id() == this->get_id()) {
+        if ( objects[ii].get_id() == this-> get_id()) {
             // This is myself, skip this loop iteration
             continue;
+
         }
+
 
         vec2d this_acc = {0,0};
         // Here add up the contribution to the acceleration
@@ -425,9 +427,9 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, doub
 };
 
 
-double Universe::distance_between(Object* A, Object* B) {
-    vec2d pos_A = A-> get_position();
-    vec2d pos_B = B-> get_position();
-    double dist = std::sqrt(((pos_B[0]-pos_A[0])*(pos_B[0]-pos_A[0]))+((pos_B[1]-pos_A[1])*(pos_B[1]*pos_A[1])));
+double Universe::distance_between(Object* X, Object* Y) {
+    vec2d pos_X = X-> get_position();
+    vec2d pos_Y = Y-> get_position();
+    double dist = std::sqrt(((pos_Y[0]-pos_X[0])*(pos_Y[0]-pos_X[0]))+((pos_Y[1]-pos_X[1])*(pos_Y[1]*pos_X[1])));
     return dist;
 }

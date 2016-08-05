@@ -249,3 +249,28 @@ void test_03 () {
     }
 
 }
+
+void test_004 () {
+    Universe universe;
+    id_type A_id;
+    id_type B_id;
+    Object A_obj;
+    Object B_obj;
+
+    A_id = universe.add_object(A_obj);
+    B_id = universe.add_object(B_obj);
+
+    Object* A = universe.get_object_by_id(A_id);
+    Object* B = universe.get_object_by_id(B_id);
+
+    A->set_position(5, 2);
+    B->set_position(3, 1);
+
+
+    double dist = universe.distance_between(A, B);
+
+    std::cout << "Distance between Object A and ObjectB =" << dist << std::endl;
+
+    debug_display_world(universe);
+
+}

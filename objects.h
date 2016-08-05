@@ -113,8 +113,8 @@ public:
     // Physics engine
     void physics_runtime_iteration ();
 
-
     double distance_between(Object* A, Object* B);
+
 
     double timestep = 0.01;
 
