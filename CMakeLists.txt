@@ -58,14 +58,14 @@ add_definitions(
 
 
 # User playground
-add_executable(playground 
-	playground/playground.cpp
-	common/shader.cpp
-	common/shader.hpp
-)
+add_executable(playground
+		playground/playground.cpp
+		common/shader.cpp
+		common/shader.hpp
+		)
 target_link_libraries(playground
-	${ALL_LIBS}
-)
+		${ALL_LIBS}
+		)
 # Xcode and Visual working directories
 set_target_properties(playground PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/playground/")
 create_target_launcher(playground WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/playground/")

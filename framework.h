@@ -5,6 +5,10 @@
 #ifndef PIE_GITHUB_FRAMEWORK_H
 #define PIE_GITHUB_FRAMEWORK_H
 
+#ifndef PI
+#define PI 3.14159265359;
+#endif
+
 // Standard libraries
 #include<vector>
 #include<array>
