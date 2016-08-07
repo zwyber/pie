@@ -265,11 +265,10 @@ void test_004 () {
 
     A->set_position(5, 2);
     B->set_position(3, 1);
+    A->set_mass(-1.5);
+    vec2d acceleration = universe.acceleration(A,B);
 
-
-    double dist = universe.distance_between(A, B);
-
-    std::cout << "Distance between Object A and ObjectB =" << dist << std::endl;
+    std::cout << "Acceleration of ObjectA With Respect to ObjectB =" << acceleration[0] << "," << acceleration[1] << std::endl;
 
     debug_display_world(universe);
 

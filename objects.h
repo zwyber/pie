@@ -57,7 +57,7 @@ public:
     double get_radius();
 
     // Calculate new position and velocity function
-    std::array<vec2d, 2> calc_new_pos_vel(std::vector<Object> &objects, double &timestep);
+    std::array<vec2d, 2> calc_new_pos_vel(std::vector<Object> &objects, double &time_step);
 };
 
 
@@ -115,6 +115,7 @@ public:
 
     double distance_between(Object* A, Object* B);
 
+    vec2d acceleration (Object* X, Object* Y);
 
     double timestep = 0.01;
 
