@@ -266,7 +266,7 @@ void test_004 () {
     A->set_position(5, 2);
     B->set_position(3, 1);
     A->set_mass(-1.5);
-    vec2d acceleration = universe.acceleration(A,B);
+    vec2d acceleration = universe.physics.acceleration(A,B);
 
     std::cout << "Acceleration of ObjectA With Respect to ObjectB =" << acceleration[0] << "," << acceleration[1] << std::endl;
 

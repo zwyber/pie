@@ -399,7 +399,7 @@ void Universe::physics_runtime_iteration () {
  *
  * Calculate the new position of the object by doing a Euler algorithm time step.
  */
-std::array<vec2d, 2> Universe::calc_new_pos_vel(std::vector<Object> &objects, double &time_step) {
+std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, double &time_step, Physics &physics) {
     // Initialize the result array
     std::array<vec2d, 2> new_pos_vel;
 
@@ -415,7 +415,7 @@ std::array<vec2d, 2> Universe::calc_new_pos_vel(std::vector<Object> &objects, do
         }
 //hello
 
-        vec2d this_acc = this -> acceleration(X , Y);
+        vec2d this_acc = physics.acceleration(X , Y);
         // Here add up the contribution to the acceleration
         acceleration = add(acceleration, this_acc);
     }
@@ -427,14 +427,14 @@ std::array<vec2d, 2> Universe::calc_new_pos_vel(std::vector<Object> &objects, do
 };
 
 
-double Universe::distance_between(Object* X, Object* Y) {
+double Physics::distance_between(Object* X, Object* Y) {
     vec2d pos_X = X-> get_position();
     vec2d pos_Y = Y-> get_position();
     double dist = std::sqrt(((pos_Y[0]-pos_X[0])*(pos_Y[0]-pos_X[0]))+((pos_Y[1]-pos_X[1])*(pos_Y[1]*pos_X[1])));
     return dist;
 }
 
-vec2d Universe::acceleration (Object* X, Object* Y){
+vec2d Physics::acceleration (Object* X, Object* Y){
     double dist = this -> distance_between (X , Y);
     vec2d pos_X = X -> get_position();
     vec2d pos_Y = Y -> get_position();

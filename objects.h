@@ -14,6 +14,7 @@
 // Initial class definitions
 class Universe;
 class Object;
+class Physics;
 
 // Definition of Object class
 class Object {
@@ -56,10 +57,17 @@ public:
     void set_radius(double r);
     double get_radius();
 
-    // Calculate new position and velocity function
-    std::array<vec2d, 2> calc_new_pos_vel(std::vector<Object> &objects, double &time_step);
 };
 
+
+class Physics {
+public:
+
+    double distance_between(Object* A, Object* B);
+
+    vec2d acceleration (Object* X, Object* Y);
+
+};
 
 
 
@@ -76,6 +84,8 @@ public:
     // Constructor function, currently not really used
     Universe();
     Universe(double Width, double Height);
+
+    Physics physics;
 
     const double &height;
     const double &width;
@@ -113,14 +123,12 @@ public:
     // Physics engine
     void physics_runtime_iteration ();
 
-    double distance_between(Object* A, Object* B);
-
-    vec2d acceleration (Object* X, Object* Y);
+    // Calculate new position and velocity function
+    std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object> &objects, double &time_step, Physics &physics);
 
     double timestep = 0.01;
 
 };
-
 
 
 #include "objects.cpp"
