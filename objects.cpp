@@ -368,7 +368,7 @@ void Universe::physics_runtime_iteration () {
 
     // Iterate over all objects
     for (int ii = 0; ii < objects.size(); ++ii) {
-        std::array<vec2d, 2> new_pos_vel = objects[ii].calc_new_pos_vel(objects, this->timestep);
+        std::array<vec2d, 2> new_pos_vel = objects[ii].calc_new_pos_vel(objects, this->timestep, this->physics);
         new_pos_vel_universe[&objects[ii]] = new_pos_vel;
     }
 
@@ -420,8 +420,8 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, doub
         acceleration = add(acceleration, this_acc);
     }
 
-    new_pos_vel[0] = add(position, cmult(velocity, timestep));
-    new_pos_vel[1] = add(velocity, cmult(acceleration, timestep));
+    new_pos_vel[0] = add(position, cmult(velocity, time_step));
+    new_pos_vel[1] = add(velocity, cmult(acceleration, time_step));
 
     return new_pos_vel;
 };

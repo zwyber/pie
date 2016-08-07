@@ -57,6 +57,9 @@ public:
     void set_radius(double r);
     double get_radius();
 
+    // Calculate new position and velocity function
+    std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object> &objects, double &time_step, Physics &physics);
+
 };
 
 
@@ -122,9 +125,6 @@ public:
 
     // Physics engine
     void physics_runtime_iteration ();
-
-    // Calculate new position and velocity function
-    std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object> &objects, double &time_step, Physics &physics);
 
     double timestep = 0.01;
 
