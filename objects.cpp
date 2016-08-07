@@ -413,7 +413,7 @@ std::array<vec2d, 2> Universe::calc_new_pos_vel(std::vector<Object> &objects, do
             continue;
 
         }
-
+//hello
 
         vec2d this_acc = this -> acceleration(X , Y);
         // Here add up the contribution to the acceleration
