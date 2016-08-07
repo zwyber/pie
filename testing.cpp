@@ -268,6 +268,8 @@ void test_004 () {
     A->set_mass(-1.5);
     vec2d acceleration = universe.physics.acceleration(A,B);
 
+    A->calc_new_pos_vel(universe.objects, universe.timestep, universe.physics);
+
     std::cout << "Acceleration of ObjectA With Respect to ObjectB =" << acceleration[0] << "," << acceleration[1] << std::endl;
 
     debug_display_world(universe);

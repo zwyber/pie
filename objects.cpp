@@ -405,6 +405,7 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, doub
 
     // Calculate the acceleration
     vec2d acceleration = {0,0};
+    Object* X = this;
     // Loop through all objects
     for (int ii = 0; ii < objects.size(); ++ii ) {
         // Make sure you are not calculating yourself
@@ -415,7 +416,7 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, doub
         }
 //hello
 
-        vec2d this_acc = physics.acceleration(X , Y);
+        vec2d this_acc = physics.acceleration(X, &objects[ii]);
         // Here add up the contribution to the acceleration
         acceleration = add(acceleration, this_acc);
     }
