@@ -10,10 +10,14 @@ using namespace std;
 #include <string.h>
 
 #include <GL/glew.h>
+#include <stdexcept>
 
 #include "shader.hpp"
 
 GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path){
+	glewExperimental = GL_TRUE;
+	if(glewInit() != GLEW_OK)
+		throw runtime_error("glewInit failed");
 
 	// Create the shaders
 	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);

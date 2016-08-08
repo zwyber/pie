@@ -28,7 +28,8 @@ private:
     double mass = 1;
     // Radius of object [m]
     double radius = 1;
-
+    // Colour vector of this object {Red, Green, Blue, alpha}. All values are between 1 and 0
+    std::array<double, 4> colour = {{(double)rand()/RAND_MAX,(double)rand()/RAND_MAX,(double)rand()/RAND_MAX,1.0}};
     // Identification number definitions
     id_type id = 0;
     bool id_set = false; // Toggle for allowing a new id to be generated or not.
@@ -56,6 +57,10 @@ public:
     // Get and setters for the radius, cannot be negative
     void set_radius(double r);
     double get_radius();
+
+    // Getter and setter for colour, colours values needs to be between 0 and 1
+    void set_colour(std::array<double, 4> Colour);
+    std::array<double, 4> get_colour();
 
     // Calculate new position and velocity function
     std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object> &objects, double &time_step, Physics &physics);

@@ -309,7 +309,22 @@ void Object::set_radius(double r){
         std::cerr << "[WARN] Tried to set radius of object #" << id << " to invalid value" << r << std::endl;
     }
 }
-
+void Object::set_colour(std::array<double, 4> Colour){
+    for(int ii = 0; ii < colour.size(); ii++){
+        if(Colour[ii]<0.0){
+            colour[ii] = 0.0;
+            std::cerr << "[WARN] Tried to set a colour value of object #" << id << " to invalid value" << Colour[ii] << " colour value was forced to 0" << std::endl;
+        }else if(Colour[ii]<=1.0) {
+            colour[ii] = Colour[ii];
+        }else{
+            colour[ii] = 1.0;
+            std::cerr << "[WARN] Tried to set a colour value of object #" << id << " to invalid value" << Colour[ii] << " colour value was forced to 1" << std::endl;
+        }
+    }
+};
+std::array<double, 4> Object::get_colour(){
+    return colour;
+};
 
 bool Universe::check_collision(Object* A, Object* B) {
     vec2d A_v = A->get_velocity();
