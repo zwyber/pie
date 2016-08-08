@@ -17,7 +17,7 @@
 // Constructors
 
 /*
- * Note on how the constructors are used: We implemented a code sequence to get "read-only" paremeters.
+ * Note on how the constructors are used: We implemented a code sequence to get "read-only" parameters.
  * The idea is that you can access properties like they are public (read them), but cannot change their
  * value, unless you are a member function of the class. See the example at http://www.cplusplus.com/forum/articles/36872/
  * or copied here below:
@@ -414,7 +414,6 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, doub
             continue;
 
         }
-//hello
 
         vec2d this_acc = physics.acceleration(X, &objects[ii]);
         // Here add up the contribution to the acceleration
@@ -439,7 +438,7 @@ vec2d Physics::acceleration (Object* X, Object* Y){
     double dist = this -> distance_between (X , Y);
     vec2d pos_X = X -> get_position();
     vec2d pos_Y = Y -> get_position();
-    vec2d r = sub(pos_X , pos_Y);
+    vec2d r = sub(pos_Y , pos_X);
     double mass = X -> get_mass();
     vec2d acc = cmult(r,(mass/(dist*dist*dist)));
     return acc;

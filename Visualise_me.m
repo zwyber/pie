@@ -1,6 +1,6 @@
-Info = load('test_03.csv');
+Info = load('CSV/test_03.csv');
 IterationSteps = 4;
-Radii = [1,2];
+Radii = [1,1];
 maxR = max(Radii);
 CircCorners = 100;
 Circs = zeros(length(Radii)*2, CircCorners);
@@ -29,13 +29,13 @@ for m=1:IterationSteps:size(Info,1)
     %plot(Info(m,1), Info(m,2), '.',Info(m,3), Info(m,4),'.');
     %pdecirc(Info(m,1),Info(m,2),Radii(1));
     %pdecirc(Info(m,3),Info(m,4),Radii(2));
-    %viscircles(Info(m,1:2),Radii(1));
-    %viscircles(Info(m,3:4),Radii(2));
-    plot(0,0,'.');
-    for qq = 1:2:size(Circs,1)
-        fill(Circs(qq,:)+Info(m,qq), Circs(qq+1,:)+Info(m,qq+1), colours((qq+1)/2,:));
-        hold on
-    end
+    viscircles(Info(m,1:2),Radii(1));
+    viscircles(Info(m,3:4),Radii(2));
+%    plot(0,0,'.');
+%     for qq = 1:2:size(Circs,1)
+%         fill(Circs(qq,:)+Info(m,qq), Circs(qq+1,:)+Info(m,qq+1), colours((qq+1)/2,:));
+%         hold on
+%     end
     axis equal;
     ylim([minY-maxR,maxY+maxR]);
     xlim([minX-maxR,maxX+maxR]);

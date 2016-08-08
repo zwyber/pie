@@ -20,7 +20,7 @@
 // Type definitions
 typedef unsigned id_type;
 typedef std::array<double, 2> vec2d;
-
+typedef std::array<vec2d, 2> pos_vel;
 // Own libraries
 #include "vecmath.h"
 #include "objects.h"
