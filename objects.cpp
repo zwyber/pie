@@ -587,6 +587,6 @@ vec2d Physics::acceleration (Object* X, Object* Y){
     vec2d pos_Y = Y -> get_position();
     vec2d r = sub(pos_Y , pos_X);
     double mass = Y -> get_mass();
-    vec2d acc = Grav * cmult(r,(mass/(dist*dist*dist)));
+    vec2d acc = cmult(r,(mass/(dist*dist*dist)));
     return acc;
 }
