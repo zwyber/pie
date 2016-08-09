@@ -28,9 +28,8 @@ private:
     double mass = 1;
     // Radius of object [m]
     double radius = 1;
-
     // Colour vector of this object {Red, Green, Blue, alpha}. All values are between 1 and 0
-    std::array<double, 4> colour = {{(double)rand()/RAND_MAX,(double)rand()/RAND_MAX,(double)rand()/RAND_MAX,1.0}};
+    std::array<double, 4> colour = {{(double)std::rand()/RAND_MAX,(double)std::rand()/RAND_MAX,(double)std::rand()/RAND_MAX,1.0}};
     // Identification number definitions
     id_type id = 0;
     bool id_set = false; // Toggle for allowing a new id to be generated or not.

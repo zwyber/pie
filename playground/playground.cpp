@@ -17,19 +17,21 @@ void DrawGrid(int stepSize)
 {
     //give stepSize in px
     GLFWwindow* CurrentWindow = glfwGetCurrentContext();
+
     int Width;
     int Height;
+
     glfwGetWindowSize(CurrentWindow, &Width, &Height);
     glBegin(GL_LINES);
-    glColor3f(0.75f, 0.75f, 0.75f);
-    for(int i=0;i<=Width/2;i+=stepSize)
+    glColor3d(0.75, 0.75, 0.75);
+    for(int i=0;i<=Width/2;i+=stepSize/2)
     {
         glVertex2d((double)i*2.0/Width,-1.0);
         glVertex2d((double)i*2.0/Width,1.0);
         glVertex2d((double)-i*2.0/Width,-1.0);
         glVertex2d((double)-i*2.0/Width,1.0);
     }
-    for(int i=0;i<=Height/2;i+=stepSize)
+    for(int i=0;i<=Height/2;i+=stepSize/2)
     {
         glVertex2d(-1.0,(double)i*2.0/Height);
         glVertex2d(1.0,(double)i*2.0/Height);
@@ -37,7 +39,6 @@ void DrawGrid(int stepSize)
         glVertex2d(1.0,(double)-i*2.0/Height);
     }
     glEnd();
-
 }
 void drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, GLdouble &screenWtHRatio, std::array<double,4> Color)
 {
@@ -91,12 +92,13 @@ int main( void )
     Object B;
 
     // Set them apart, and on a collision course
-    A.set_position(2, 0);
-    A.set_velocity(0, 0);
+    A.set_position(2, 1);
+    A.set_velocity(-1, 0.7);
+    //A.bouncyness = 0.9;
 
-
-    B.set_position(-2, 0);
+    B.set_position(-2, -1);
     B.set_velocity(0, 0);
+    //B.bouncyness = 0.9;
 
     // Generate a universe
     Universe universe(width/50.0, height/50.0);
@@ -156,7 +158,7 @@ int main( void )
         universe.physics_runtime_iteration();
         posA = Ap->get_position();
         posB = Bp->get_position();
-        //std::cout << "Position of A: " << posA[0] << "," << posA[1] << " Position of B: " << posB[0] << "," << posB[1] << ";" << std::endl;
+        std::cout << "Position of A: " << posA[0] << "," << posA[1] << " Position of B: " << posB[0] << "," << posB[1] << ";" << std::endl;
 
         // Swap buffers
 		glfwSwapBuffers(window);

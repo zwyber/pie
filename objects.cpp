@@ -4,7 +4,6 @@
 
 #include "objects.h"
 
-
 /*
  * Universe class functions
  *
@@ -341,7 +340,7 @@ bool Universe::check_collision(Object* A, Object* B) {
     double B_r = B->get_radius();
 
     // Check if objects are overlapping and moving aay from each other
-    if(len(sub(A_x,B_x)) < (A_r+B_r) && dot(sub(A_v,B_v),sub(B_x,A_x)) > 0){
+    if(len(sub(A_x,B_x)) < (A_r+B_r) && A_x != B_x && dot(sub(A_v,B_v),sub(B_x,A_x)) > 0){
         return true;
     } else{
         return false;
@@ -468,7 +467,7 @@ void Universe::physics_runtime_iteration () {
             mirror.set_velocity(-1*vel[0], vel[1]);
 
             // Set the same vertical position, mirrored horizontal in the wall
-            mirror.set_position(-this->_Width/2 + (pos[0] + this->_Width/2), pos[1]);
+            mirror.set_position(-this->_Width/2 + (this->_Width/2-pos[0]), pos[1]);
 
             // Perform a collision
             this->resolve_collision(&mirror, &objects[ii]);
