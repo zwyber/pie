@@ -8,6 +8,10 @@
 #ifndef PI
 #define PI 3.14159265359;
 #endif
+#ifndef Grav
+#define Grav -1;
+#endif
+
 
 // Standard libraries
 #include<vector>
