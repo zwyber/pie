@@ -17,7 +17,7 @@
 #include<map>
 #include<cmath>
 #include<fstream>
-
+#include<cstdlib>
 // Type definitions
 typedef unsigned id_type;
 typedef std::array<double, 2> vec2d;
