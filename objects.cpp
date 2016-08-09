@@ -358,16 +358,52 @@ void Universe::resolve_collision(Object* A, Object* B) {
     double A_m = A->get_mass();
     double B_m = B->get_mass();
 
-    // Horrible long expression which calculates the new position! It is the equation on Wikipedia for the
-    // vector notation of resolving a collision.
+    double coeff; // Coefficient of restitution, the smallest of the two
+    if ( A->bouncyness < B->bouncyness )
+        coeff = A->bouncyness;
+    else
+        coeff = B->bouncyness;
 
-    vec2d A_v_new = sub(A_v, cmult(sub(A_x, B_x), (2*B_m/(A_m + B_m))*dot(sub(A_v, B_v), sub(A_x, B_x)) / len_squared(sub(A_x, B_x))));
-    vec2d B_v_new = sub(B_v, cmult(sub(B_x, A_x), (2*A_m/(A_m + B_m))*dot(sub(B_v, A_v), sub(B_x, A_x)) / len_squared(sub(B_x, A_x))));
+    /*
+     * For the collision you can have 100% elastic or 100% inelastic. The final velocity vector is a
+     * linear combination of the two, where the bouncyness coefficient determines how much elastic
+     * the collision is.
+     *
+     * Not completely sure energy is conserved with this method :S
+     */
+
+    // Initialise the vectors
+    vec2d A_v_e_new; // Object A, velocity, elastic, new
+    vec2d A_v_i_new; // Object A, velocity, inelastic, new
+    vec2d B_v_e_new; // etc
+    vec2d B_v_i_new;
+
+    // Horrible long expression which calculates the new velocity! It is the equation on Wikipedia for the
+    // vector notation of resolving a collision: https://en.wikipedia.org/wiki/Elastic_collision
+    A_v_e_new = sub(A_v, cmult(sub(A_x, B_x),
+                                     (coeff) * (2 * B_m / (A_m + B_m)) * dot(sub(A_v, B_v), sub(A_x, B_x)) /
+                                     len_squared(sub(A_x, B_x))));
+    B_v_e_new = sub(B_v, cmult(sub(B_x, A_x),
+                                     (coeff) * (2 * A_m / (A_m + B_m)) * dot(sub(B_v, A_v), sub(B_x, A_x)) /
+                                     len_squared(sub(B_x, A_x))));
+
+    // Fully inelastic expression, very simple derivation:
+    /*
+     * p momentum, v velocity, m mass, ' final state
+     * p1' + p2' = p1 + p2 // Conservation of momentum
+     * v1' = v2'           // Same final velocity
+     * --> v1' = p1 + p2/(m1 + m2)
+     */
+    A_v_i_new = cmult(add(cmult(A_x, A_m), cmult(B_x, B_m)), 1/(A_m + B_m));
+    B_v_i_new = A_v_i_new; // Same velocity, fully joined together in motion
+
+    // Create a linear combination of the two types of collision
+    vec2d A_v_new = add(cmult(A_v_e_new, coeff), cmult(A_v_i_new, (1-coeff)));
+    vec2d B_v_new = add(cmult(B_v_e_new, coeff), cmult(B_v_i_new, (1-coeff)));
 
     // Push these new vectors to the objects
     A->set_velocity(A_v_new);
     B->set_velocity(B_v_new);
-
 }
 
 /*
@@ -404,6 +440,102 @@ void Universe::physics_runtime_iteration () {
                     this->resolve_collision(&objects[ii], &objects[jj]);
                 }
             }
+        }
+
+        // Check if we are near a wall
+        vec2d pos = objects[ii].get_position();
+        double r = objects[ii].get_radius();
+
+        // If it exceeds the world
+        if (    pos[0] - r < -this->_Width/2  || pos[0] + r > this->_Width/2 || \
+                pos[1] - r < -this->_Height/2 || pos[1] + r > this->_Height/2 ) {
+            // Make a mirror object at the
+        }
+
+        //// Durp wall collision is rather ugly now, put in subroutine
+
+        // Colliding in the west wall
+        if ( pos[0] - r < -this->_Width/2 ) {
+            // Create a mirror object
+            Object mirror;
+            mirror.set_mass(objects[ii].get_mass());
+            mirror.set_radius(objects[ii].get_radius());
+            mirror.bouncyness = objects[ii].bouncyness;
+
+            // Preserve the vertical velocity, inverse the horizontal velocity
+            vec2d vel = objects[ii].get_velocity();
+            mirror.set_velocity(-1*vel[0], vel[1]);
+
+            // Set the same vertical position, mirrored horizontal in the wall
+            mirror.set_position(-this->_Width/2 + (pos[0] + this->_Width/2), pos[1]);
+
+            // Perform a collision
+            this->resolve_collision(&mirror, &objects[ii]);
+
+            // Mirror object will clean up due to scope
+        }
+
+        // Colliding into the east wall
+        if ( pos[0] + r > this->_Width/2 ) {
+            // Create a mirror object
+            Object mirror;
+            mirror.set_mass(objects[ii].get_mass());
+            mirror.set_radius(objects[ii].get_radius());
+            mirror.bouncyness = objects[ii].bouncyness;
+
+            // Preserve the vertical velocity, inverse the horizontal velocity
+            vec2d vel = objects[ii].get_velocity();
+            mirror.set_velocity(-1*vel[0], vel[1]);
+
+            // Set the same vertical position, mirrored horizontal in the wall
+            mirror.set_position(this->_Width/2 + (this->_Width/2 - pos[0]), pos[1]);
+
+            // Perform a collision
+            this->resolve_collision(&mirror, &objects[ii]);
+
+            // Mirror object will clean up due to scope
+        }
+
+        // Collide into the north wall
+        if ( pos[1] + r > this->_Height/2 ) {
+            // Create a mirror object
+            Object mirror;
+            mirror.set_mass(objects[ii].get_mass());
+            mirror.set_radius(objects[ii].get_radius());
+            mirror.bouncyness = objects[ii].bouncyness;
+
+            // Preserve the horizontal velocity, inverse the vertical velocity
+            vec2d vel = objects[ii].get_velocity();
+            mirror.set_velocity(vel[0], -1*vel[1]);
+
+            // Set the same horizontal position, mirrored vertical in the wall
+            mirror.set_position(pos[0], this->_Height/2 + (this->_Height/2 - pos[1]));
+
+            // Perform a collision
+            this->resolve_collision(&mirror, &objects[ii]);
+
+            // Mirror object will clean up due to scope
+        }
+
+        // Collide into the south wall
+        if ( pos[1] - r < -this->_Height/2 ) {
+            // Create a mirror object
+            Object mirror;
+            mirror.set_mass(objects[ii].get_mass());
+            mirror.set_radius(objects[ii].get_radius());
+            mirror.bouncyness = objects[ii].bouncyness;
+
+            // Preserve the horizontal velocity, inverse the vertical velocity
+            vec2d vel = objects[ii].get_velocity();
+            mirror.set_velocity(vel[0], -1*vel[1]);
+
+            // Set the same horizontal position, mirrored vertical in the wall
+            mirror.set_position(pos[0], -this->_Height/2 + (-this->_Height/2 - pos[1]));
+
+            // Perform a collision
+            this->resolve_collision(&mirror, &objects[ii]);
+
+            // Mirror object will clean up due to scope
         }
     }
 

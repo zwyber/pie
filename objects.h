@@ -28,6 +28,7 @@ private:
     double mass = 1;
     // Radius of object [m]
     double radius = 1;
+
     // Colour vector of this object {Red, Green, Blue, alpha}. All values are between 1 and 0
     std::array<double, 4> colour = {{(double)rand()/RAND_MAX,(double)rand()/RAND_MAX,(double)rand()/RAND_MAX,1.0}};
     // Identification number definitions
@@ -39,6 +40,9 @@ public:
     id_type get_id();
     // Set to the id given. Advised to use Universe::give_new_object_id()
     void set_id(id_type &new_id);
+
+    // Bouncyness, the coefficient of restitution for this object
+    double bouncyness = 1;
 
     // Get and setters for the position
     void set_position(double new_x, double new_y);
