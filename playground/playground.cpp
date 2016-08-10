@@ -66,18 +66,18 @@ void drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, GLdouble &scree
     glEnd();
 }
 
-void drawObjectList(std::vector<Object> &objects, double Uwidth, double Uheight){
+void drawObjectList(std::vector<Object*> &objects, double Uwidth, double Uheight){
     GLFWwindow* CurrentWindow = glfwGetCurrentContext();
     int Width;
     int Height;
     glfwGetWindowSize(CurrentWindow, &Width, &Height);
     GLdouble WtHratio = (GLdouble)Width/Height;
     for(int ii = 0; ii < objects.size(); ii++){
-        GLdouble radius = 2.0*objects[ii].get_radius()/Uheight;
-        vec2d position = objects[ii].get_position();
+        GLdouble radius = 2.0*objects[ii]->get_radius()/Uheight;
+        vec2d position = objects[ii]->get_position();
         position[0] *= 2.0/Uwidth;
         position[1] *= 2.0/Uheight;
-        drawFilledCircle(position, radius, 100, WtHratio, objects[ii].get_colour());
+        drawFilledCircle(position, radius, 100, WtHratio, objects[ii]->get_colour());
         //std::cout << "Position of object "<< ii << ": " << position[0] << "," << position[1] << "  \t";
     }
     //std::cout << std::endl;
@@ -88,37 +88,26 @@ int main( void )
     int width = 1024;
     int height = 768;
 
-    Object A;
-    Object B;
+    Object* A = new Object;
+    Object* B = new Object;
 
     // Set them apart, and on a collision course
-    A.set_position(2, 0);
-    A.set_velocity(0,10);
-    A.set_mass(5);
-    A.bouncyness = 0;
+    A->set_position(2, 0);
+    A->set_velocity(0,10);
+    A->set_mass(5);
+    A->bouncyness = 0;
 
-    B.set_position(2, 2);
-    B.set_velocity(0, -1);
-    B.set_mass(100);
-    B.set_radius(1);
-
-    Object C;
-    C.set_position(3, 3);
-
-    Object D;
-    D.set_position(-3, -3);
+    B->set_position(2, 2);
+    B->set_velocity(0, -1);
+    B->set_mass(100);
+    B->set_radius(1);
 
     // Generate a universe
     Universe universe(width/25.0, height/25.0);
 
     // Add them to the universe
-    id_type A_id = universe.add_object(A);
-    id_type B_id = universe.add_object(B);
-    id_type C_id = universe.add_object(C);
-    id_type D_id = universe.add_object(D);
-
-    Object* Ap = universe.get_object_by_id(A_id);
-    Object* Bp = universe.get_object_by_id(B_id);
+    universe.add_object(A);
+    universe.add_object(B);
 
     // Initialise GLFW
 	if( !glfwInit() )
@@ -166,8 +155,8 @@ int main( void )
         DrawGrid(50);
         drawObjectList(universe.objects,universe.width, universe.height);
         universe.physics_runtime_iteration();
-        posA = Ap->get_position();
-        posB = Bp->get_position();
+        posA = A->get_position();
+        posB = B->get_position();
         // std::cout << "Position of A: " << posA[0] << "," << posA[1] << " Position of B: " << posB[0] << "," << posB[1] << ";" << std::endl;
 
         // Swap buffers
