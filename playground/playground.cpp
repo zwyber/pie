@@ -94,10 +94,12 @@ int main( void )
     // Set them apart, and on a collision course
     A.set_position(2, 1);
     A.set_velocity(-1, 0.7);
+    A.set_mass(2);
     //A.bouncyness = 0.9;
 
     B.set_position(-2, -1);
-    B.set_velocity(0, 0);
+    B.set_velocity(5, 0);
+    B.set_mass(2);
     //B.bouncyness = 0.9;
 
     // Generate a universe

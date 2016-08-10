@@ -333,9 +333,6 @@ bool Universe::check_collision(Object* A, Object* B) {
     vec2d B_v = B->get_velocity();
     vec2d B_x = B->get_position();
 
-    double A_m = A->get_mass();
-    double B_m = B->get_mass();
-
     double A_r = A->get_radius();
     double B_r = B->get_radius();
 
@@ -437,6 +434,7 @@ void Universe::physics_runtime_iteration () {
                 // Check for a collision
                 if ( check_collision(&objects[ii], &objects[jj]) ) {
                     // If that is the case, go fix it!
+                    std::cout << "\n\nResolving collision\n\n";
                     this->resolve_collision(&objects[ii], &objects[jj]);
                 }
             }
@@ -548,7 +546,7 @@ void Universe::physics_runtime_iteration () {
  */
 std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, double &time_step, Physics &physics) {
     // Initialize the result array
-    std::array<vec2d, 2> new_pos_vel;
+    std::array<vec2d, 2> new_pos_vel = {{0}};
 
     // Calculate the acceleration
     vec2d acceleration = {0,0};
@@ -577,7 +575,7 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, doub
 double Physics::distance_between(Object* X, Object* Y) {
     vec2d pos_X = X-> get_position();
     vec2d pos_Y = Y-> get_position();
-    double dist = std::sqrt(((pos_Y[0]-pos_X[0])*(pos_Y[0]-pos_X[0]))+((pos_Y[1]-pos_X[1])*(pos_Y[1]*pos_X[1])));
+    double dist = std::sqrt( (pos_Y[0]-pos_X[0])*(pos_Y[0]-pos_X[0]) + (pos_Y[1]-pos_X[1])*(pos_Y[1]-pos_X[1]) );
     return dist;
 }
 
