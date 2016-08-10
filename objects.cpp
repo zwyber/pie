@@ -1,4 +1,3 @@
-//
 // Created by paul on 8/1/16.
 //
 
@@ -326,7 +325,7 @@ std::array<double, 4> Object::get_colour(){
     return colour;
 };
 
-bool Universe::check_collision(Object* A, Object* B) {
+bool Physics::check_collision(Object* A, Object* B) {
     vec2d A_v = A->get_velocity();
     vec2d A_x = A->get_position();
 
@@ -344,7 +343,7 @@ bool Universe::check_collision(Object* A, Object* B) {
     }
 }
 
-void Universe::resolve_collision(Object* A, Object* B) {
+void Physics::resolve_collision(Object* A, Object* B) {
     // Using the math from Wikipedia: https://en.wikipedia.org/wiki/Elastic_collision
     vec2d A_v = A->get_velocity();
     vec2d A_x = A->get_position();
@@ -432,10 +431,10 @@ void Universe::physics_runtime_iteration () {
             // Do not check yourself
             if (ii != jj) {
                 // Check for a collision
-                if ( check_collision(&objects[ii], &objects[jj]) ) {
+                if ( physics.check_collision(&objects[ii], &objects[jj]) ) {
                     // If that is the case, go fix it!
-                    //std::cout << "\n\nResolving collision\n\n";
-                    this->resolve_collision(&objects[ii], &objects[jj]);
+                    std::cout << "Resolving collision...\n";
+                    physics.resolve_collision(&objects[ii], &objects[jj]);
                 }
             }
         }
@@ -454,86 +453,26 @@ void Universe::physics_runtime_iteration () {
 
         // Colliding in the west wall
         if ( pos[0] - r < -this->_Width/2 ) {
-            // Create a mirror object
-            Object mirror;
-            mirror.set_mass(objects[ii].get_mass());
-            mirror.set_radius(objects[ii].get_radius());
-            mirror.bouncyness = objects[ii].bouncyness;
-
-            // Preserve the vertical velocity, inverse the horizontal velocity
-            vec2d vel = objects[ii].get_velocity();
-            mirror.set_velocity(-1*vel[0], vel[1]);
-
-            // Set the same vertical position, mirrored horizontal in the wall
-            mirror.set_position(-this->_Width/2 + (this->_Width/2-pos[0]), pos[1]);
-
-            // Perform a collision
-            this->resolve_collision(&mirror, &objects[ii]);
-
-            // Mirror object will clean up due to scope
+            // Do the wall collision
+            physics.wall_collision(&objects[ii], this->_Width, this->_Height, 4);
         }
 
         // Colliding into the east wall
         if ( pos[0] + r > this->_Width/2 ) {
-            // Create a mirror object
-            Object mirror;
-            mirror.set_mass(objects[ii].get_mass());
-            mirror.set_radius(objects[ii].get_radius());
-            mirror.bouncyness = objects[ii].bouncyness;
-
-            // Preserve the vertical velocity, inverse the horizontal velocity
-            vec2d vel = objects[ii].get_velocity();
-            mirror.set_velocity(-1*vel[0], vel[1]);
-
-            // Set the same vertical position, mirrored horizontal in the wall
-            mirror.set_position(this->_Width/2 + (this->_Width/2 - pos[0]), pos[1]);
-
-            // Perform a collision
-            this->resolve_collision(&mirror, &objects[ii]);
-
-            // Mirror object will clean up due to scope
+            // Do the wall collision
+            physics.wall_collision(&objects[ii], this->_Width, this->_Height, 2);
         }
 
         // Collide into the north wall
         if ( pos[1] + r > this->_Height/2 ) {
-            // Create a mirror object
-            Object mirror;
-            mirror.set_mass(objects[ii].get_mass());
-            mirror.set_radius(objects[ii].get_radius());
-            mirror.bouncyness = objects[ii].bouncyness;
-
-            // Preserve the horizontal velocity, inverse the vertical velocity
-            vec2d vel = objects[ii].get_velocity();
-            mirror.set_velocity(vel[0], -1*vel[1]);
-
-            // Set the same horizontal position, mirrored vertical in the wall
-            mirror.set_position(pos[0], this->_Height/2 + (this->_Height/2 - pos[1]));
-
-            // Perform a collision
-            this->resolve_collision(&mirror, &objects[ii]);
-
-            // Mirror object will clean up due to scope
+            // Do the wall collision
+            physics.wall_collision(&objects[ii], this->_Width, this->_Height, 1);
         }
 
         // Collide into the south wall
         if ( pos[1] - r < -this->_Height/2 ) {
-            // Create a mirror object
-            Object mirror;
-            mirror.set_mass(objects[ii].get_mass());
-            mirror.set_radius(objects[ii].get_radius());
-            mirror.bouncyness = objects[ii].bouncyness;
-
-            // Preserve the horizontal velocity, inverse the vertical velocity
-            vec2d vel = objects[ii].get_velocity();
-            mirror.set_velocity(vel[0], -1*vel[1]);
-
-            // Set the same horizontal position, mirrored vertical in the wall
-            mirror.set_position(pos[0], -this->_Height/2 + (-this->_Height/2 - pos[1]));
-
-            // Perform a collision
-            this->resolve_collision(&mirror, &objects[ii]);
-
-            // Mirror object will clean up due to scope
+            // Do the wall collision
+            physics.wall_collision(&objects[ii], this->_Width, this->_Height, 3);
         }
     }
 
@@ -557,7 +496,6 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, doub
         if ( objects[ii].get_id() == this-> get_id()) {
             // This is myself, skip this loop iteration
             continue;
-
         }
 
         vec2d this_acc = physics.acceleration(X, &objects[ii]);
@@ -572,6 +510,49 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object> &objects, doub
 };
 
 
+void Physics::wall_collision(Object* X, double width, double height, int wall) {
+    // Create a mirror object
+    Object mirror;
+    mirror.set_mass(X->get_mass());
+    mirror.set_radius(X->get_radius());
+    mirror.bouncyness = X->bouncyness;
+
+    // Get velocity of the object
+    vec2d pos = X->get_position();
+    vec2d vel = X->get_velocity();
+
+    switch (wall) {
+        case 1: // North
+            mirror.set_velocity(vel[0], -1 * std::abs(vel[1]) );
+            mirror.set_position(pos[0], height/2 + std::abs(height/2 - pos[1]) );
+            break;
+        case 2: // East
+            mirror.set_velocity(-1 * std::abs(vel[0]), vel[1]);
+            mirror.set_position(width/2 + std::abs(width/2 - pos[0]), pos[1]);
+            break;
+        case 3: // South
+            mirror.set_velocity(vel[0], std::abs(vel[1]) );
+            mirror.set_position(pos[0], -height/2 - std::abs(pos[1] + height/2) );
+            break;
+        case 4: // West
+            mirror.set_velocity(std::abs(vel[0]), vel[1]);
+            mirror.set_position(-width/2 - std::abs(pos[0] + width/2), pos[1]);
+            break;
+    }
+
+
+
+    // Perform a collision
+    if ( this->check_collision(&mirror, X) ) {
+        this->resolve_collision(&mirror, X);
+    }
+    else{
+        std::cout << "Meh";
+    }
+
+    // Mirror object will clean up due to scope
+}
+
 double Physics::distance_between(Object* X, Object* Y) {
     vec2d pos_X = X-> get_position();
     vec2d pos_Y = Y-> get_position();
@@ -585,6 +566,6 @@ vec2d Physics::acceleration (Object* X, Object* Y){
     vec2d pos_Y = Y -> get_position();
     vec2d r = sub(pos_Y , pos_X);
     double mass = Y -> get_mass();
-    vec2d acc = cmult(r,(mass/(dist*dist*dist)));
+    vec2d acc = cmult(r,(this->G * mass/(dist*dist*dist)));
     return acc;
 }

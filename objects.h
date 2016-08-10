@@ -70,17 +70,24 @@ public:
 
 };
 
-
 class Physics {
 public:
+
+    double G = 10;
 
     double distance_between(Object* A, Object* B);
 
     vec2d acceleration (Object* X, Object* Y);
 
+    // Resolve object collision between two objects, i.e. change their velocities
+    void resolve_collision (Object* A, Object* B);
+
+    // Check collisions between objects
+    bool check_collision (Object* A, Object* B);
+
+    void wall_collision(Object* X, double width, double height, int wall);
+
 };
-
-
 
 // Definition of Universe class
 class Universe {
@@ -126,17 +133,14 @@ public:
     // Map for getting an object given the id
     std::map<id_type, Object*> id_to_object_map;
 
-    // Check collisions between objects
-    bool check_collision (Object* A, Object* B);
-    // Resolve object collision between two objects, i.e. change their velocities
-    void resolve_collision (Object* A, Object* B);
 
     // Physics engine
     void physics_runtime_iteration ();
 
-    double timestep = 0.01;
+    double timestep = 0.005;
 
 };
+
 
 
 #include "objects.cpp"

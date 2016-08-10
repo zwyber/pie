@@ -92,15 +92,20 @@ int main( void )
     Object B;
 
     // Set them apart, and on a collision course
-    A.set_position(5, -4);
-    A.set_velocity(3, 0);
-    A.set_mass(2);
-    //A.bouncyness = 0.9;
+    A.set_position(2, 1);
+    A.set_velocity(0, 10);
+    A.set_mass(1);
 
-    B.set_position(-5, 0);
-    B.set_velocity(0, 0);
-    B.set_mass(2);
-    //B.bouncyness = 0.9;
+    B.set_position(-2, -1);
+    B.set_velocity(0, -1);
+    B.set_mass(100);
+    B.set_radius(1);
+
+    Object C;
+    C.set_position(3, 3);
+
+    Object D;
+    D.set_position(-3, -3);
 
     // Generate a universe
     Universe universe(width/25.0, height/25.0);
@@ -108,6 +113,8 @@ int main( void )
     // Add them to the universe
     id_type A_id = universe.add_object(A);
     id_type B_id = universe.add_object(B);
+    id_type C_id = universe.add_object(C);
+    id_type D_id = universe.add_object(D);
 
     Object* Ap = universe.get_object_by_id(A_id);
     Object* Bp = universe.get_object_by_id(B_id);
@@ -160,7 +167,7 @@ int main( void )
         universe.physics_runtime_iteration();
         posA = Ap->get_position();
         posB = Bp->get_position();
-        //std::cout << "Position of A: " << posA[0] << "," << posA[1] << " Position of B: " << posB[0] << "," << posB[1] << ";" << std::endl;
+        // std::cout << "Position of A: " << posA[0] << "," << posA[1] << " Position of B: " << posB[0] << "," << posB[1] << ";" << std::endl;
 
         // Swap buffers
 		glfwSwapBuffers(window);
