@@ -143,7 +143,7 @@ void test_01() {
     std::cout << "Collision detection scenario 1:" << std::endl;
     debug_display_world(universe);
     // Collision of objects moving toward each other and overlapping
-    std::cout << "Collision between object A and B is: " << universe.check_collision(pA, pB) <<"\n" << std::endl;
+    std::cout << "Collision between object A and B is: " << universe.physics.check_collision(pA, pB) <<"\n" << std::endl;
 
     pA->set_velocity(2,2);
     pB->set_velocity(1,1);
@@ -151,7 +151,7 @@ void test_01() {
     std::cout << "Collision detection scenario 2:" << std::endl;
     debug_display_world(universe);
     // Collision of objects moving just away from each other and overlapping
-    std::cout << "Collision between object A and B is: " << universe.check_collision(pA, pB) <<"\n" << std::endl;
+    std::cout << "Collision between object A and B is: " << universe.physics.check_collision(pA, pB) <<"\n" << std::endl;
 
     pA->set_velocity(-2,-1);
     pB->set_velocity(1,1);
@@ -162,7 +162,7 @@ void test_01() {
     std::cout << "Collision detection scenario 3:" << std::endl;
     debug_display_world(universe);
     // Collision of objects moving toward each other and not overlapping
-    std::cout << "Collision between object A and B is: " << universe.check_collision(pA, pB) <<"\n" << std::endl;
+    std::cout << "Collision between object A and B is: " << universe.physics.check_collision(pA, pB) <<"\n" << std::endl;
 
     ////// COLLISION RESOLVING
     std::cout << "Collision resolving scenario:" << std::endl;
@@ -173,9 +173,9 @@ void test_01() {
     pB->set_position(49.2,19.2);
     debug_display_world(universe);
 
-    if(universe.check_collision(pA,pB)){
+    if(universe.physics.check_collision(pA,pB)){
         std::cout << "Collision between object A and B is: " << true <<". Resolving collision..." << std::endl;
-        universe.resolve_collision(pA,pB);
+        universe.physics.resolve_collision(pA,pB);
         std::cout << "Scenario after collision: " << std::endl;
         debug_display_world(universe);
 

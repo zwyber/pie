@@ -1,3 +1,4 @@
+//
 // Created by paul on 8/1/16.
 //
 
@@ -465,6 +466,7 @@ void Universe::physics_runtime_iteration () {
         if ( pos[0] - r < -this->_Width/2 ) {
             // Do the wall collision
             physics.wall_collision(&objects[ii], this->_Width, this->_Height, 4);
+
         }
 
         // Colliding into the east wall
@@ -575,4 +577,11 @@ vec2d Physics::acceleration (Object* X, Object* Y){
     double mass = Y -> get_mass();
     vec2d acc = cmult(r,(this->G * mass/(dist*dist*dist)));
     return acc;
+}
+
+void Universe::boundary_condition (Object* Z){
+    //exceeding from the west wall
+    if (pos[0] - r < -this->_Width/2){
+        vec2d pos_Z = Z -> set_position(-_Width/2)+r,
+    }
 }

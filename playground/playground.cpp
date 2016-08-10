@@ -85,8 +85,8 @@ void drawObjectList(std::vector<Object> &objects, double Uwidth, double Uheight)
 
 int main( void )
 {
-    int width = 720;
-    int height = 480;
+    int width = 1024;
+    int height = 768;
 
     Object A;
     Object B;
