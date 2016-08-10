@@ -434,7 +434,7 @@ void Universe::physics_runtime_iteration () {
                 // Check for a collision
                 if ( check_collision(&objects[ii], &objects[jj]) ) {
                     // If that is the case, go fix it!
-                    std::cout << "\n\nResolving collision\n\n";
+                    //std::cout << "\n\nResolving collision\n\n";
                     this->resolve_collision(&objects[ii], &objects[jj]);
                 }
             }

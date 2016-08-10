@@ -73,10 +73,10 @@ void drawObjectList(std::vector<Object> &objects, double Uwidth, double Uheight)
     glfwGetWindowSize(CurrentWindow, &Width, &Height);
     GLdouble WtHratio = (GLdouble)Width/Height;
     for(int ii = 0; ii < objects.size(); ii++){
-        GLdouble radius = objects[ii].get_radius()/Uheight;
+        GLdouble radius = 2.0*objects[ii].get_radius()/Uheight;
         vec2d position = objects[ii].get_position();
-        position[0] *= 1.0/Uwidth;
-        position[1] *= 1.0/Uheight;
+        position[0] *= 2.0/Uwidth;
+        position[1] *= 2.0/Uheight;
         drawFilledCircle(position, radius, 100, WtHratio, objects[ii].get_colour());
         //std::cout << "Position of object "<< ii << ": " << position[0] << "," << position[1] << "  \t";
     }
@@ -92,18 +92,18 @@ int main( void )
     Object B;
 
     // Set them apart, and on a collision course
-    A.set_position(2, 1);
-    A.set_velocity(-1, 0.7);
+    A.set_position(5, -4);
+    A.set_velocity(3, 0);
     A.set_mass(2);
     //A.bouncyness = 0.9;
 
-    B.set_position(-2, -1);
-    B.set_velocity(5, 0);
+    B.set_position(-5, 0);
+    B.set_velocity(0, 0);
     B.set_mass(2);
     //B.bouncyness = 0.9;
 
     // Generate a universe
-    Universe universe(width/50.0, height/50.0);
+    Universe universe(width/25.0, height/25.0);
 
     // Add them to the universe
     id_type A_id = universe.add_object(A);
@@ -160,7 +160,7 @@ int main( void )
         universe.physics_runtime_iteration();
         posA = Ap->get_position();
         posB = Bp->get_position();
-        std::cout << "Position of A: " << posA[0] << "," << posA[1] << " Position of B: " << posB[0] << "," << posB[1] << ";" << std::endl;
+        //std::cout << "Position of A: " << posA[0] << "," << posA[1] << " Position of B: " << posB[0] << "," << posB[1] << ";" << std::endl;
 
         // Swap buffers
 		glfwSwapBuffers(window);
