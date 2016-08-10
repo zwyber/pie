@@ -92,11 +92,12 @@ int main( void )
     Object B;
 
     // Set them apart, and on a collision course
-    A.set_position(2, 1);
-    A.set_velocity(0, 10);
-    A.set_mass(1);
+    A.set_position(2, 0);
+    A.set_velocity(0,10);
+    A.set_mass(5);
+    A.bouncyness = 0;
 
-    B.set_position(-2, -1);
+    B.set_position(2, 2);
     B.set_velocity(0, -1);
     B.set_mass(100);
     B.set_radius(1);

@@ -347,9 +347,11 @@ void Physics::resolve_collision(Object* A, Object* B) {
     // Using the math from Wikipedia: https://en.wikipedia.org/wiki/Elastic_collision
     vec2d A_v = A->get_velocity();
     vec2d A_x = A->get_position();
+    double A_r = A->get_radius();
 
     vec2d B_v = B->get_velocity();
     vec2d B_x = B->get_position();
+    double B_r = B->get_radius();
 
     double A_m = A->get_mass();
     double B_m = B->get_mass();
@@ -400,6 +402,16 @@ void Physics::resolve_collision(Object* A, Object* B) {
     // Push these new vectors to the objects
     A->set_velocity(A_v_new);
     B->set_velocity(B_v_new);
+
+    // Now also move them apart slightly, such that they are just touching. They
+    // are moved apart perpendicular to the plane of contact
+    vec2d r = sub(B_x, A_x);
+    double l = (A_r + B_r) - len(r);
+
+    // Move A and B apart
+    A->set_position(add(A_x, cmult(r, -l*A_m/(A_m + B_m))));
+    B->set_position(add(B_x, cmult(r, l*B_m/(A_m + B_m))));
+
 }
 
 /*
@@ -427,15 +439,13 @@ void Universe::physics_runtime_iteration () {
 
     // Check for collisions
     for (int ii = 0; ii < objects.size(); ++ii) {
-        for (int jj = 0; jj < objects.size(); ++jj) {
+        for (int jj = ii + 1; jj < objects.size(); ++jj) {
             // Do not check yourself
-            if (ii != jj) {
-                // Check for a collision
-                if ( physics.check_collision(&objects[ii], &objects[jj]) ) {
-                    // If that is the case, go fix it!
-                    std::cout << "Resolving collision...\n";
-                    physics.resolve_collision(&objects[ii], &objects[jj]);
-                }
+            // Check for a collision
+            if ( physics.check_collision(&objects[ii], &objects[jj]) ) {
+                // If that is the case, go fix it!
+                std::cout << "Resolving collision...\n";
+                physics.resolve_collision(&objects[ii], &objects[jj]);
             }
         }
 
@@ -542,12 +552,9 @@ void Physics::wall_collision(Object* X, double width, double height, int wall) {
 
 
 
-    // Perform a collision
+    // Perform a collision, only if sensible (prevents things getting stuck in a wall)
     if ( this->check_collision(&mirror, X) ) {
         this->resolve_collision(&mirror, X);
-    }
-    else{
-        std::cout << "Meh";
     }
 
     // Mirror object will clean up due to scope
