@@ -1,3 +1,4 @@
+//
 // Created by paul on 8/1/16.
 //
 
@@ -400,6 +401,7 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object*> &objects, dou
         if ( objects[ii] == this ) {
             // This is myself, skip this loop iteration
             continue;
+
         }
 
         vec2d this_acc = physics.acceleration(X, objects[ii]);

@@ -25,6 +25,6 @@ typedef std::array<vec2d, 2> pos_vel;
 // Own libraries
 #include "vecmath.h"
 #include "objects.h"
-
+#include "visuals.h"
 
 #endif //PIE_GITHUB_FRAMEWORK_H
