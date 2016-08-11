@@ -4,6 +4,11 @@
 
 #include "visuals.h"
 
+namespace visuals{
+    // Variable that is the number of pixels per physics length unit.
+    double pixRatio = 25.0;
+}
+
 /*
  * Function to initialise a new window that can be drawn on.
  */
@@ -52,8 +57,7 @@ GLFWwindow* initNewWindow(int width, int height){
 /*
  * Function to draw a grid in the current context window
  */
-void DrawGrid(int stepSize)
-{
+void drawGrid(int stepSize){
     // give stepSize in px
 
     // Get the window the Grid will be drawn to.
@@ -72,7 +76,7 @@ void DrawGrid(int stepSize)
     glColor3d(0.75, 0.75, 0.75);
     // Iterate over half screen width and draw lines from middle to both left and right
     // (each line is drawn from bottom to top)
-    for(int i=0;i<=Width/2;i+=stepSize/2)
+    for(int i=0;i<=Width/2;i+=stepSize)
     {
         // Place drawing cursor, right
         glVertex2d((double)i*2.0/Width,-1.0);
@@ -86,7 +90,7 @@ void DrawGrid(int stepSize)
     }
     // Iterate over half screen height and draw lines from middle to both top and bottom
     // (each line is drawn from left to right)
-    for(int i=0;i<=Height/2;i+=stepSize/2)
+    for(int i=0;i<=Height/2;i+=stepSize)
     {
         // Place drawing cursor, up
         glVertex2d(-1.0,(double)i*2.0/Height);
@@ -106,8 +110,7 @@ void DrawGrid(int stepSize)
  * Because r is normalized to height, we need screen screenWtHratio to get the x positions
  * The function is a modification of http://slabode.exofire.net/circle_draw.shtml#
  */
-void drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, GLdouble &screenWtHRatio, std::array<double,4> Colour)
-{
+void drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, GLdouble &screenWtHRatio, std::array<double,4> Colour){
     // !! r needs to be normalized to screen HEIGHT !!
     //// Define constants/parameters for calculations
     // Get the stepsize angle of a complete circle
@@ -127,6 +130,8 @@ void drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, GLdouble &scree
     // Set colour of the triangle fan.
     glColor4d(Colour[0], Colour[1], Colour[2], Colour[3]);
 
+    // !!! In case we wish to use textures it's important to include the following line:
+    glVertex2d(pos[0], pos[1]);
     for(int ii = 0; ii < num_segments; ii++)
     {
         // Add a drawing point to the circle outline
@@ -138,13 +143,15 @@ void drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, GLdouble &scree
         x = c * x - s * y;
         y = s * t + c * y;
     }
+    // !!! In case we wish to use textures it's important to include the following line:
+    glVertex2d(x/screenWtHRatio + pos[0], y + pos[1]);
     // end drawing
     glEnd();
 }
 /*
  * Function to draw all Objects from an object list to the current window
  */
-void drawObjectList(std::vector<Object*> &objects, double Uwidth, double Uheight){
+void drawObjectList(std::vector<Object*> &objects){
     // get the current window pointer to get its size so we can normalize the universe size to pixel size.
     GLFWwindow* CurrentWindow = glfwGetCurrentContext();
     // Create parameters where glfwGetWindowSize can write to.
@@ -155,11 +162,11 @@ void drawObjectList(std::vector<Object*> &objects, double Uwidth, double Uheight
     GLdouble WtHratio = (GLdouble)Width/Height;
     for(int ii = 0; ii < objects.size(); ii++){
         // Normalize the radius from universe to height [-1, 1];
-        GLdouble radius = 2.0*objects[ii]->get_radius()/Uheight;
+        GLdouble radius = visuals::pixRatio*2.0*objects[ii]->get_radius()/Height;
         vec2d position = objects[ii]->get_position();
         // Normalize the position from universe to [-1, 1];
-        position[0] *= 2.0/Uwidth;
-        position[1] *= 2.0/Uheight;
+        position[0] *= visuals::pixRatio*2.0/Width;
+        position[1] *= visuals::pixRatio*2.0/Height;
         // Draw the circle at the position
         drawFilledCircle(position, radius, 100, WtHratio, objects[ii]->get_colour());
     }

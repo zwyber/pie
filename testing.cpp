@@ -14,6 +14,15 @@ void debug_display_world (Universe &universe) {
     }
 }
 
+void DrawBox(double Width, double Height){
+    glBegin(GL_LINE_LOOP);
+    glColor4d(1.0,0,0,1.0);
+    glVertex2d(Width, Height);
+    glVertex2d(-Width, Height);
+    glVertex2d(-Width, -Height);
+    glVertex2d(Width, -Height);
+    glEnd();
+}
 
 
 
@@ -279,22 +288,26 @@ void test_06() {
     int width = 1600;
     int height = 900;
 
+    int universeWidth = 700;
+    int universeHeight = 700;
+    visuals::pixRatio = 50;
+
     Object* A = new Object;
     Object* B = new Object;
 
     // Set them apart, and on a collision course
-    A->set_position(2, 0);
-    A->set_velocity(2,10);
-    A->set_mass(3);
+    A->set_position(-2, -2);
+    A->set_velocity(2,0);
+    A->set_mass(0.5);
     A->bouncyness = 1;
 
     B->set_position(2, 2);
-    B->set_velocity(0, -1);
-    B->set_mass(3);
+    B->set_velocity(0, 1);
+    B->set_mass(0.5);
     B->set_radius(1);
 
     // Generate a universe
-    Universe universe(width/25.0, height/25.0);
+    Universe universe(universeWidth/visuals::pixRatio, universeHeight/visuals::pixRatio);
 
     // Add them to the universe
     universe.add_object(A);
@@ -306,12 +319,13 @@ void test_06() {
     // initNewWindow already makes window currentContext so no need to call it again later on.
     window = initNewWindow(width, height);
     // Set the buffer clear color to:
-    glClearColor(0.3, 0.2, 0.2, 1.0);
+    glClearColor(0.2, 0.2, 0.3, 1.0);
     do{
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
         glClear(GL_COLOR_BUFFER_BIT);
-        DrawGrid(50);
-        drawObjectList(universe.objects,universe.width, universe.height);
+        drawGrid(visuals::pixRatio);
+        drawObjectList(universe.objects);
+        DrawBox((double)universeWidth/width, (double)universeHeight/height);
         universe.physics_runtime_iteration();
         posA = A->get_position();
         posB = B->get_position();

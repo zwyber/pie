@@ -16,7 +16,7 @@
 GLFWwindow* initNewWindow(int width, int height);
 
 // Draws a grid in the current active window, the stepsize is the px size of the grid
-void DrawGrid(int stepSize);
+void drawGrid(int stepSize);
 
 // Draws circles. Needs a position for the centre, a radius (normalized to screen height), number of points used to
 // define the circle, screenratio (so you actually get circles and not ellipses) and finally it needs a colour
@@ -24,7 +24,7 @@ void DrawGrid(int stepSize);
 void drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, GLdouble &screenWtHRatio, std::array<double,4> Colour);
 
 // Goes through the object list and draws all objects to the current active window
-void drawObjectList(std::vector<Object*> &objects, double Uwidth, double Uheight);
+void drawObjectList(std::vector<Object*> &objects);
 
 #include "visuals.cpp"
 

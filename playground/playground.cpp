@@ -9,7 +9,7 @@ int main()
     GLFWwindow* window;
     int width = 1600;
     int height = 900;
-
+    visuals::pixRatio = 12;
     Object* A = new Object;
     Object* B = new Object;
 
@@ -25,7 +25,7 @@ int main()
     B->set_radius(1);
 
     // Generate a universe
-    Universe universe(width/25.0, height/25.0);
+    Universe universe(width/visuals::pixRatio, height/visuals::pixRatio);
 
     // Add them to the universe
     universe.add_object(A);
@@ -41,8 +41,8 @@ int main()
 	do{
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
         glClear(GL_COLOR_BUFFER_BIT);
-        DrawGrid(50);
-        drawObjectList(universe.objects,universe.width, universe.height);
+        drawGrid(visuals::pixRatio);
+        drawObjectList(universe.objects);
         universe.physics_runtime_iteration();
         posA = A->get_position();
         posB = B->get_position();
