@@ -10,6 +10,7 @@
 GLFWwindow* initNewWindow(int width, int height){
 
     //Most of the initNewWindow code is from http://www.opengl-tutorial.org/ where this library set originates from.
+    GLFWwindow* window;
 
     ///// initializing the GLFW functionality.
     // If the initfailed (returns false) it will throw an error

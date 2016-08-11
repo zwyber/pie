@@ -1,15 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <GL/glew.h>
-
-#include <glfw3.h>
-GLFWwindow* window;
 
 #include "../framework.h"
 
 int main()
 {
+    GLFWwindow* window;
     int width = 1600;
     int height = 900;
 
@@ -36,11 +33,14 @@ int main()
 
     vec2d posA;
     vec2d posB;
+
+    // initNewWindow already makes window currentContext so no need to call it again later on.
     window = initNewWindow(width, height);
+    // Set the buffer clear color to:
     glClearColor(0.3, 0.2, 0.2, 1.0);
 	do{
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
+        glClear(GL_COLOR_BUFFER_BIT);
         DrawGrid(50);
         drawObjectList(universe.objects,universe.width, universe.height);
         universe.physics_runtime_iteration();

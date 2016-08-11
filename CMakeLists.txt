@@ -78,3 +78,6 @@ SOURCE_GROUP(shaders REGULAR_EXPRESSION ".*/.*shader$" )
 
 set(SOURCE_FILES main.cpp)
 add_executable(pie ${SOURCE_FILES})
+target_link_libraries(pie
+		${ALL_LIBS}
+		)

@@ -19,6 +19,10 @@
 #include<fstream>
 #include<cstdlib>
 
+// Used GL libraries
+#include <GL/glew.h>
+#include <glfw3.h>
+
 // Type definitions
 typedef std::array<double, 2> vec2d;
 typedef std::array<vec2d, 2> pos_vel;
@@ -26,5 +30,6 @@ typedef std::array<vec2d, 2> pos_vel;
 #include "vecmath.h"
 #include "objects.h"
 #include "visuals.h"
+
 
 #endif //PIE_GITHUB_FRAMEWORK_H
