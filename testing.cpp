@@ -15,8 +15,6 @@ void debug_display_world (Universe &universe) {
     }
 }
 
-
-
 bool CollidesWithAny(Object* obj, Universe &uni){
     for(int ii = 0; ii < uni.objects.size(); ii++){
         if(uni.objects[ii] != obj){
@@ -309,14 +307,22 @@ void test_05 () {
     }
 }
 
-void test_06() {
-    int width = 1600;
-    int height = 900;
-    int universeWidth = 700;
-    int universeHeight = 700;
 
-    // initNewWindow already makes window currentContext so no need to call it again later on.
+void test_06() {
+    ////// Press Z to zoom
+    // Window dimensions [px]
+    int width = 720;
+    int height = 480;
+    // universe dimensions [px]
+    int universeWidth = 700;
+    int universeHeight = 500;
+
+    int AmountOfObjects = 100;
+
+    // window already makes GLFWpointer currentContext so no need to call it again later on.
     Window window = Window(width, height);
+
+    // set ration of [px/m]
     window.pixRatio = 25;
 
     Object* A = new Object;
@@ -335,33 +341,40 @@ void test_06() {
 
     // Generate a universe
     Universe universe(universeWidth/window.pixRatio, universeHeight/window.pixRatio);
+    //// Look in the addRandomObjects function to find the parameter range of objects
+    addRandomObjects(universe,0,AmountOfObjects);
 
     // Add them to the universe
-    addRandomObjects(universe,0,100);
     //universe.add_object(A);
     //universe.add_object(B);
-    vec2d posA;
-    vec2d posB;
+    //vec2d posA;
+    //vec2d posB;
     // Set the buffer clear color to:
     glClearColor(0.2, 0.2, 0.3, 1.0);
-    bool HOLD = false;
+    bool HOLDZ = false;
     do{
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
         glClear(GL_COLOR_BUFFER_BIT);
+        // Draw a grid with m/div
         window.drawGrid(window.pixRatio);
+        // Draw the universe's objects on top of that
         window.drawObjectList(universe.objects);
+        // Draw A box on the boundaries of the universe
         window.drawBox(universe.width, universe.height);
+        // Do a physics iteration
         universe.physics_runtime_iteration();
-        posA = A->get_position();
-        posB = B->get_position();
+        //posA = A->get_position();
+        //posB = B->get_position();
         // std::cout << "Position of A: " << posA[0] << "," << posA[1] << " Position of B: " << posB[0] << "," << posB[1] << ";" << std::endl;
 
         // Swap buffers
         glfwSwapBuffers(window.GLFWpointer);
         glfwPollEvents();
+
+        // This makes you zoom between 25 and 50 pixels per m
         if(glfwGetKey(window.GLFWpointer, GLFW_KEY_Z) == GLFW_PRESS){
-            if(!HOLD){
-                HOLD = true;
+            if(!HOLDZ){
+                HOLDZ = true;
                 if(window.pixRatio == 25)
                     window.pixRatio = 50;
 
@@ -369,7 +382,7 @@ void test_06() {
                     window.pixRatio = 25;
             }
         }else{
-            HOLD = false;
+            HOLDZ = false;
         }
 
     } // Check if the ESC key was pressed or the window was closed

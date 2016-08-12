@@ -40,6 +40,7 @@ public:
 // Goes through the object list and draws all objects to the current active window
     void drawObjectList(std::vector<Object *> &objects);
 
+    // Draws a simple red box in the middle of the screen.
     void drawBox(double Width, double Height);
 
     // Too avoid call back issues the method of http://gamedev.stackexchange.com/questions/58541/how-can-i-associate-a-key-callback-with-a-wrapper-class-instance

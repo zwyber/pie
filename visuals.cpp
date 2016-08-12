@@ -5,13 +5,6 @@
 #include "visuals.h"
 
 
-void Window::window_size_callback(int width, int height)
-{
-    winHeight = height;
-    winWidth = width;
-    winWtHratio = (double)width/height;
-    glViewport(0,0, width, height);
-}
 /*
  * Function to initialise a new window that can be drawn on.
  */
@@ -166,6 +159,10 @@ void Window::drawObjectList(std::vector<Object*> &objects){
         drawFilledCircle(position, radius, 100, objects[ii]->get_colour());
     }
 }
+/*
+ * Draws a redbox to the middle of the screen.
+ * Uses Universe scale!!!
+ */
 void Window::drawBox(double Width, double Height){
 
     glBegin(GL_LINE_LOOP);
@@ -177,4 +174,15 @@ void Window::drawBox(double Width, double Height){
     glVertex2d(-Width, -Height);
     glVertex2d(Width, -Height);
     glEnd();
+}
+/*
+ * Working function that is called when the window is resized.
+ */
+void Window::window_size_callback(int width, int height){
+    // Update the parameters to fit those of the window.
+    winHeight = height;
+    winWidth = width;
+    winWtHratio = (double)width/height;
+    // Update GL's canvas to fit the window.
+    glViewport(0,0, width, height);
 }
