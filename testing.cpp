@@ -14,9 +14,16 @@ void debug_display_world (Universe &universe) {
     }
 }
 
-void DrawBox(double Width, double Height){
+void drawBox(double Width, double Height){
+    GLFWwindow* currentWindow = glfwGetCurrentContext();
+    // Create parameters where glfwGetWindowSize can write to.
+    int WWidth;
+    int WHeight;
+    glfwGetWindowSize(currentWindow, &WWidth, &WHeight);
     glBegin(GL_LINE_LOOP);
     glColor4d(1.0,0,0,1.0);
+    Width *= visuals::pixRatio/WWidth;
+    Height *= visuals::pixRatio/WHeight;
     glVertex2d(Width, Height);
     glVertex2d(-Width, Height);
     glVertex2d(-Width, -Height);
@@ -287,7 +294,6 @@ void test_06() {
     GLFWwindow* window;
     int width = 1600;
     int height = 900;
-
     int universeWidth = 700;
     int universeHeight = 700;
     visuals::pixRatio = 50;
@@ -299,7 +305,7 @@ void test_06() {
     A->set_position(-2, -2);
     A->set_velocity(2,0);
     A->set_mass(0.5);
-    A->bouncyness = 1;
+    A->bouncyness = 0;
 
     B->set_position(2, 2);
     B->set_velocity(0, 1);
@@ -320,12 +326,13 @@ void test_06() {
     window = initNewWindow(width, height);
     // Set the buffer clear color to:
     glClearColor(0.2, 0.2, 0.3, 1.0);
+    bool HOLD = false;
     do{
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
         glClear(GL_COLOR_BUFFER_BIT);
         drawGrid(visuals::pixRatio);
         drawObjectList(universe.objects);
-        DrawBox((double)universeWidth/width, (double)universeHeight/height);
+        drawBox(universe.width, universe.height);
         universe.physics_runtime_iteration();
         posA = A->get_position();
         posB = B->get_position();
@@ -334,6 +341,18 @@ void test_06() {
         // Swap buffers
         glfwSwapBuffers(window);
         glfwPollEvents();
+        if(glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS){
+            if(!HOLD){
+                HOLD = true;
+                if(visuals::pixRatio == 50)
+                    visuals::pixRatio = 100;
+
+                else
+                    visuals::pixRatio = 50;
+            }
+        }else{
+            HOLD = false;
+        }
 
     } // Check if the ESC key was pressed or the window was closed
     while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&

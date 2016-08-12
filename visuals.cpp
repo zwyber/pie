@@ -8,7 +8,6 @@ namespace visuals{
     // Variable that is the number of pixels per physics length unit.
     double pixRatio = 25.0;
 }
-
 /*
  * Function to initialise a new window that can be drawn on.
  */
@@ -37,6 +36,7 @@ GLFWwindow* initNewWindow(int width, int height){
         getchar();
         glfwTerminate();
     }
+
     // Set the working space of gl to window
     glfwMakeContextCurrent(window);
 
@@ -130,21 +130,21 @@ void drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, GLdouble &scree
     // Set colour of the triangle fan.
     glColor4d(Colour[0], Colour[1], Colour[2], Colour[3]);
 
-    // !!! In case we wish to use textures it's important to include the following line:
-    glVertex2d(pos[0], pos[1]);
+    // !!! In case we wish to use textures it's important to include the following lines:
+    //glVertex2d(pos[0], pos[1]);
+    //glVertex2d(x/screenWtHRatio + pos[0], y + pos[1]);
+
     for(int ii = 0; ii < num_segments; ii++)
     {
-        // Add a drawing point to the circle outline
-        glVertex2d(x/screenWtHRatio + pos[0], y + pos[1]);//output vertex
-
-        // Apply the rotation matrix, to rotate around the circle centre so this point can be drawn next iteration.
+        // Apply the rotation matrix, to rotate around the circle centre so this point can be drawn.
         // Rotation matrix = [cos(phi), -sin(phi); sin(phi) cos(phi)]
         t = x;
         x = c * x - s * y;
         y = s * t + c * y;
+
+        // Add a drawing point to the circle outline
+        glVertex2d(x/screenWtHRatio + pos[0], y + pos[1]);//output vertex
     }
-    // !!! In case we wish to use textures it's important to include the following line:
-    glVertex2d(x/screenWtHRatio + pos[0], y + pos[1]);
     // end drawing
     glEnd();
 }
