@@ -2,6 +2,7 @@
 //
 
 #include "testing.h"
+#include <time.h>
 
 void debug_display_world (Universe &universe) {
     // Iterate over all objects
@@ -14,24 +15,42 @@ void debug_display_world (Universe &universe) {
     }
 }
 
-void drawBox(double Width, double Height){
-    GLFWwindow* currentWindow = glfwGetCurrentContext();
-    // Create parameters where glfwGetWindowSize can write to.
-    int WWidth;
-    int WHeight;
-    glfwGetWindowSize(currentWindow, &WWidth, &WHeight);
-    glBegin(GL_LINE_LOOP);
-    glColor4d(1.0,0,0,1.0);
-    Width *= visuals::pixRatio/WWidth;
-    Height *= visuals::pixRatio/WHeight;
-    glVertex2d(Width, Height);
-    glVertex2d(-Width, Height);
-    glVertex2d(-Width, -Height);
-    glVertex2d(Width, -Height);
-    glEnd();
+
+
+bool CollidesWithAny(Object* obj, Universe &uni){
+    for(int ii = 0; ii < uni.objects.size(); ii++){
+        if(uni.objects[ii] != obj){
+            if(uni.physics.check_collision(uni.objects[ii],obj)){
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
-
+void addRandomObjects(Universe &universe, unsigned seed, int objectAmount){
+    if(!seed){
+        srand(time(NULL));
+    }else{
+        srand(seed);
+    }
+    std::array<double,2> radiusLim = {0.2, 1};
+    std::array<double,2> massLim = {0.1, 3};
+    std::array<double,2> velocityLim = {-5, 5};
+    for(int ii = 0; ii < objectAmount; ii++){
+        Object* A = new Object;
+        A->set_mass((std::rand()/(double)RAND_MAX)*(massLim[1]-massLim[0])+massLim[0]);
+        A->set_velocity((std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0],(std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0]);
+        A->set_radius((std::rand()/(double)RAND_MAX)*(radiusLim[1]-radiusLim[0])+radiusLim[0]);
+        //A->bouncyness = std::rand()/(double)RAND_MAX;
+        std::array<double,2> xLim = {-universe.width/2+A->get_radius(), universe.width/2-A->get_radius()};
+        std::array<double,2> yLim = {-universe.height/2+A->get_radius(), universe.height/2-A->get_radius()};
+        do{
+            A->set_position((std::rand()/(double)RAND_MAX)*(xLim[1]-xLim[0])+xLim[0], (std::rand()/(double)RAND_MAX)*(yLim[1]-yLim[0])+yLim[0]);
+        }while(CollidesWithAny(A, universe));
+        universe.add_object(A);
+    }
+}
 
 void test_00 () {
 
@@ -291,72 +310,71 @@ void test_05 () {
 }
 
 void test_06() {
-    GLFWwindow* window;
     int width = 1600;
     int height = 900;
     int universeWidth = 700;
     int universeHeight = 700;
-    visuals::pixRatio = 50;
+
+    // initNewWindow already makes window currentContext so no need to call it again later on.
+    Window window = Window(width, height);
+    window.pixRatio = 25;
 
     Object* A = new Object;
     Object* B = new Object;
 
     // Set them apart, and on a collision course
-    A->set_position(-2, -2);
-    A->set_velocity(2,0);
-    A->set_mass(0.5);
-    A->bouncyness = 0;
+    //A->set_position(-2, -2);
+    //A->set_velocity(2,0);
+    //A->set_mass(0.5);
+    //A->bouncyness = 1;
 
-    B->set_position(2, 2);
-    B->set_velocity(0, 1);
-    B->set_mass(0.5);
-    B->set_radius(1);
+    //B->set_position(2, 2);
+    //B->set_velocity(0, 1);
+    //B->set_mass(0.5);
+    //B->set_radius(1);
 
     // Generate a universe
-    Universe universe(universeWidth/visuals::pixRatio, universeHeight/visuals::pixRatio);
+    Universe universe(universeWidth/window.pixRatio, universeHeight/window.pixRatio);
 
     // Add them to the universe
-    universe.add_object(A);
-    universe.add_object(B);
-
+    addRandomObjects(universe,0,100);
+    //universe.add_object(A);
+    //universe.add_object(B);
     vec2d posA;
     vec2d posB;
-
-    // initNewWindow already makes window currentContext so no need to call it again later on.
-    window = initNewWindow(width, height);
     // Set the buffer clear color to:
     glClearColor(0.2, 0.2, 0.3, 1.0);
     bool HOLD = false;
     do{
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
         glClear(GL_COLOR_BUFFER_BIT);
-        drawGrid(visuals::pixRatio);
-        drawObjectList(universe.objects);
-        drawBox(universe.width, universe.height);
+        window.drawGrid(window.pixRatio);
+        window.drawObjectList(universe.objects);
+        window.drawBox(universe.width, universe.height);
         universe.physics_runtime_iteration();
         posA = A->get_position();
         posB = B->get_position();
         // std::cout << "Position of A: " << posA[0] << "," << posA[1] << " Position of B: " << posB[0] << "," << posB[1] << ";" << std::endl;
 
         // Swap buffers
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(window.GLFWpointer);
         glfwPollEvents();
-        if(glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS){
+        if(glfwGetKey(window.GLFWpointer, GLFW_KEY_Z) == GLFW_PRESS){
             if(!HOLD){
                 HOLD = true;
-                if(visuals::pixRatio == 50)
-                    visuals::pixRatio = 100;
+                if(window.pixRatio == 25)
+                    window.pixRatio = 50;
 
                 else
-                    visuals::pixRatio = 50;
+                    window.pixRatio = 25;
             }
         }else{
             HOLD = false;
         }
 
     } // Check if the ESC key was pressed or the window was closed
-    while( glfwGetKey(window, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
-           glfwWindowShouldClose(window) == 0 );
+    while( glfwGetKey(window.GLFWpointer, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
+           glfwWindowShouldClose(window.GLFWpointer) == 0 );
 
     // Close OpenGL window and terminate GLFW
     glfwTerminate();

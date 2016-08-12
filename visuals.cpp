@@ -4,17 +4,24 @@
 
 #include "visuals.h"
 
-namespace visuals{
-    // Variable that is the number of pixels per physics length unit.
-    double pixRatio = 25.0;
+
+void Window::window_size_callback(int width, int height)
+{
+    winHeight = height;
+    winWidth = width;
+    winWtHratio = (double)width/height;
+    glViewport(0,0, width, height);
 }
 /*
  * Function to initialise a new window that can be drawn on.
  */
-GLFWwindow* initNewWindow(int width, int height){
+Window::Window(int width, int height){
 
-    //Most of the initNewWindow code is from http://www.opengl-tutorial.org/ where this library set originates from.
-    GLFWwindow* window;
+    //Most of this code is from http://www.opengl-tutorial.org/ where this library set originates from.
+
+    winHeight = height;
+    winWidth = width;
+    winWtHratio = (double)width/height;
 
     ///// initializing the GLFW functionality.
     // If the initfailed (returns false) it will throw an error
@@ -29,16 +36,16 @@ GLFWwindow* initNewWindow(int width, int height){
 
     ///// Create the actual window
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow( width, height, "!!! Space debris debugger window !!!", NULL, NULL);
+    GLFWpointer = glfwCreateWindow( width, height, "!!! Space debris debugger window !!!", NULL, NULL);
     // Return error if window did not get created
-    if( window == NULL ){
+    if( GLFWpointer == NULL ){
         fprintf( stderr, "Failed to open GLFW window.\n" );
         getchar();
         glfwTerminate();
     }
 
     // Set the working space of gl to window
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(GLFWpointer);
 
     ///// Initialize GLEW
     //return error if this failed.
@@ -49,26 +56,21 @@ GLFWwindow* initNewWindow(int width, int height){
     }
 
     ///// Toggle the input mode.
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+    glfwSetInputMode(GLFWpointer, GLFW_STICKY_KEYS, GL_TRUE);
 
-    // Return the pointer to the window we created.
-    return window;
+    // Couple the pointer to this Window to that of the GLFW window pointer
+    // This will be used in WindowResizeStaticCallback (see .h class definition)
+    glfwSetWindowUserPointer(GLFWpointer, this);
+
+    // Call th function WindowResizeStaticCallback (which refers to window_size_callback)
+    // when the window gets rescaled.
+    glfwSetWindowSizeCallback(GLFWpointer, WindowResizeStaticCallback);
 }
 /*
  * Function to draw a grid in the current context window
  */
-void drawGrid(int stepSize){
+void Window::drawGrid(int stepSize){
     // give stepSize in px
-
-    // Get the window the Grid will be drawn to.
-    GLFWwindow* CurrentWindow = glfwGetCurrentContext();
-
-    // Declare integers the getwindowssize can write to.
-    int Width;
-    int Height;
-
-    // get width and height of the open window
-    glfwGetWindowSize(CurrentWindow, &Width, &Height);
 
     // Start Drawing lines
     glBegin(GL_LINES);
@@ -76,31 +78,31 @@ void drawGrid(int stepSize){
     glColor3d(0.75, 0.75, 0.75);
     // Iterate over half screen width and draw lines from middle to both left and right
     // (each line is drawn from bottom to top)
-    for(int i=0;i<=Width/2;i+=stepSize)
+    for(int i=0;i<=winWidth/2;i+=stepSize)
     {
         // Place drawing cursor, right
-        glVertex2d((double)i*2.0/Width,-1.0);
+        glVertex2d((double)i*2.0/winWidth,-1.0);
         // Draw line from cursor to point:
-        glVertex2d((double)i*2.0/Width,1.0);
+        glVertex2d((double)i*2.0/winWidth,1.0);
 
         // Place drawing cursor, left
-        glVertex2d((double)-i*2.0/Width,-1.0);
+        glVertex2d((double)-i*2.0/winWidth,-1.0);
         // Draw line from cursor to point:
-        glVertex2d((double)-i*2.0/Width,1.0);
+        glVertex2d((double)-i*2.0/winWidth,1.0);
     }
     // Iterate over half screen height and draw lines from middle to both top and bottom
     // (each line is drawn from left to right)
-    for(int i=0;i<=Height/2;i+=stepSize)
+    for(int i=0;i<=winHeight/2;i+=stepSize)
     {
         // Place drawing cursor, up
-        glVertex2d(-1.0,(double)i*2.0/Height);
+        glVertex2d(-1.0,(double)i*2.0/winHeight);
         // Draw line from cursor to point:
-        glVertex2d(1.0,(double)i*2.0/Height);
+        glVertex2d(1.0,(double)i*2.0/winHeight);
 
         // Place drawing cursor, down
-        glVertex2d(-1.0,(double)-i*2.0/Height);
+        glVertex2d(-1.0,(double)-i*2.0/winHeight);
         // Draw line from cursor to point:
-        glVertex2d(1.0,(double)-i*2.0/Height);
+        glVertex2d(1.0,(double)-i*2.0/winHeight);
     }
     // end drawing lines.
     glEnd();
@@ -110,7 +112,7 @@ void drawGrid(int stepSize){
  * Because r is normalized to height, we need screen screenWtHratio to get the x positions
  * The function is a modification of http://slabode.exofire.net/circle_draw.shtml#
  */
-void drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, GLdouble &screenWtHRatio, std::array<double,4> Colour){
+void Window::drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, std::array<double,4> Colour){
     // !! r needs to be normalized to screen HEIGHT !!
     //// Define constants/parameters for calculations
     // Get the stepsize angle of a complete circle
@@ -132,7 +134,7 @@ void drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, GLdouble &scree
 
     // !!! In case we wish to use textures it's important to include the following lines:
     //glVertex2d(pos[0], pos[1]);
-    //glVertex2d(x/screenWtHRatio + pos[0], y + pos[1]);
+    //glVertex2d(x/winWtHratio + pos[0], y + pos[1]);
 
     for(int ii = 0; ii < num_segments; ii++)
     {
@@ -143,7 +145,7 @@ void drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, GLdouble &scree
         y = s * t + c * y;
 
         // Add a drawing point to the circle outline
-        glVertex2d(x/screenWtHRatio + pos[0], y + pos[1]);//output vertex
+        glVertex2d(x/winWtHratio + pos[0], y + pos[1]);//output vertex
     }
     // end drawing
     glEnd();
@@ -151,23 +153,28 @@ void drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, GLdouble &scree
 /*
  * Function to draw all Objects from an object list to the current window
  */
-void drawObjectList(std::vector<Object*> &objects){
-    // get the current window pointer to get its size so we can normalize the universe size to pixel size.
-    GLFWwindow* CurrentWindow = glfwGetCurrentContext();
-    // Create parameters where glfwGetWindowSize can write to.
-    int Width;
-    int Height;
-    glfwGetWindowSize(CurrentWindow, &Width, &Height);
-    // Create the WtHratio for drawFilledCircle
-    GLdouble WtHratio = (GLdouble)Width/Height;
+void Window::drawObjectList(std::vector<Object*> &objects){
+
     for(int ii = 0; ii < objects.size(); ii++){
         // Normalize the radius from universe to height [-1, 1];
-        GLdouble radius = visuals::pixRatio*2.0*objects[ii]->get_radius()/Height;
+        GLdouble radius = pixRatio*2.0*objects[ii]->get_radius()/winHeight;
         vec2d position = objects[ii]->get_position();
         // Normalize the position from universe to [-1, 1];
-        position[0] *= visuals::pixRatio*2.0/Width;
-        position[1] *= visuals::pixRatio*2.0/Height;
+        position[0] *= pixRatio*2.0/winWidth;
+        position[1] *= pixRatio*2.0/winHeight;
         // Draw the circle at the position
-        drawFilledCircle(position, radius, 100, WtHratio, objects[ii]->get_colour());
+        drawFilledCircle(position, radius, 100, objects[ii]->get_colour());
     }
+}
+void Window::drawBox(double Width, double Height){
+
+    glBegin(GL_LINE_LOOP);
+    glColor4d(1.0,0,0,1.0);
+    Width *= pixRatio/winWidth;
+    Height *= pixRatio/winHeight;
+    glVertex2d(Width, Height);
+    glVertex2d(-Width, Height);
+    glVertex2d(-Width, -Height);
+    glVertex2d(Width, -Height);
+    glEnd();
 }
