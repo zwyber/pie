@@ -472,3 +472,52 @@ vec2d Physics::acceleration (Object* X, Object* Y){
     vec2d acc = cmult(r,(this->G * mass/(dist*dist*dist)));
     return acc;
 }
+
+std::array<vec2d, 2> Player::calc_new_pos_vel (std::vector<Object*> &objects, double &time_step, Physics &physics) {
+
+    // Initialize the result array
+    std::array<vec2d, 2> new_pos_vel = {{0}};
+
+    // Calculate the acceleration
+    vec2d acceleration = {0,0};
+    Object* X = this;
+    // Loop through all objects
+    for (int ii = 0; ii < objects.size(); ++ii ) {
+        // Make sure you are not calculating yourself
+        if ( objects[ii] == this ) {
+            // This is myself, skip this loop iteration
+            continue;
+
+        }
+
+        vec2d this_acc = physics.acceleration(X, objects[ii]);
+        // Here add up the contribution to the acceleration
+        acceleration = add(acceleration, this_acc);
+    }
+
+    // Get access to the users keyboard input
+    GLFWwindow* window = glfwGetCurrentContext();
+    vec2d input = {{0}};
+    double thruster_a = 50;
+    if ( glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS ) {
+        input[1] = thruster_a;
+    }
+    if ( glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS ) {
+        input[1] = -thruster_a;
+    }
+    if ( glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS ) {
+        input[0] = -thruster_a;
+    }
+    if ( glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS ) {
+        input[0] = thruster_a;
+    }
+
+    acceleration = add(acceleration, input);
+
+    new_pos_vel[0] = add(this->get_position(), cmult(this->get_velocity(), time_step));
+    new_pos_vel[1] = add(this->get_velocity(), cmult(acceleration, time_step));
+
+    return new_pos_vel;
+
+
+};

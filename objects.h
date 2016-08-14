@@ -60,14 +60,14 @@ public:
     std::array<double, 4> get_colour();
 
     // Calculate new position and velocity function
-    std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object*> &objects, double &time_step, Physics &physics);
+    virtual std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object*> &objects, double &time_step, Physics &physics);
 
 };
 
 class Physics {
 public:
 
-    double G = 10;
+    double G = 50;
 
     double distance_between(Object* A, Object* B);
 
@@ -122,6 +122,13 @@ public:
 
 };
 
+class Player : public Object {
+
+    // Calculate new position and velocity function
+    std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object*> &objects, double &time_step, Physics &physics);
+
+
+};
 
 
 #include "objects.cpp"

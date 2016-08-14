@@ -6,24 +6,37 @@
 
 int main()
 {
-    int width = 1600;
-    int height = 900;
-    Object* A = new Object;
+    int width = 600;
+    int height = 400;
+    Object* A = new Player;
     Object* B = new Object;
+    Object* C = new Object;
+    Object* D = new Object;
 
     Window window = Window(width, height);
-    window.pixRatio = 12;
+    window.pixRatio = 30;
 
     // Set them apart, and on a collision course
     A->set_position(2, 0);
-    A->set_velocity(2,10);
-    A->set_mass(3);
+    A->set_velocity(0,0);
+    A->set_radius(0.5);
+    A->set_mass(5);
     A->bouncyness = 1;
 
     B->set_position(2, 2);
     B->set_velocity(0, -1);
-    B->set_mass(3);
-    B->set_radius(1);
+    B->set_mass(2);
+    //B->bouncyness = 0.7;
+
+    C->set_position(-2, -2);
+    C->set_mass(2);
+    //C->bouncyness = 0.7;
+
+    D->set_position(-4, -4);
+    D->set_mass(2);
+    //D->bouncyness = 0.7;
+
+
 
     // Generate a universe
     Universe universe(width/window.pixRatio, height/window.pixRatio);
@@ -31,6 +44,8 @@ int main()
     // Add them to the universe
     universe.add_object(A);
     universe.add_object(B);
+    universe.add_object(C);
+    universe.add_object(D);
 
     vec2d posA;
     vec2d posB;
@@ -40,7 +55,7 @@ int main()
 	do{
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
         glClear(GL_COLOR_BUFFER_BIT);
-        window.drawGrid(window.pixRatio);
+        // window.drawGrid(window.pixRatio);
         window.drawObjectList(universe.objects);
         universe.physics_runtime_iteration();
         posA = A->get_position();
