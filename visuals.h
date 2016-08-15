@@ -11,6 +11,14 @@
 #ifndef TUTORIALS_VISUALS_H
 #define TUTORIALS_VISUALS_H
 
+namespace vis{
+    const unsigned FIXED_SIZE_UNIVERSE = 0;
+    const unsigned AUTO_SIZE_UNIVERSE = 1;
+    const unsigned PROP_SIZE_UNIVERSE = 2;
+    const unsigned NO_RESIZE = 3;
+    const unsigned ZOOM_UNIVERSE = 4;
+}
+
 class Window{
 private:
     // Keep the following parameters protected but shared in the draw functions
@@ -18,9 +26,21 @@ private:
     int winWidth;
     double winWtHratio;
 
+    //// properties in order to resolve universe and window conversions
+    // Currently only a single universe can be bound to a window, if needed this can be easily changed to a vector
+    Universe* boundUniverse;
+    unsigned activeFlag;
+
+    //
+    vec2d uniToWinRatio;
+    void stdInitWindow();
 public:
     // Constructor that makes a window use ready.
-    Window(int width, int height);
+    Window(Universe* uni, double pixRatio);
+    Window(int width, int height, Universe* uni, double pixelRatio,const unsigned flag);
+
+    void bindUniverse(Universe* uni);
+    void changeResizeFlag(unsigned flag);
     // The pointer to the actual GLFWwindow this class controls
     GLFWwindow* GLFWpointer;
 

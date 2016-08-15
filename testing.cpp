@@ -314,16 +314,15 @@ void test_06() {
     int width = 720;
     int height = 480;
     // universe dimensions [px]
-    int universeWidth = 700;
-    int universeHeight = 500;
+    int universeWidth = 640;
+    int universeHeight = 400;
 
-    int AmountOfObjects = 100;
+    int AmountOfObjects = 4;
 
     // window already makes GLFWpointer currentContext so no need to call it again later on.
-    Window window = Window(width, height);
 
     // set ration of [px/m]
-    window.pixRatio = 25;
+    double pixRatio = 25;
 
     Object* A = new Object;
     Object* B = new Object;
@@ -340,7 +339,8 @@ void test_06() {
     //B->set_radius(1);
 
     // Generate a universe
-    Universe universe(universeWidth/window.pixRatio, universeHeight/window.pixRatio);
+    Universe universe(universeWidth/pixRatio, universeHeight/pixRatio);
+    Window window = Window(width, height, &universe, pixRatio,vis::ZOOM_UNIVERSE);
     //// Look in the addRandomObjects function to find the parameter range of objects
     addRandomObjects(universe,0,AmountOfObjects);
 
@@ -375,11 +375,7 @@ void test_06() {
         if(glfwGetKey(window.GLFWpointer, GLFW_KEY_Z) == GLFW_PRESS){
             if(!HOLDZ){
                 HOLDZ = true;
-                if(window.pixRatio == 25)
-                    window.pixRatio = 50;
-
-                else
-                    window.pixRatio = 25;
+                window.changeResizeFlag(vis::AUTO_SIZE_UNIVERSE);
             }
         }else{
             HOLDZ = false;

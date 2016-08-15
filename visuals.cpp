@@ -4,17 +4,38 @@
 
 #include "visuals.h"
 
-
 /*
  * Function to initialise a new window that can be drawn on.
  */
-Window::Window(int width, int height){
+Window::Window(Universe* uni, double pixelRatio){
+    pixRatio = pixelRatio;
+    winHeight = uni->height*pixRatio;
+    winWidth = uni->width*pixRatio;
+    winWtHratio = (double)winWidth/winHeight;
+    boundUniverse = uni;
+    activeFlag = vis::AUTO_SIZE_UNIVERSE;
+    stdInitWindow();
+}
 
-    //Most of this code is from http://www.opengl-tutorial.org/ where this library set originates from.
-
+Window::Window(int width, int height, Universe* uni, double pixelRatio, const unsigned flag){
     winHeight = height;
     winWidth = width;
     winWtHratio = (double)width/height;
+    pixRatio = pixelRatio;
+    boundUniverse = uni;
+    if(flag == vis::AUTO_SIZE_UNIVERSE && boundUniverse!=NULL){
+        boundUniverse->resize(width,height);
+    }
+    activeFlag = flag;
+    stdInitWindow();
+}
+
+void Window::stdInitWindow(){
+
+    //Most of this code is from http://www.opengl-tutorial.org/ where this library set originates from.
+    if(boundUniverse!=NULL){
+        uniToWinRatio = {boundUniverse->width*pixRatio/winWidth, boundUniverse->height*pixRatio/winHeight};
+    }
 
     ///// initializing the GLFW functionality.
     // If the initfailed (returns false) it will throw an error
@@ -25,11 +46,17 @@ Window::Window(int width, int height){
 
     ///// Set the property of windows:
     // Make windows fixed size
-    glfwWindowHint(GLFW_RESIZABLE,GL_TRUE);
+    if(activeFlag == 3){
+        glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
+    }else{
+        glfwWindowHint(GLFW_RESIZABLE,GL_TRUE);
+    }
 
     ///// Create the actual window
     // Open a window and create its OpenGL context
-    GLFWpointer = glfwCreateWindow( width, height, "!!! Space debris debugger window !!!", NULL, NULL);
+    GLFWpointer = glfwCreateWindow(winWidth, winHeight, "!!! Space debris debugger window !!!", NULL, NULL);
+
+
     // Return error if window did not get created
     if( GLFWpointer == NULL ){
         fprintf( stderr, "Failed to open GLFW window.\n" );
@@ -41,7 +68,7 @@ Window::Window(int width, int height){
     glfwMakeContextCurrent(GLFWpointer);
 
     ///// Initialize GLEW
-    //return error if this failed.
+    // Return error if this failed.
     if (glewInit() != GLEW_OK) {
         fprintf(stderr, "Failed to initialize GLEW\n");
         getchar();
@@ -59,6 +86,28 @@ Window::Window(int width, int height){
     // when the window gets rescaled.
     glfwSetWindowSizeCallback(GLFWpointer, WindowResizeStaticCallback);
 }
+
+void Window::bindUniverse(Universe *uni) {
+    boundUniverse = uni;
+    uniToWinRatio = {boundUniverse->width*pixRatio/winWidth, boundUniverse->height*pixRatio/winHeight};
+    window_size_callback(winWidth, winHeight);
+}
+
+void Window::changeResizeFlag(unsigned flag){
+    if(boundUniverse == NULL){
+        std::cerr << "[WARN]: tried to change windows resize flag while no Universe was bound. Did not recalculate ratio of universe to window" << std::endl;
+    }else{
+        uniToWinRatio = {boundUniverse->width*pixRatio/winWidth, boundUniverse->height*pixRatio/winHeight};
+    }
+    if(activeFlag == vis::NO_RESIZE && flag != vis::NO_RESIZE){
+        std::cerr << "[WARN]: Cannot change property 'GLFW_RESIZABLE' to 'GL_TRUE' after initialization." << std::endl;
+    }else if(flag == vis::NO_RESIZE){
+        std::cerr << "[WARN]: Cannot change property 'GLFW_RESIZABLE' to 'GL_FALSE' after initialization." << std::endl;
+    }
+    activeFlag = flag;
+    window_size_callback(winWidth,winHeight);
+}
+
 /*
  * Function to draw a grid in the current context window
  */
@@ -184,5 +233,23 @@ void Window::window_size_callback(int width, int height){
     winWidth = width;
     winWtHratio = (double)width/height;
     // Update GL's canvas to fit the window.
+    // Some changes to the universe based on user preferences (activeFlag)
+    switch(activeFlag) {
+        case vis::FIXED_SIZE_UNIVERSE:
+            break;
+        case vis::AUTO_SIZE_UNIVERSE:
+            boundUniverse->resize(width / pixRatio, height / pixRatio);
+            break;
+        case vis::PROP_SIZE_UNIVERSE:
+        case vis::NO_RESIZE:
+            boundUniverse->resize(uniToWinRatio[0] * width / pixRatio , uniToWinRatio[1] * height / pixRatio);
+            break;
+        case vis::ZOOM_UNIVERSE:
+            pixRatio = uniToWinRatio[0]*width /boundUniverse->width;
+           if(pixRatio > uniToWinRatio[1]*height/ boundUniverse->height){
+                pixRatio = uniToWinRatio[1]*height/ boundUniverse->height;
+           }
+            break;
+    }
     glViewport(0,0, width, height);
 }

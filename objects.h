@@ -115,6 +115,9 @@ public:
     Object* get_object_by_index(int index);
     std::vector<Object*> get_all_objects ();
 
+    // Resize the universe
+    void resize(double width, double height);
+
     // Physics engine
     void physics_runtime_iteration ();
 

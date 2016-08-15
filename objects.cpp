@@ -124,7 +124,19 @@ std::vector<Object*> Universe::get_all_objects() {
     return objects;
 }
 
-
+void Universe::resize(double width, double height) {
+    if(width > 0){
+        _Width = width;
+    }else{
+        std::cerr << "[WARN] Tried to set resize universe width to invalid value " << width << ". Resize was not executed for width." << std::endl;
+    }
+    if(height > 0){
+        _Height = height;
+    }else{
+        std::cerr << "[WARN] Tried to set resize universe height to invalid value " << height << ". Resize was not executed for height." << std::endl;
+    }
+    // Optional add some code here that keeps objects within universe
+}
 
 
 // Object

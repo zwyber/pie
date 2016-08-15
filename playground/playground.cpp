@@ -13,8 +13,7 @@ int main()
     Object* C = new Object;
     Object* D = new Object;
 
-    Window window = Window(width, height);
-    window.pixRatio = 30;
+    Window window = Window(width,height,NULL,30,vis::AUTO_SIZE_UNIVERSE);
 
     // Set them apart, and on a collision course
     A->set_position(2, 0);
@@ -40,7 +39,7 @@ int main()
 
     // Generate a universe
     Universe universe(width/window.pixRatio, height/window.pixRatio);
-
+    window.bindUniverse(&universe);
     // Add them to the universe
     universe.add_object(A);
     universe.add_object(B);
