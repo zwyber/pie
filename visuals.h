@@ -68,7 +68,7 @@ public:
 
     // This function format makes it appear to GLFWcallback functions (as it now does for anything else) as if the function was global.
     // As the callback functions are incapable of interpreting functions from a class
-    inline static void WindowResizeStaticCallback(GLFWwindow* win, int width, int height){
+    static void WindowResizeStaticCallback(GLFWwindow* win, int width, int height){
         // We need to know which Window actually called which we can do as we coupled the GLFW user pointer to this Window pointer.
         Window *window = static_cast<Window*>(glfwGetWindowUserPointer(win));
         // now we got our Window pointer and we can call functions from WITHIN the class.

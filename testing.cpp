@@ -33,8 +33,8 @@ void addRandomObjects(Universe &universe, unsigned seed, int objectAmount){
         srand(seed);
     }
     std::array<double,2> radiusLim = {0.2, 1};
-    std::array<double,2> massLim = {0.1, 3};
-    std::array<double,2> velocityLim = {-5, 5};
+    std::array<double,2> massLim = {0.1, 1};
+    std::array<double,2> velocityLim = {-1, 1};
     for(int ii = 0; ii < objectAmount; ii++){
         Object* A = new Object;
         A->set_mass((std::rand()/(double)RAND_MAX)*(massLim[1]-massLim[0])+massLim[0]);
@@ -307,7 +307,6 @@ void test_05 () {
     }
 }
 
-
 void test_06() {
     ////// Press Z to zoom
     // Window dimensions [px]
@@ -340,7 +339,7 @@ void test_06() {
 
     // Generate a universe
     Universe universe(universeWidth/pixRatio, universeHeight/pixRatio);
-    Window window = Window(width, height, &universe, pixRatio,vis::ZOOM_UNIVERSE);
+    Window window = Window(&universe, pixRatio);
     //// Look in the addRandomObjects function to find the parameter range of objects
     addRandomObjects(universe,0,AmountOfObjects);
 
@@ -375,7 +374,7 @@ void test_06() {
         if(glfwGetKey(window.GLFWpointer, GLFW_KEY_Z) == GLFW_PRESS){
             if(!HOLDZ){
                 HOLDZ = true;
-                window.changeResizeFlag(vis::AUTO_SIZE_UNIVERSE);
+                window.changeResizeFlag(vis::ZOOM_UNIVERSE);
             }
         }else{
             HOLDZ = false;
@@ -387,4 +386,83 @@ void test_06() {
 
     // Close OpenGL window and terminate GLFW
     glfwTerminate();
+}
+double potentialEnergy(Object* X, Object* Y, Universe* uni){
+    vec2d r = sub(Y -> get_position(), X -> get_position());
+    return uni->physics.G *X->get_mass()*Y->get_mass()/(len(r));
+}
+void test_07() {
+    //// WRITES SYSTEM ENERGY TO FILE
+
+    int universeWidth = 720;
+    int universeHeight = 480;
+
+    int AmountOfObjects = 20;
+
+    double pixRatio = 25;
+
+    Universe universe(universeWidth/pixRatio, universeHeight/pixRatio);
+    Window window = Window(&universe, pixRatio);
+
+    glClearColor(0.2, 0.2, 0.3, 1.0);
+
+    addRandomObjects(universe,0,AmountOfObjects);
+
+    std::ofstream outputfile;
+    outputfile.open("test_06.csv");
+
+    Universe* uni = &universe;
+    do{
+        int ii = 0;
+        for(; ii < universe.objects.size()-1; ii++){
+            double vel = len(universe.objects[ii]->get_velocity());
+            outputfile << 0.5*universe.objects[ii]->get_mass()*vel*vel << ",";
+
+            double ener = 0;
+            for (int qq = 0; qq < universe.objects.size(); ++qq ) {
+                // Make sure you are not calculating yourself
+                if (qq == ii) {
+                    // This is myself, skip this loop iteration
+                    continue;
+                }
+                // Here add up the contribution to the acceleration
+                ener += potentialEnergy(universe.objects[ii], universe.objects[qq],uni);
+            }
+            outputfile << ener << ",";
+        }
+        double vel = len(universe.objects[ii]->get_velocity());
+        outputfile << 0.5*universe.objects[ii]->get_mass()*vel*vel << ",";
+        double ener = 0;
+        for (int qq = 0; qq < universe.objects.size(); ++qq ) {
+            // Make sure you are not calculating yourself
+            if (qq == ii) {
+                // This is myself, skip this loop iteration
+                continue;
+            }
+            // Here add up the contribution to the acceleration
+            ener += potentialEnergy(universe.objects[ii], universe.objects[qq],uni);
+
+        }
+        outputfile << ener << ";" << std::endl;
+        // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // Draw the universe's objects on top of that
+        window.drawObjectList(universe.objects);
+
+        // Do a physics iteration
+        universe.physics_runtime_iteration();
+
+        // Swap buffers
+        glfwSwapBuffers(window.GLFWpointer);
+        glfwPollEvents();
+
+    } // Check if the ESC key was pressed or the window was closed
+    while( glfwGetKey(window.GLFWpointer, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
+           glfwWindowShouldClose(window.GLFWpointer) == 0 );
+
+    outputfile.close();
+    // Close OpenGL window and terminate GLFW
+    glfwTerminate();
+
 }
