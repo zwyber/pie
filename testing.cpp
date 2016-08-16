@@ -409,7 +409,7 @@ void test_07() {
     addRandomObjects(universe,1,AmountOfObjects);
 
     std::ofstream outputfile;
-    outputfile.open("test_06.csv");
+    outputfile.open("test_07.csv");
 
     Universe* uni = &universe;
     do{
