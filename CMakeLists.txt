@@ -4,7 +4,6 @@ project (Tutorials)
 
 find_package(OpenGL REQUIRED)
 
-
 if( CMAKE_BINARY_DIR STREQUAL CMAKE_SOURCE_DIR )
     message( FATAL_ERROR "Please select another Build Directory ! (and give it a clever name, like bin_Visual2012_64bits/)" )
 endif()
@@ -31,7 +30,6 @@ if(INCLUDE_DISTRIB)
 endif(INCLUDE_DISTRIB)
 
 
-
 include_directories(
 	external/AntTweakBar-1.16/include/
 	external/glfw-3.1.2/include/GLFW/
@@ -39,6 +37,7 @@ include_directories(
 	external/glew-1.13.0/include/
 	external/assimp-3.0.1270/include/
 	external/bullet-2.81-rev2613/src/
+	external/freetype-2.6.5/include/
 	.
 )
 
@@ -81,3 +80,7 @@ add_executable(pie ${SOURCE_FILES})
 target_link_libraries(pie
 		${ALL_LIBS}
 		)
+
+add_custom_command(TARGET pie PRE_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${CMAKE_SOURCE_DIR}/config $<TARGET_FILE_DIR:pie>)

@@ -178,3 +178,5 @@ add_subdirectory( bullet-2.81-rev2613/src/BulletCollision )
 add_subdirectory( bullet-2.81-rev2613/src/BulletDynamics )
 add_subdirectory( bullet-2.81-rev2613/src/LinearMath )
 
+
+add_subdirectory(freetype-2.6.5)

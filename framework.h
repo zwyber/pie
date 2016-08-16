@@ -22,6 +22,8 @@
 // Used GL libraries
 #include <GL/glew.h>
 #include <glfw3.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
 
 // Type definitions
 typedef std::array<double, 2> vec2d;

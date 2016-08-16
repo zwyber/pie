@@ -458,3 +458,61 @@ void test_07() {
     glfwTerminate();
 
 }
+
+void test_08() {
+    /// Tries to draw in different way
+    int universeWidth = 720;
+    int universeHeight = 480;
+
+    int AmountOfObjects = 3;
+
+    double pixRatio = 25;
+
+    Universe universe(universeWidth/pixRatio, universeHeight/pixRatio);
+    Window window = Window(&universe, pixRatio);
+
+    glClearColor(0.2, 0.2, 0.3, 1.0);
+
+    addRandomObjects(universe,1,AmountOfObjects);
+
+    //// Add fonts
+    FT_Library myLibrary;
+    FT_Face  myFace;
+
+    //////// !!! currently no functions of FreeType can be found beyond the Header!!!
+    FT_Error err = FT_Init_FreeType(&myLibrary);
+    if(err){
+        std::cerr << "[Err]: Could not initialize the FreeFont Library." << std::endl;
+    }
+    /*
+    FT_Error catchError = FT_New_Face(myLibrary, "verdana.ttf", 0 ,&myFace);
+    if(catchError == FT_Err_Unknown_File_Format){
+        std::cerr << "[WARN]: Font Format is unsupported." << std::endl;
+    }else if(catchError){
+        std::cerr << "[WARN]: Could not initialize/read/open font." << std::endl;
+    }
+    FT_Set_Pixel_Sizes(myFace,0, 16);
+    */
+
+    do{
+        // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        // Draw the universe's objects on top of that
+        window.drawObjectList(universe.objects);
+
+        // Do a physics iteration
+        universe.physics_runtime_iteration();
+
+        // Swap buffers
+        glfwSwapBuffers(window.GLFWpointer);
+        glfwPollEvents();
+
+    } // Check if the ESC key was pressed or the window was closed
+    while( glfwGetKey(window.GLFWpointer, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
+           glfwWindowShouldClose(window.GLFWpointer) == 0 );
+
+    // Close OpenGL window and terminate GLFW
+    glfwTerminate();
+
+}
