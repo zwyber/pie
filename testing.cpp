@@ -388,8 +388,8 @@ void test_06() {
     glfwTerminate();
 }
 double potentialEnergy(Object* X, Object* Y, Universe* uni){
-    vec2d r = sub(Y -> get_position(), X -> get_position());
-    return uni->physics.G *X->get_mass()*Y->get_mass()/(len(r));
+    double r = uni->physics.distance_between(Y , X );
+    return -uni->physics.G *X->get_mass()*Y->get_mass()/r;
 }
 void test_07() {
     //// WRITES SYSTEM ENERGY TO FILE
@@ -397,7 +397,7 @@ void test_07() {
     int universeWidth = 720;
     int universeHeight = 480;
 
-    int AmountOfObjects = 20;
+    int AmountOfObjects = 3;
 
     double pixRatio = 25;
 
@@ -406,17 +406,17 @@ void test_07() {
 
     glClearColor(0.2, 0.2, 0.3, 1.0);
 
-    addRandomObjects(universe,0,AmountOfObjects);
+    addRandomObjects(universe,1,AmountOfObjects);
 
     std::ofstream outputfile;
     outputfile.open("test_06.csv");
 
     Universe* uni = &universe;
     do{
-        int ii = 0;
-        for(; ii < universe.objects.size()-1; ii++){
-            double vel = len(universe.objects[ii]->get_velocity());
-            outputfile << 0.5*universe.objects[ii]->get_mass()*vel*vel << ",";
+
+        for(int ii = 0; ii < universe.objects.size(); ii++){
+            double vel2 = len_squared(universe.objects[ii]->get_velocity());
+            outputfile << 0.5*universe.objects[ii]->get_mass()*vel2 << ",";
 
             double ener = 0;
             for (int qq = 0; qq < universe.objects.size(); ++qq ) {
@@ -428,22 +428,13 @@ void test_07() {
                 // Here add up the contribution to the acceleration
                 ener += potentialEnergy(universe.objects[ii], universe.objects[qq],uni);
             }
-            outputfile << ener << ",";
-        }
-        double vel = len(universe.objects[ii]->get_velocity());
-        outputfile << 0.5*universe.objects[ii]->get_mass()*vel*vel << ",";
-        double ener = 0;
-        for (int qq = 0; qq < universe.objects.size(); ++qq ) {
-            // Make sure you are not calculating yourself
-            if (qq == ii) {
-                // This is myself, skip this loop iteration
-                continue;
+            //// Made the potential energy per object only store half, as for each potential between 2 objects 2 objects store it but there is only one potential.
+            if(ii == universe.objects.size()-1){
+                outputfile << ener/2 << ";" << std::endl;
+            }else{
+                outputfile << ener/2 << ",";
             }
-            // Here add up the contribution to the acceleration
-            ener += potentialEnergy(universe.objects[ii], universe.objects[qq],uni);
-
         }
-        outputfile << ener << ";" << std::endl;
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
         glClear(GL_COLOR_BUFFER_BIT);
 
