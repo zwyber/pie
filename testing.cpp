@@ -433,6 +433,7 @@ void test_07() {
                 outputfile << ener/2 << ";" << std::endl;
             }else{
                 outputfile << ener/2 << ",";
+
             }
         }
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
