@@ -73,6 +73,14 @@ void Universe::add_object (Object* &obj) {
     objects.push_back(obj);
 }
 
+Object* Universe::add_object () {
+    Object* obj = new Object;
+
+    objects.push_back(obj);
+
+    return obj;
+}
+
 // Remove object functions
 
 /*
