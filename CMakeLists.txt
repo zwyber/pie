@@ -45,6 +45,7 @@ set(ALL_LIBS
 	${OPENGL_LIBRARY}
 	glfw
 	GLEW_1130
+    freetype
 )
 
 add_definitions(
@@ -59,8 +60,6 @@ add_definitions(
 # User playground
 add_executable(playground
 		playground/playground.cpp
-		common/shader.cpp
-		common/shader.hpp
 		)
 target_link_libraries(playground
 		${ALL_LIBS}
