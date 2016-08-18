@@ -361,6 +361,8 @@ void Universe::physics_runtime_iteration () {
                 // If that is the case, go fix it!
                 //std::cout << "Resolving collision...\n";
                 physics.resolve_collision(objects[ii], objects[jj]);
+                objects[ii]->on_collide(objects[jj], this->physics);
+                objects[jj]->on_collide(objects[ii], this->physics);
             }
         }
 
@@ -568,3 +570,22 @@ void Universe::simulate_one_time_unit(double fps) {
         std::cerr << "WARNING: SIMULATION CANNOT KEEP UP!";
     }
  */
+
+void Physics::lose_energy(Object* me, double factor) {
+    // Rescale the velocity factor
+    me->set_velocity(cmult(me->get_velocity(), 1 - std::sqrt(factor)));
+}
+
+void Object::lose_energy(double factor, Physics &physics) {
+    physics.lose_energy(this, factor);
+}
+
+void Object::on_collide (Object* target, Physics &physics) {
+    // Do nothing yet
+    target->lose_energy(0.2, physics);
+}
+
+void Player::on_collide (Object* target, Physics &physics) {
+    // Make the other object slow down!
+    target->lose_energy(0, physics);
+}

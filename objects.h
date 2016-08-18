@@ -62,6 +62,11 @@ public:
     // Calculate new position and velocity function
     virtual std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object*> &objects, Physics &physics);
 
+    // Lose energy on command :D
+    void lose_energy (double factor, Physics &physics);
+
+    virtual void on_collide (Object* target, Physics &physics);
+
 };
 
 class Physics {
@@ -83,6 +88,8 @@ public:
     bool check_collision (Object* A, Object* B);
 
     void wall_collision(Object* X, double width, double height, int wall);
+
+    void lose_energy (Object* me, double factor);
 
 };
 
@@ -130,11 +137,12 @@ public:
 
 class Player : public Object {
 
-    double thruster_force = 100;
+    double thruster_force = 50;
 
     // Calculate new position and velocity function
     std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object*> &objects, Physics &physics);
 
+    void on_collide (Object* target, Physics &physics);
 
 };
 
