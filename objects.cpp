@@ -407,8 +407,15 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object*> &objects, dou
     // Calculate the acceleration
     vec2d acceleration = physics.net_acceleration(objects, this);
 
-    new_pos_vel[0] = add(position, cmult(velocity, time_step));
+    // Midpoint method?
+    vec2d velocity_half = add(velocity, cmult(acceleration, time_step/2));
+    new_pos_vel[0] = add(position, cmult(velocity_half, time_step) );
+
     new_pos_vel[1] = add(velocity, cmult(acceleration, time_step));
+
+    // Euler method
+    //new_pos_vel[0] = add(position, cmult(velocity, time_step));
+    //new_pos_vel[1] = add(velocity, cmult(acceleration, time_step));
 
     return new_pos_vel;
 };
