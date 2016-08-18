@@ -60,7 +60,7 @@ public:
     std::array<double, 4> get_colour();
 
     // Calculate new position and velocity function
-    virtual std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object*> &objects, double &time_step, Physics &physics);
+    virtual std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object*> &objects, Physics &physics);
 
 };
 
@@ -68,11 +68,13 @@ class Physics {
 public:
 
     double G = 5;
-
+    double timestep = double(1.0/60)/10;
     double distance_between(Object* A, Object* B);
 
     vec2d acceleration (Object* X, Object* Y);
     vec2d net_acceleration (std::vector<Object*> &objects, Object* me);
+
+    std::array<vec2d, 2> de_solver (vec2d &acceleration, Object* me);
 
     // Resolve object collision between two objects, i.e. change their velocities
     void resolve_collision (Object* A, Object* B);
@@ -123,14 +125,14 @@ public:
     void physics_runtime_iteration ();
     void simulate_one_time_unit (double fps);
 
-    double timestep = double(1.0/60)/10;
-
 };
 
 class Player : public Object {
 
+    double thruster_force = 100;
+
     // Calculate new position and velocity function
-    std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object*> &objects, double &time_step, Physics &physics);
+    std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object*> &objects, Physics &physics);
 
 
 };

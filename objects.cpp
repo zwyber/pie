@@ -334,7 +334,7 @@ void Universe::physics_runtime_iteration () {
 
     // Iterate over all objects
     for (int ii = 0; ii < objects.size(); ++ii) {
-        std::array<vec2d, 2> new_pos_vel = objects[ii]->calc_new_pos_vel(objects, this->timestep, this->physics);
+        std::array<vec2d, 2> new_pos_vel = objects[ii]->calc_new_pos_vel(objects, this->physics);
         new_pos_vel_universe[objects[ii]] = new_pos_vel;
     }
 
@@ -400,24 +400,11 @@ void Universe::physics_runtime_iteration () {
  *
  * Calculate the new position of the object by doing a Euler algorithm time step.
  */
-std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object*> &objects, double &time_step, Physics &physics) {
-    // Initialize the result array
-    std::array<vec2d, 2> new_pos_vel = {{0}};
-
+std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object*> &objects, Physics &physics) {
     // Calculate the acceleration
     vec2d acceleration = physics.net_acceleration(objects, this);
 
-    // Midpoint method?
-    vec2d velocity_half = add(velocity, cmult(acceleration, time_step/2));
-    new_pos_vel[0] = add(position, cmult(velocity_half, time_step) );
-
-    new_pos_vel[1] = add(velocity, cmult(acceleration, time_step));
-
-    // Euler method
-    //new_pos_vel[0] = add(position, cmult(velocity, time_step));
-    //new_pos_vel[1] = add(velocity, cmult(acceleration, time_step));
-
-    return new_pos_vel;
+    return physics.de_solver(acceleration, this);
 };
 
 
@@ -497,17 +484,14 @@ vec2d Physics::net_acceleration(std::vector<Object *> &objects, Object* me) {
     return acceleration;
 }
 
-std::array<vec2d, 2> Player::calc_new_pos_vel (std::vector<Object*> &objects, double &time_step, Physics &physics) {
-
-    // Initialize the result array
-    std::array<vec2d, 2> new_pos_vel = {{0}};
+std::array<vec2d, 2> Player::calc_new_pos_vel (std::vector<Object*> &objects, Physics &physics) {
 
     vec2d acceleration = physics.net_acceleration(objects, this);
 
     // Get access to the users keyboard input
     GLFWwindow* window = glfwGetCurrentContext();
     vec2d input = {{0}};
-    double thruster_a = 10;
+    double thruster_a = this->thruster_force / this->get_mass();
     if ( glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS ) {
         input[1] = thruster_a;
     }
@@ -523,12 +507,27 @@ std::array<vec2d, 2> Player::calc_new_pos_vel (std::vector<Object*> &objects, do
 
     acceleration = add(acceleration, input);
 
-    new_pos_vel[0] = add(this->get_position(), cmult(this->get_velocity(), time_step));
-    new_pos_vel[1] = add(this->get_velocity(), cmult(acceleration, time_step));
+    return physics.de_solver(acceleration, this);
+};
+
+std::array<vec2d, 2> Physics::de_solver (vec2d &acceleration, Object* me) {
+    // Initialize the result array
+    std::array<vec2d, 2> new_pos_vel = {{0}};
+
+    // Midpoint method :)
+    vec2d velocity = me->get_velocity();
+    vec2d position = me->get_position();
+
+    vec2d velocity_half = add(velocity, cmult(acceleration, timestep/2));
+    new_pos_vel[0] = add(position, cmult(velocity_half, timestep) );
+
+    new_pos_vel[1] = add(velocity, cmult(acceleration, timestep));
+
+    // Euler method
+    //new_pos_vel[0] = add(position, cmult(velocity, time_step));
+    //new_pos_vel[1] = add(velocity, cmult(acceleration, time_step));
 
     return new_pos_vel;
-
-
 };
 
 
@@ -537,7 +536,7 @@ void Universe::simulate_one_time_unit(double fps) {
     // Call physics_runtime_iteration as many times as required to advance it one time "unit",
     // which is defined as 1/FPS
 
-    int iterations = double(1.0/fps) / this->timestep;
+    int iterations = double(1.0/fps) / this->physics.timestep;
     for ( int ii = 0; ii < iterations; ++ii ) {
         this->physics_runtime_iteration();
     }
