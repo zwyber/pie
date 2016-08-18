@@ -39,6 +39,9 @@ public:
     Window(Universe* uni, double pixRatio);
     Window(int width, int height, Universe* uni, double pixelRatio,const unsigned flag);
 
+    double fps = 60;
+    double lastTime = glfwGetTime();
+
     void bindUniverse(Universe* uni);
     void changeResizeFlag(unsigned flag);
     // The pointer to the actual GLFWwindow this class controls
@@ -62,6 +65,9 @@ public:
 
     // Draws a simple red box in the middle of the screen.
     void drawBox(double Width, double Height);
+
+    // For frame pacing
+    void pace_frame();
 
     // Too avoid call back issues the method of http://gamedev.stackexchange.com/questions/58541/how-can-i-associate-a-key-callback-with-a-wrapper-class-instance
     // has been used to define functions in this class.

@@ -67,11 +67,12 @@ public:
 class Physics {
 public:
 
-    double G = 50;
+    double G = 5;
 
     double distance_between(Object* A, Object* B);
 
     vec2d acceleration (Object* X, Object* Y);
+    vec2d net_acceleration (std::vector<Object*> &objects, Object* me);
 
     // Resolve object collision between two objects, i.e. change their velocities
     void resolve_collision (Object* A, Object* B);
@@ -120,8 +121,9 @@ public:
 
     // Physics engine
     void physics_runtime_iteration ();
+    void simulate_one_time_unit (double fps);
 
-    double timestep = 0.005;
+    double timestep = double(1.0/60)/10;
 
 };
 

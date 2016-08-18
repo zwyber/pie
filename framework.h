@@ -18,6 +18,8 @@
 #include<cmath>
 #include<fstream>
 #include<cstdlib>
+#include<ctime>
+#include<unistd.h>
 
 // Used GL libraries
 #include <GL/glew.h>

@@ -405,21 +405,7 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object*> &objects, dou
     std::array<vec2d, 2> new_pos_vel = {{0}};
 
     // Calculate the acceleration
-    vec2d acceleration = {0,0};
-    Object* X = this;
-    // Loop through all objects
-    for (int ii = 0; ii < objects.size(); ++ii ) {
-        // Make sure you are not calculating yourself
-        if ( objects[ii] == this ) {
-            // This is myself, skip this loop iteration
-            continue;
-
-        }
-
-        vec2d this_acc = physics.acceleration(X, objects[ii]);
-        // Here add up the contribution to the acceleration
-        acceleration = add(acceleration, this_acc);
-    }
+    vec2d acceleration = physics.net_acceleration(objects, this);
 
     new_pos_vel[0] = add(position, cmult(velocity, time_step));
     new_pos_vel[1] = add(velocity, cmult(acceleration, time_step));
@@ -485,32 +471,36 @@ vec2d Physics::acceleration (Object* X, Object* Y){
     return acc;
 }
 
+vec2d Physics::net_acceleration(std::vector<Object *> &objects, Object* me) {
+    // Calculate the acceleration
+    vec2d acceleration = {0,0};
+    // Loop through all objects
+    for (int ii = 0; ii < objects.size(); ++ii ) {
+        // Make sure you are not calculating yourself
+        if ( objects[ii] == me ) {
+            // This is myself, skip this loop iteration
+            continue;
+        }
+
+        vec2d this_acc = this->acceleration(me, objects[ii]);
+        // Here add up the contribution to the acceleration
+        acceleration = add(acceleration, this_acc);
+    }
+
+    return acceleration;
+}
+
 std::array<vec2d, 2> Player::calc_new_pos_vel (std::vector<Object*> &objects, double &time_step, Physics &physics) {
 
     // Initialize the result array
     std::array<vec2d, 2> new_pos_vel = {{0}};
 
-    // Calculate the acceleration
-    vec2d acceleration = {0,0};
-    Object* X = this;
-    // Loop through all objects
-    for (int ii = 0; ii < objects.size(); ++ii ) {
-        // Make sure you are not calculating yourself
-        if ( objects[ii] == this ) {
-            // This is myself, skip this loop iteration
-            continue;
-
-        }
-
-        vec2d this_acc = physics.acceleration(X, objects[ii]);
-        // Here add up the contribution to the acceleration
-        acceleration = add(acceleration, this_acc);
-    }
+    vec2d acceleration = physics.net_acceleration(objects, this);
 
     // Get access to the users keyboard input
     GLFWwindow* window = glfwGetCurrentContext();
     vec2d input = {{0}};
-    double thruster_a = 50;
+    double thruster_a = 10;
     if ( glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS ) {
         input[1] = thruster_a;
     }
@@ -533,3 +523,34 @@ std::array<vec2d, 2> Player::calc_new_pos_vel (std::vector<Object*> &objects, do
 
 
 };
+
+
+void Universe::simulate_one_time_unit(double fps) {
+
+    // Call physics_runtime_iteration as many times as required to advance it one time "unit",
+    // which is defined as 1/FPS
+
+    int iterations = double(1.0/fps) / this->timestep;
+    for ( int ii = 0; ii < iterations; ++ii ) {
+        this->physics_runtime_iteration();
+    }
+
+}
+
+/*
+ * clock_t begin = std::clock();
+
+
+    clock_t end = std::clock();
+
+    double delta = double(end - begin) / CLOCKS_PER_SEC;
+
+    // If the execution was done within a second
+    if (delta < 1) {
+        unsigned int microseconds = int(double(1 - delta) * 1E6);
+        usleep(microseconds);
+    }
+    else{
+        std::cerr << "WARNING: SIMULATION CANNOT KEEP UP!";
+    }
+ */

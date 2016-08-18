@@ -49,6 +49,8 @@ int main()
     vec2d posA;
     vec2d posB;
 
+    window.fps = 60;
+
     // Set the buffer clear color to:
     glClearColor(0.3, 0.2, 0.2, 1.0);
 	do{
@@ -56,7 +58,8 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
         // window.drawGrid(window.pixRatio);
         window.drawObjectList(universe.objects);
-        universe.physics_runtime_iteration();
+        universe.simulate_one_time_unit(window.fps);
+
         posA = A->get_position();
         posB = B->get_position();
         // std::cout << "Position of A: " << posA[0] << "," << posA[1] << " Position of B: " << posB[0] << "," << posB[1] << ";" << std::endl;
@@ -64,6 +67,8 @@ int main()
         // Swap buffers
 		glfwSwapBuffers(window.GLFWpointer);
 		glfwPollEvents();
+
+        window.pace_frame();
 
     } // Check if the ESC key was pressed or the window was closed
 	while( glfwGetKey(window.GLFWpointer, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
