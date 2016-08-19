@@ -10,7 +10,7 @@ int main()
     int height = 400;
     Object* A = new Player;
     Object* B = new Object;
-    Object* C = new Player;
+    Object* C = new Object;
     Object* D = new Object;
 
     Window window = Window(width,height,NULL,30,vis::AUTO_SIZE_UNIVERSE);
@@ -20,20 +20,20 @@ int main()
     A->set_velocity(0,0);
     A->set_radius(0.5);
     A->set_mass(1);
-    A->bouncyness = 1;
+    A->bouncyness = 0.4;
 
     B->set_position(2, 2);
     B->set_velocity(0, -1);
     B->set_mass(2);
-    //B->bouncyness = 0.7;
+    B->bouncyness = 0.2;
 
     C->set_position(-2, -2);
     C->set_mass(2);
-    //C->bouncyness = 0.7;
+    C->bouncyness = 0.5;
 
     D->set_position(-4, -4);
     D->set_mass(2);
-    //D->bouncyness = 0.7;
+    D->bouncyness = 0.3;
 
 
 

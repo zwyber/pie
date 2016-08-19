@@ -43,6 +43,7 @@ include_directories(
 
 set(ALL_LIBS
 	${OPENGL_LIBRARY}
+	${FREETYPE_LIBRARIES}
 	glfw
 	GLEW_1130
     freetype

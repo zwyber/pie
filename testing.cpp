@@ -262,7 +262,7 @@ void test_004 () {
     A->set_mass(-1.5);
     vec2d acceleration = universe.physics.acceleration(A,B);
 
-    A->calc_new_pos_vel(universe.objects, universe.timestep, universe.physics);
+    A->calc_new_pos_vel(universe.objects, universe.physics);
 
     std::cout << "Acceleration of ObjectA With Respect to ObjectB =" << acceleration[0] << "," << acceleration[1] << std::endl;
 
@@ -394,19 +394,49 @@ double potentialEnergy(Object* X, Object* Y, Universe* uni){
 void test_07() {
     //// WRITES SYSTEM ENERGY TO FILE
 
-    int universeWidth = 720;
-    int universeHeight = 480;
+    int width = 600;
+    int height = 400;
+    Object* A = new Player;
+    Object* B = new Object;
+    Object* C = new Object;
+    Object* D = new Object;
 
-    int AmountOfObjects = 3;
+    Window window = Window(width,height,NULL,30,vis::AUTO_SIZE_UNIVERSE);
 
-    double pixRatio = 25;
+    // Set them apart, and on a collision course
+    A->set_position(2, 0);
+    A->set_velocity(0,0);
+    A->set_radius(0.5);
+    A->set_mass(5);
+    A->bouncyness = 1;
 
-    Universe universe(universeWidth/pixRatio, universeHeight/pixRatio);
-    Window window = Window(&universe, pixRatio);
+    B->set_position(2, 2);
+    B->set_velocity(0, -1);
+    B->set_mass(2);
+    //B->bouncyness = 0.7;
 
-    glClearColor(0.2, 0.2, 0.3, 1.0);
+    C->set_position(-2, -2);
+    C->set_mass(2);
+    //C->bouncyness = 0.7;
 
-    addRandomObjects(universe,1,AmountOfObjects);
+    D->set_position(-4, -4);
+    D->set_mass(2);
+    //D->bouncyness = 0.7;
+
+
+
+    // Generate a universe
+    Universe universe(width/window.pixRatio, height/window.pixRatio);
+    window.bindUniverse(&universe);
+    // Add them to the universe
+    universe.add_object(A);
+    universe.add_object(B);
+    universe.add_object(C);
+    universe.add_object(D);
+
+    vec2d posA;
+    vec2d posB;
+
 
     std::ofstream outputfile;
     outputfile.open("test_07.csv");
@@ -443,11 +473,13 @@ void test_07() {
         window.drawObjectList(universe.objects);
 
         // Do a physics iteration
-        universe.physics_runtime_iteration();
+        universe.simulate_one_time_unit(window.fps);
 
         // Swap buffers
         glfwSwapBuffers(window.GLFWpointer);
         glfwPollEvents();
+
+        window.pace_frame();
 
     } // Check if the ESC key was pressed or the window was closed
     while( glfwGetKey(window.GLFWpointer, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
@@ -482,17 +514,51 @@ void test_08() {
     //////// !!! currently no functions of FreeType can be found beyond the Header!!!
     FT_Error err = FT_Init_FreeType(&myLibrary);
     if(err){
-        std::cerr << "[Err]: Could not initialize the FreeFont Library." << std::endl;
+       std::cerr << "[Err]: Could not initialize the FreeFont Library." << std::endl;
     }
-    /*
     FT_Error catchError = FT_New_Face(myLibrary, "verdana.ttf", 0 ,&myFace);
     if(catchError == FT_Err_Unknown_File_Format){
         std::cerr << "[WARN]: Font Format is unsupported." << std::endl;
     }else if(catchError){
         std::cerr << "[WARN]: Could not initialize/read/open font." << std::endl;
     }
+    /*
     FT_Set_Pixel_Sizes(myFace,0, 16);
-    */
+
+    FT_GlyphSlot  slot = myFace->glyph;  /* a small shortcut */
+    //int           pen_x, pen_y, n;
+    //pen_x = 300;
+    //pen_y = 200;
+    //std::string text = "MEHMEHMEH";
+    //int num_chars = text.length();
+    //for ( n = 0; n < num_chars; n++ )
+    //{
+        //FT_UInt  glyph_index;
+
+        /* retrieve glyph index from character code */
+        //glyph_index = FT_Get_Char_Index( myFace, text[n] );
+
+        /* load glyph image into the slot (erase previous one) */
+        //FT_Error error = FT_Load_Glyph( myFace, glyph_index, FT_LOAD_DEFAULT );
+        //if ( error )
+        //    continue;  /* ignore errors */
+
+        /* convert to an anti-aliased bitmap */
+        //error = FT_Render_Glyph( myFace->glyph, FT_RENDER_MODE_NORMAL );
+        //if ( error )
+        //    continue;
+
+        /* now, draw to our target surface */
+        /*my_draw_bitmap( &slot->bitmap,
+                        pen_x + slot->bitmap_left,
+                        pen_y - slot->bitmap_top );
+
+        */
+
+        /* increment pen position */
+        //pen_x += slot->advance.x >> 6;
+        //pen_y += slot->advance.y >> 6; /* not useful for now */
+    //}
 
     do{
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)

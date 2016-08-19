@@ -1,10 +1,11 @@
-Info = load('test_06.csv');
+Info = load('test_07D.csv');
 figure;
 hold on
 LEGEND = cell(1,size(Info,2));
 title('Kinetic Energy');
 POT = zeros(1,size(Info,1));
 KIN = zeros(1,size(Info,1));
+
 for ii =1:2:size(Info,2)
     plot(Info(:,ii));
     LEGEND{1,ii} = ['Kinetic Energy of Object #', num2str((ii+1)/2)];
@@ -13,6 +14,7 @@ for ii =1:2:size(Info,2)
     LEGEND{1,ii+1} = ['Potential Energy of Object #', num2str((ii+1)/2)];
     POT(1,:) = POT(1,:)+Info(:,ii+1)';
 end
+
 xlabel('Iteration');
 ylabel('Energy');
 legend(LEGEND)

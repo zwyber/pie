@@ -272,10 +272,13 @@ void Physics::resolve_collision(Object* A, Object* B) {
     double B_m = B->get_mass();
 
     double coeff; // Coefficient of restitution, the smallest of the two
-    if ( A->bouncyness < B->bouncyness )
-        coeff = A->bouncyness;
-    else
-        coeff = B->bouncyness;
+    // (for now take the coefficient of restitution as a linear combination because it wouldn't make sense that the
+    // energy absorbed would be equal when most bouncyness or inelastic.
+    coeff = (A->bouncyness + B->bouncyness)/2.0;
+    //if ( A->bouncyness < B->bouncyness )
+    //    coeff = A->bouncyness;
+    //else
+    //    coeff = B->bouncyness;
 
     /*
      * For the collision you can have 100% elastic or 100% inelastic. The final velocity vector is a
@@ -286,18 +289,18 @@ void Physics::resolve_collision(Object* A, Object* B) {
      */
 
     // Initialise the vectors
-    vec2d A_v_e_new; // Object A, velocity, elastic, new
-    vec2d A_v_i_new; // Object A, velocity, inelastic, new
-    vec2d B_v_e_new; // etc
-    vec2d B_v_i_new;
+    //vec2d A_v_e_new; // Object A, velocity, elastic, new
+    //vec2d A_v_i_new; // Object A, velocity, inelastic, new
+    //vec2d B_v_e_new; // etc
+    //vec2d B_v_i_new;
 
     // Horrible long expression which calculates the new velocity! It is the equation on Wikipedia for the
     // vector notation of resolving a collision: https://en.wikipedia.org/wiki/Elastic_collision
-    A_v_e_new = sub(A_v, cmult(sub(A_x, B_x),
-                                     (coeff) * (2 * B_m / (A_m + B_m)) * dot(sub(A_v, B_v), sub(A_x, B_x)) /
-                                     len_squared(sub(A_x, B_x))));
-    B_v_e_new = sub(B_v, cmult(sub(B_x, A_x),
-                                     (coeff) * (2 * A_m / (A_m + B_m)) * dot(sub(B_v, A_v), sub(B_x, A_x)) /
+    vec2d A_v_new = sub(A_v, cmult(sub(A_x, B_x),
+                                     ((coeff+1) * B_m / (A_m + B_m)) * dot(sub(A_v, B_v), sub(A_x, B_x)) /
+                                    len_squared(sub(A_x, B_x))));
+    vec2d B_v_new = sub(B_v, cmult(sub(B_x, A_x),
+                                     ((coeff+1) * A_m / (A_m + B_m)) * dot(sub(B_v, A_v), sub(B_x, A_x)) /
                                      len_squared(sub(B_x, A_x))));
 
     // Fully inelastic expression, very simple derivation:
@@ -307,12 +310,12 @@ void Physics::resolve_collision(Object* A, Object* B) {
      * v1' = v2'           // Same final velocity
      * --> v1' = p1 + p2/(m1 + m2)
      */
-    A_v_i_new = cmult(add(cmult(A_x, A_m), cmult(B_x, B_m)), 1/(A_m + B_m));
-    B_v_i_new = A_v_i_new; // Same velocity, fully joined together in motion
+    //A_v_i_new = cmult(add(cmult(A_v, A_m), cmult(B_v, B_m)), 1/(A_m + B_m));
+    //B_v_i_new = A_v_i_new; // Same velocity, fully joined together in motion
 
     // Create a linear combination of the two types of collision
-    vec2d A_v_new = add(cmult(A_v_e_new, coeff), cmult(A_v_i_new, (1-coeff)));
-    vec2d B_v_new = add(cmult(B_v_e_new, coeff), cmult(B_v_i_new, (1-coeff)));
+    //vec2d A_v_new = add(cmult(A_v_e_new, coeff), cmult(A_v_i_new, (1-coeff)));
+    //vec2d B_v_new = add(cmult(B_v_e_new, coeff), cmult(B_v_i_new, (1-coeff)));
 
     // Push these new vectors to the objects
     A->set_velocity(A_v_new);
@@ -582,7 +585,7 @@ void Object::lose_energy(double factor, Physics &physics) {
 
 void Object::on_collide (Object* target, Physics &physics) {
     // Do nothing yet
-    target->lose_energy(0.2, physics);
+    target->lose_energy(0, physics);
 }
 
 void Player::on_collide (Object* target, Physics &physics) {

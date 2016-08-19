@@ -92,7 +92,7 @@ void Window::pace_frame() {
     // Check how much time we have left
     double delta = glfwGetTime() - lastTime;
     if (delta < 1/fps) {
-        usleep(uint((1/fps - delta)*1E6));
+        usleep(unsigned((1/fps - delta)*1E6));
 
         if (delta/(1.0/fps) > 0.75) {
             std::cerr << "WARNING at 75% of CPU time per frame" << std::endl;

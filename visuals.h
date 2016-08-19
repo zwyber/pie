@@ -66,6 +66,8 @@ public:
     // Draws a simple red box in the middle of the screen.
     void drawBox(double Width, double Height);
 
+    void drawFT_Bitmap(FT_Bitmap);
+
     // For frame pacing
     void pace_frame();
 
