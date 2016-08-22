@@ -84,3 +84,5 @@ target_link_libraries(pie
 add_custom_command(TARGET pie PRE_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy_directory
 		${CMAKE_SOURCE_DIR}/config $<TARGET_FILE_DIR:pie>)
+
+set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")

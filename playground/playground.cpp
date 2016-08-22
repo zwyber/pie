@@ -53,7 +53,7 @@ int main()
             Object* obj = universe.add_object();
             obj->set_position(pos);
             obj->set_radius(0.4);
-            obj->bouncyness = 0.9;
+            obj->bouncyness = 0.7;
             obj->set_mass(0.4);
 
             // Halt the program for a bit
