@@ -73,7 +73,7 @@ class Physics {
 public:
 
     double G = 5;
-    double timestep = double(1.0/60)/10;
+    double timestep = double(1.0/60)/20;
     double distance_between(Object* A, Object* B);
 
     vec2d acceleration (Object* X, Object* Y);

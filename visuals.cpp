@@ -95,11 +95,11 @@ void Window::pace_frame() {
         usleep(unsigned((1/fps - delta)*1E6));
 
         if (delta/(1.0/fps) > 0.75) {
-            std::cerr << "WARNING at 75% of CPU time per frame" << std::endl;
+            //std::cerr << "WARNING at 75% of CPU time per frame" << std::endl;
         }
     }
     else{
-        std::cerr << "CANNOT REACH TARGET FPS" << std::endl;
+        // std::cerr << "CANNOT REACH TARGET FPS" << std::endl;
     }
 
     lastTime = glfwGetTime();
@@ -271,4 +271,21 @@ void Window::window_size_callback(int width, int height){
             break;
     }
     glViewport(0,0, width, height);
+}
+
+vec2d Window::px_to_length(vec2d px) {
+    vec2d l = {0};
+
+    l[0] = (px[0] - (winWidth/2.0)) / pixRatio;
+    l[1] = (-px[1] + (winHeight/2.0)) / pixRatio;
+
+    return l;
+}
+
+vec2d Window::length_to_px(vec2d length) {
+
+    // It no works yet :(
+    std::cerr << "length_to_px not implemented yet";
+
+    return length;
 }

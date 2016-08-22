@@ -421,7 +421,7 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object*> &objects, Phy
 };
 
 
-void Physics::wall_collision(Object* X, double width, double height, int wall) {
+void Physics::  wall_collision(Object* X, double width, double height, int wall) {
     // Create a mirror object
     Object mirror;
     mirror.set_mass(X->get_mass());

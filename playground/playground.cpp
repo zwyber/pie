@@ -18,22 +18,9 @@ int main()
     // Set them apart, and on a collision course
     A->set_position(2, 0);
     A->set_velocity(0,0);
-    A->set_radius(0.5);
-    A->set_mass(1);
-    A->bouncyness = 0.4;
-
-    B->set_position(2, 2);
-    B->set_velocity(0, -1);
-    B->set_mass(2);
-    B->bouncyness = 0.2;
-
-    C->set_position(-2, -2);
-    C->set_mass(2);
-    C->bouncyness = 0.5;
-
-    D->set_position(-4, -4);
-    D->set_mass(2);
-    D->bouncyness = 0.3;
+    A->set_radius(1);
+    A->set_mass(6);
+    A->bouncyness = 1;
 
 
 
@@ -42,12 +29,6 @@ int main()
     window.bindUniverse(&universe);
     // Add them to the universe
     universe.add_object(A);
-    universe.add_object(B);
-    universe.add_object(C);
-    universe.add_object(D);
-
-    vec2d posA;
-    vec2d posB;
 
     window.fps = 60;
 
@@ -60,9 +41,28 @@ int main()
         window.drawObjectList(universe.objects);
         universe.simulate_one_time_unit(window.fps);
 
-        posA = A->get_position();
-        posB = B->get_position();
-        // std::cout << "Position of A: " << posA[0] << "," << posA[1] << " Position of B: " << posB[0] << "," << posB[1] << ";" << std::endl;
+        // Check if we want to add an object
+        if ( glfwGetMouseButton(window.GLFWpointer, GLFW_MOUSE_BUTTON_LEFT) ) {
+            double xpos, ypos;
+            glfwGetCursorPos(window.GLFWpointer, &xpos, &ypos);
+            vec2d cursor_pos = {xpos, ypos};
+
+            // Translate to universe position
+            vec2d pos = window.px_to_length(cursor_pos);
+
+            // Spawn an object there
+            Object* obj = universe.add_object();
+            obj->set_position(pos);
+            obj->set_radius(0.4);
+            obj->bouncyness = 0.9;
+            obj->set_mass(0.4);
+
+            // Halt the program for a bit
+            usleep(100000);
+
+        }
+
+
 
         // Swap buffers
 		glfwSwapBuffers(window.GLFWpointer);
@@ -76,6 +76,8 @@ int main()
 
     // Close OpenGL window and terminate GLFW
     glfwTerminate();
+
+    std::cout << "There were " << universe.objects.size() << " objects!";
 
     return 0;
 }
