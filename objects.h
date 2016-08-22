@@ -137,7 +137,11 @@ public:
 
 class Player : public Object {
 
+public:
+
     double thruster_force = 50;
+
+    void add_thrust () {this->thruster_force += 10;}
 
     // Calculate new position and velocity function
     std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object*> &objects, Physics &physics);

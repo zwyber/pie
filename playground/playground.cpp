@@ -9,9 +9,6 @@ int main()
     int width = 600;
     int height = 400;
     Object* A = new Player;
-    Object* B = new Object;
-    Object* C = new Object;
-    Object* D = new Object;
 
     Window window = Window(width,height,NULL,30,vis::AUTO_SIZE_UNIVERSE);
 
@@ -29,6 +26,8 @@ int main()
     window.bindUniverse(&universe);
     // Add them to the universe
     universe.add_object(A);
+
+    Player* player = dynamic_cast<Player*>(A);
 
     window.fps = 60;
 
@@ -61,6 +60,19 @@ int main()
             usleep(100000);
 
         }
+
+        if ( glfwGetKey(window.GLFWpointer, GLFW_KEY_M) ) {
+            player->thruster_force += 20;
+
+            std::cout << player->thruster_force << std::endl;
+            usleep(100000);
+        }
+
+        if ( glfwGetKey(window.GLFWpointer, GLFW_KEY_N) ) {
+            player->thruster_force -= 20;
+            usleep(100000);
+        }
+
 
 
 
