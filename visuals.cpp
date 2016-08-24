@@ -78,6 +78,11 @@ void Window::stdInitWindow(){
     ///// Toggle the input mode.
     glfwSetInputMode(GLFWpointer, GLFW_STICKY_KEYS, GL_TRUE);
 
+    //glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glDisable(GL_LIGHTING);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     // Couple the pointer to this Window to that of the GLFW window pointer
     // This will be used in WindowResizeStaticCallback (see .h class definition)
     glfwSetWindowUserPointer(GLFWpointer, this);
@@ -224,7 +229,7 @@ void Window::drawObjectList(std::vector<Object*> &objects){
         position[0] *= pixRatio*2.0/winWidth;
         position[1] *= pixRatio*2.0/winHeight;
         // Draw the circle at the position
-        drawFilledCircle(position, radius, 100, objects[ii]->get_colour());
+        drawFilledCircle(position, radius, 10, objects[ii]->get_colour());
     }
 }
 /*
@@ -242,6 +247,14 @@ void Window::drawBox(double Width, double Height){
     glVertex2d(-Width, -Height);
     glVertex2d(Width, -Height);
     glEnd();
+}
+
+void Window::drawFT_Bitmap(FT_Bitmap* image, int xleft, int ytop){
+    // OPTION ONE - limited to -bit-maps array of bits
+    //glBitmap(image->width,image->rows,(double)xleft/winWidth,(double)ytop/winHeight,image->width+xleft,image->rows+ytop,image->buffer);
+    // OPTION TWO - draws incorrectly on Alpha based bytes
+    glRasterPos2d((double)xleft/winWidth,(double)ytop/winHeight);
+    glDrawPixels(image->width,image->rows, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, image->buffer);
 }
 /*
  * Working function that is called when the window is resized.

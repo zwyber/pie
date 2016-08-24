@@ -498,7 +498,7 @@ void test_08() {
 
     int AmountOfObjects = 3;
 
-    double pixRatio = 25;
+    double pixRatio = 50;
 
     Universe universe(universeWidth/pixRatio, universeHeight/pixRatio);
     Window window = Window(&universe, pixRatio);
@@ -507,62 +507,21 @@ void test_08() {
 
     addRandomObjects(universe,1,AmountOfObjects);
 
-    //// Add fonts
-    FT_Library myLibrary;
-    FT_Face  myFace;
 
-    //////// !!! currently no functions of FreeType can be found beyond the Header!!!
-    FT_Error err = FT_Init_FreeType(&myLibrary);
-    if(err){
-       std::cerr << "[Err]: Could not initialize the FreeFont Library." << std::endl;
-    }
-    FT_Error catchError = FT_New_Face(myLibrary, "verdana.ttf", 0 ,&myFace);
-    if(catchError == FT_Err_Unknown_File_Format){
-        std::cerr << "[WARN]: Font Format is unsupported." << std::endl;
-    }else if(catchError){
-        std::cerr << "[WARN]: Could not initialize/read/open font." << std::endl;
-    }
-    /*
-    FT_Set_Pixel_Sizes(myFace,0, 16);
+    freetype::font_data myFont;
+    myFont.init("frabk.ttf", 32);
 
-    FT_GlyphSlot  slot = myFace->glyph;  /* a small shortcut */
-    //int           pen_x, pen_y, n;
-    //pen_x = 300;
-    //pen_y = 200;
-    //std::string text = "MEHMEHMEH";
-    //int num_chars = text.length();
-    //for ( n = 0; n < num_chars; n++ )
-    //{
-        //FT_UInt  glyph_index;
+    std::string text = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.";
+    //char text[128];
 
-        /* retrieve glyph index from character code */
-        //glyph_index = FT_Get_Char_Index( myFace, text[n] );
-
-        /* load glyph image into the slot (erase previous one) */
-        //FT_Error error = FT_Load_Glyph( myFace, glyph_index, FT_LOAD_DEFAULT );
-        //if ( error )
-        //    continue;  /* ignore errors */
-
-        /* convert to an anti-aliased bitmap */
-        //error = FT_Render_Glyph( myFace->glyph, FT_RENDER_MODE_NORMAL );
-        //if ( error )
-        //    continue;
-
-        /* now, draw to our target surface */
-        /*my_draw_bitmap( &slot->bitmap,
-                        pen_x + slot->bitmap_left,
-                        pen_y - slot->bitmap_top );
-
-        */
-
-        /* increment pen position */
-        //pen_x += slot->advance.x >> 6;
-        //pen_y += slot->advance.y >> 6; /* not useful for now */
-    //}
+    std::cout << text << "does this work?" << std::endl;
 
     do{
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
         glClear(GL_COLOR_BUFFER_BIT);
+
+        freetype::print(myFont,2,2,text.c_str());
+
 
         // Draw the universe's objects on top of that
         window.drawObjectList(universe.objects);
