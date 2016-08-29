@@ -24,13 +24,9 @@
 // Used GL libraries
 #include <GL/glew.h>
 #include <glfw3.h>
-#include <windows.h>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <stdexcept>
+#include <glm/glm.hpp>
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include <FreeType.h>
 // Type definitions
 typedef std::array<double, 2> vec2d;
 typedef std::array<vec2d, 2> pos_vel;
@@ -38,6 +34,8 @@ typedef std::array<vec2d, 2> pos_vel;
 #include "vecmath.h"
 #include "objects.h"
 #include "visuals.h"
+#include "Shader.h"
+#include "OGLfonts.h"
 
 
 #endif //PIE_GITHUB_FRAMEWORK_H

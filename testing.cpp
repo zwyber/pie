@@ -507,24 +507,19 @@ void test_08() {
 
     addRandomObjects(universe,1,AmountOfObjects);
 
-
-    freetype::font_data myFont;
-    myFont.init("frabk.ttf", 32);
-
+    std::string filename = "verdana.ttf";
     std::string text = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.";
-    //char text[128];
 
-    std::cout << text << "does this work?" << std::endl;
+    Shader shader("shaders/text.glvs", "shaders/text.glfs");
+    FontTexHandler myFont = FontTexHandler(filename, 32, &shader, window.windowSize());
+    glm::vec3 colour = glm::vec3(1.0, 0.0, 0.0);
 
     do{
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
         glClear(GL_COLOR_BUFFER_BIT);
-
-        freetype::print(myFont,2,2,text.c_str());
-
-
+        myFont.renderText(text, 0, 0, 1, colour);
         // Draw the universe's objects on top of that
-        window.drawObjectList(universe.objects);
+        //window.drawObjectList(universe.objects);
 
         // Do a physics iteration
         universe.physics_runtime_iteration();
@@ -540,4 +535,81 @@ void test_08() {
     // Close OpenGL window and terminate GLFW
     glfwTerminate();
 
+}
+
+void test_09(){
+    int universeWidth = 720;
+    int universeHeight = 480;
+
+    int AmountOfObjects = 3;
+
+    double pixRatio = 50;
+
+    Universe universe(universeWidth/pixRatio, universeHeight/pixRatio);
+    Window window = Window(&universe, pixRatio);
+
+    addRandomObjects(universe,1,AmountOfObjects);
+    glClearColor(0.2, 0.2, 0.3, 1.0);
+
+    Shader shader("shaders/test.glvs", "shaders/test.glfs");
+    GLuint vertexPosLocation = glGetAttribLocation(shader.Program, "VertexPos" );
+
+    /*
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(vertexPosLocation);
+    glVertexAttribPointer(vertexPosLocation, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    */
+    GLuint VertexArrayID;
+    glGenVertexArrays(1, &VertexArrayID);
+    glBindVertexArray(VertexArrayID);
+
+    static const GLfloat g_vertex_buffer_data[] = {
+            -1.0f, -1.0f, 0.0f, 1.0f,
+            1.0f, -1.0f, 0.0f, 1.0f,
+            0.0f,  1.0f, 0.0f, 1.0f,
+    };
+
+    GLuint vertexbuffer;
+    glGenBuffers(1, &vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+
+    glm::vec3 color = {1,0,0};
+    do{
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+        // 1rst attribute buffer : vertices
+        glEnableVertexAttribArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+        glVertexAttribPointer(
+                0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                4,                  // size
+                GL_FLOAT,           // type
+                GL_FALSE,           // normalized?
+                0,                  // stride
+                (void*)0            // array buffer offset
+        );
+// Draw the triangle !
+        shader.use();
+        window.drawObjectList(universe.objects);
+        glDisableVertexAttribArray(0);
+
+
+        universe.physics_runtime_iteration();
+
+        glfwSwapBuffers(window.GLFWpointer);
+        glfwPollEvents();
+
+    }while ( glfwGetKey(window.GLFWpointer, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
+             glfwWindowShouldClose(window.GLFWpointer) == 0 );
+
+    // Close OpenGL window and terminate GLFW
+    glfwTerminate();
 }

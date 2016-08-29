@@ -78,11 +78,12 @@ void Window::stdInitWindow(){
     ///// Toggle the input mode.
     glfwSetInputMode(GLFWpointer, GLFW_STICKY_KEYS, GL_TRUE);
 
-    //glDisable(GL_DEPTH_TEST);
+    glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+    glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
-    glDisable(GL_LIGHTING);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
+    glEnable(GL_TEXTURE_2D);
     // Couple the pointer to this Window to that of the GLFW window pointer
     // This will be used in WindowResizeStaticCallback (see .h class definition)
     glfwSetWindowUserPointer(GLFWpointer, this);
@@ -229,7 +230,7 @@ void Window::drawObjectList(std::vector<Object*> &objects){
         position[0] *= pixRatio*2.0/winWidth;
         position[1] *= pixRatio*2.0/winHeight;
         // Draw the circle at the position
-        drawFilledCircle(position, radius, 10, objects[ii]->get_colour());
+        drawFilledCircle(position, radius, 75, objects[ii]->get_colour());
     }
 }
 /*
@@ -285,7 +286,7 @@ void Window::window_size_callback(int width, int height){
     }
     glViewport(0,0, width, height);
 }
-
+vec2d Window::windowSize() {return {(double)winWidth,(double)winHeight};}
 vec2d Window::px_to_length(vec2d px) {
     vec2d l = {0};
 

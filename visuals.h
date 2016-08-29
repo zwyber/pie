@@ -75,6 +75,7 @@ public:
     vec2d px_to_length (vec2d px);
     vec2d length_to_px (vec2d length);
 
+    vec2d windowSize();
     // Too avoid call back issues the method of http://gamedev.stackexchange.com/questions/58541/how-can-i-associate-a-key-callback-with-a-wrapper-class-instance
     // has been used to define functions in this class.
 
