@@ -465,6 +465,11 @@ double Physics::distance_between(Object* X, Object* Y) {
     vec2d pos_X = X-> get_position();
     vec2d pos_Y = Y-> get_position();
     double dist = std::sqrt( (pos_Y[0]-pos_X[0])*(pos_Y[0]-pos_X[0]) + (pos_Y[1]-pos_X[1])*(pos_Y[1]-pos_X[1]) );
+
+    if ( dist <= 0 ) {
+        dist = 0.1;
+    }
+
     return dist;
 }
 

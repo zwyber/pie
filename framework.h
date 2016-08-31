@@ -31,10 +31,10 @@
 typedef std::array<double, 2> vec2d;
 typedef std::array<vec2d, 2> pos_vel;
 // Own libraries
-#include "vecmath.h"
-#include "objects.h"
-#include "visuals.h"
-#include "Shader.h"
+#include "lib/vecmath.h"
+#include "lib/objects.h"
+#include "lib/visuals.h"
+#include "external/learn_opengl/Shader.h"
 #include "OGLfonts.h"
 
 

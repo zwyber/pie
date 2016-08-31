@@ -14,9 +14,7 @@ if( CMAKE_BINARY_DIR MATCHES " " )
 	message( "Your Build Directory contains spaces. If you experience problems when compiling, this can be the cause." )
 endif()
 
-
-
-# Compile external dependencies 
+# Compile external dependencies
 add_subdirectory (external)
 
 # On Visual 2005 and above, this module can set the debug working directory
@@ -58,21 +56,10 @@ add_definitions(
 )
 
 
-# User playground
-add_executable(playground
-		playground/playground.cpp
-		)
-target_link_libraries(playground
-		${ALL_LIBS}
-		)
-# Xcode and Visual working directories
-set_target_properties(playground PROPERTIES XCODE_ATTRIBUTE_CONFIGURATION_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/playground/")
-create_target_launcher(playground WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/playground/")
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 
-SOURCE_GROUP(common REGULAR_EXPRESSION ".*/common/.*" )
+SOURCE_GROUP(common REGULAR_EXPRESSION ".*/external/opengltut_common/.*" )
 SOURCE_GROUP(shaders REGULAR_EXPRESSION ".*/.*shader$" )
 
 set(SOURCE_FILES main.cpp)
@@ -83,6 +70,8 @@ target_link_libraries(pie
 
 add_custom_command(TARGET pie PRE_BUILD
 		COMMAND ${CMAKE_COMMAND} -E copy_directory
-		${CMAKE_SOURCE_DIR}/config $<TARGET_FILE_DIR:pie>)
+		${CMAKE_SOURCE_DIR}/runtime-requirements $<TARGET_FILE_DIR:pie>)
 
-set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
+if (NOT UNIX)
+    set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")
+endif()

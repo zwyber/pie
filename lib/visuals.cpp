@@ -230,7 +230,7 @@ void Window::drawObjectList(std::vector<Object*> &objects){
         position[0] *= pixRatio*2.0/winWidth;
         position[1] *= pixRatio*2.0/winHeight;
         // Draw the circle at the position
-        drawFilledCircle(position, radius, 75, objects[ii]->get_colour());
+        drawFilledCircle(position, radius, std::sqrt(objects[ii]->get_radius())*25, objects[ii]->get_colour());
     }
 }
 /*
