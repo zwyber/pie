@@ -1,4 +1,3 @@
-//
 // Created by paul on 8/2/16.
 //
 
@@ -21,21 +20,29 @@
 #include<ctime>
 #include<unistd.h>
 
+// Used PNG library
+#include <png.h>
+
 // Used GL libraries
 #include <GL/glew.h>
 #include <glfw3.h>
 #include <glm/glm.hpp>
 #include <ft2build.h>
+#include "external/learn_opengl/Shader.h"
 #include FT_FREETYPE_H
+#include "external/ahrs-visualizer/png_texture.cpp"
+
+
 // Type definitions
 typedef std::array<double, 2> vec2d;
 typedef std::array<vec2d, 2> pos_vel;
+
 // Own libraries
 #include "lib/vecmath.h"
 #include "lib/objects.h"
 #include "lib/visuals.h"
-#include "external/learn_opengl/Shader.h"
-#include "OGLfonts.h"
 
+// Semi-own written libraries
+#include "OGLfonts.h"
 
 #endif //PIE_GITHUB_FRAMEWORK_H

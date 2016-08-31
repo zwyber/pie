@@ -80,7 +80,6 @@ cmake_minimum_required(VERSION 2.6)
 
 include(CheckIncludeFile)
 
-
 # CMAKE_TOOLCHAIN_FILE must be set before `project' is called, which
 # configures the base build environment and references the toolchain file
 if (APPLE)

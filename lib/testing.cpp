@@ -4,7 +4,8 @@
 #include "testing.h"
 #include <time.h>
 //#include "TextureManager.h"
-#include "common/texture.hpp"
+#include "external/opengltut_common/texture.hpp"
+
 void debug_display_world (Universe &universe) {
     // Iterate over all objects
     for(int ii = 0; ii < universe.objects.size(); ++ii) {
