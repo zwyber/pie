@@ -21,7 +21,7 @@
 #include<unistd.h>
 
 // Used PNG library
-#include <png.h>
+//#include <png.h>
 
 // Used GL libraries
 #include <GL/glew.h>
@@ -30,7 +30,7 @@
 #include <ft2build.h>
 #include "external/learn_opengl/Shader.h"
 #include FT_FREETYPE_H
-#include "external/ahrs-visualizer/png_texture.cpp"
+//#include "external/ahrs-visualizer/png_texture.cpp"
 
 
 // Type definitions

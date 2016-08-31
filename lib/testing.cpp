@@ -494,7 +494,7 @@ void test_07() {
 }
 
 void test_08() {
-    /// Tries to draw in different way
+    /// Tries to draw text in different way
     int universeWidth = 720;
     int universeHeight = 480;
 
@@ -599,6 +599,7 @@ GLuint createVAOandVBOs(
     return VAid;
 }
 void test_09(){
+    //// Most basic colouring shaders
     int universeWidth = 720;
     int universeHeight = 480;
 
@@ -705,7 +706,7 @@ void test_09(){
     glfwTerminate();
 }
 void test_10(){
-
+    ////Test most basic Texturing
     int universeWidth = 720;
     int universeHeight = 480;
 
@@ -716,34 +717,67 @@ void test_10(){
     Universe universe(universeWidth/pixRatio, universeHeight/pixRatio);
     Window window = Window(&universe, pixRatio);
 
+    glEnable(GL_TEXTURE_2D);
+
     addRandomObjects(universe,1,AmountOfObjects);
     glClearColor(0.2, 0.2, 0.3, 1.0);
 
     unsigned int faces[4] = {0,1,2,3};
     float vertices[12] = {0,0,0, 0,1,0, 1,1,0, 1,0,0};
-    float normals[12] = {0,0,1, 0,0,1, 0,0,1, 0,0,1};
     float texcoords[8] = {0,0, 0,1, 1,1, 1,0};
 
-    Shader circleShader("shaders/circle.glvs", "shaders/circle.glfs");
-    GLuint discColor = glGetAttribLocation(circleShader.Program, "disc_color" );
-    GLuint mytex_location = glGetAttribLocation(circleShader.Program, "mytex" );
 
-    GLuint vaoid = createVAOandVBOs(faces,4,vertices,4,normals,texcoords);
-    GLuint texid = loadDDS("pie.dds");
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0.0f, 1.0f, 0.0f, 1.f, 1.f, -1.f);
 
+    Shader myShader("shaders/texture.glvs", "shaders/texture.glfs");
+
+    GLuint texID = loadDDS("Asteroid.dds");
+    /*
+    glActiveTexture(GL_TEXTURE0);
+    int texture_location = glGetUniformLocation(myShader.Program,"tex");
+    glUniform1i(texture_location, 0);
+    glEnable(GL_TEXTURE_2D);
+    glGenTextures(1, &texID);
+    glBindTexture(GL_TEXTURE_2D, texID);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+
+    glEnableClientState(GL_COLOR_ARRAY);
+    glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer[1]);
+    glColorPointer(4,GL_FLOAT,0,0);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer[0]);
+    glVertexPointer(3,GL_FLOAT,0,0);
+
+
+    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+    glBindBuffer(GL_ARRAY_BUFFER,texcoords[0]);
+    glTexCoordPointer(2,GL_FLOAT,0,0);
+
+    GLubyte indices[] = {0,1,2,3};
+    glEnableClientState( GL_INDEX_ARRAY );
+    glIndexPointer( GL_UNSIGNED_BYTE, 0, indices );
+    */
     do{
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glEnable(GL_TEXTURE_2D);
-        circleShader.use();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texid);
-        glUniform1i(mytex_location , (GLint)0); // make our shader use tex unit 0
+        //circleShader.use();
+        glEnable( GL_TEXTURE_2D );
+        glBindTexture (GL_TEXTURE_2D, texID);
+        glBegin(GL_QUADS);
+        // Front Face
+        glTexCoord2f(0.0f, 0.0f); glVertex3f(0.0f, 0.0f,  1.0f);  // Bottom Left Of The Texture and Quad
+        glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, 0.0f,  1.0f);  // Bottom Right Of The Texture and Quad
+        glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  1.0f);  // Top Right Of The Texture and Quad
+        glTexCoord2f(0.0f, 1.0f); glVertex3f(0.0f,  1.0f,  1.0f);  // Top Left Of The Texture and Quad
+        glEnd();
 
-        glBindVertexArray(vaoid);
-        glDrawArrays(GL_TRIANGLE_FAN,0,4);
+        //glBindVertexArray(vaoid);
+        //glDrawArrays(GL_TRIANGLE_FAN,0,4);
         //glDrawArrays(GL_QUADS,0,4);
-        glBindVertexArray(0);
+        //glBindVertexArray(0);
 
         //glUseProgram(0);
         //glBindTexture(GL_TEXTURE_2D,0);
