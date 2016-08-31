@@ -7,7 +7,7 @@
 
 int main() {
 
-    test_09();
+    test_10();
 
     return 0;
 

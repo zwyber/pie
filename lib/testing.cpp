@@ -3,7 +3,8 @@
 
 #include "testing.h"
 #include <time.h>
-
+//#include "TextureManager.h"
+#include "common/texture.hpp"
 void debug_display_world (Universe &universe) {
     // Iterate over all objects
     for(int ii = 0; ii < universe.objects.size(); ++ii) {
@@ -536,7 +537,66 @@ void test_08() {
     glfwTerminate();
 
 }
+// Source createVAOandVBOs: http://www.morethantechnical.com/2013/11/09/vertex-array-objects-with-shaders-on-opengl-2-1-glsl-1-2-wcode/
+GLuint createVAOandVBOs(
+        const unsigned int *faceArray, int numIntegersInFacesArray,
+        const float *verticesArray, int numVertices,
+        const float *normalsArray,
+        const float *texcoordsArray
+)
+{
+    GLuint  vertexLoc = 0, normalLoc = 1, texCoordLoc = 2;
 
+    // generate Vertex Array for mesh
+    GLuint VAid;
+    glGenVertexArrays(1,&VAid);
+    glBindVertexArray(VAid);
+    std::cout << "new VAO " << VAid << "\n";
+
+    // buffer for faces
+    GLuint buffer;
+    glGenBuffers(1, &buffer);
+    std::cout <<"new elements (faces) buffer " << buffer << " ("<<sizeof(GLuint) * numIntegersInFacesArray<<" bytes)\n";
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * numIntegersInFacesArray, faceArray, GL_STATIC_DRAW);
+
+    // buffer for vertex positions
+    if (verticesArray && numVertices > 0) {
+        glGenBuffers(1, &buffer);
+        std::cout <<"new position buffer " << buffer << " ("<<sizeof(GLfloat)*3*numVertices<<" bytes)\n";
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*3*numVertices, verticesArray, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(vertexLoc);
+        glVertexAttribPointer(vertexLoc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    }
+
+    // buffer for vertex normals
+    if (normalsArray && numVertices > 0) {
+        glGenBuffers(1, &buffer);
+        std::cout <<"new normal buffer " << buffer << " ("<<sizeof(GLfloat)*3*numVertices<<" bytes)\n";
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*3*numVertices, normalsArray, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(normalLoc);
+        glVertexAttribPointer(normalLoc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    }
+
+    // buffer for vertex texture coordinates
+    if (texcoordsArray && numVertices > 0) {
+        glGenBuffers(1, &buffer);
+        std::cout <<"new texcoord buffer " << buffer << " ("<<sizeof(GLfloat)*2*numVertices<<" bytes)\n";
+        glBindBuffer(GL_ARRAY_BUFFER, buffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*2*numVertices, texcoordsArray, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(texCoordLoc);
+        glVertexAttribPointer(texCoordLoc, 2, GL_FLOAT, GL_FALSE, 0, 0);
+    }
+
+    // unbind buffers
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER,0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+
+    return VAid;
+}
 void test_09(){
     int universeWidth = 720;
     int universeHeight = 480;
@@ -553,7 +613,10 @@ void test_09(){
 
     Shader shader("shaders/test.glvs", "shaders/test.glfs");
     GLuint vertexPosLocation = glGetAttribLocation(shader.Program, "VertexPos" );
+    GLuint textColorLocation = glGetUniformLocation(shader.Program, "textColor");
 
+    Shader circleShader("shaders/circle.glvs", "shaders/circle.glfs");
+    GLuint discColor = glGetAttribLocation(circleShader.Program, "disc_color" );
     /*
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -572,8 +635,11 @@ void test_09(){
     static const GLfloat g_vertex_buffer_data[] = {
             -1.0f, -1.0f, 0.0f, 1.0f,
             1.0f, -1.0f, 0.0f, 1.0f,
-            0.0f,  1.0f, 0.0f, 1.0f,
+            1.0f,  1.0f, 0.0f, 1.0f,
+            -1.0f,  1.0f, 0.0f, 1.0f,
     };
+
+
 
     GLuint vertexbuffer;
     glGenBuffers(1, &vertexbuffer);
@@ -581,8 +647,28 @@ void test_09(){
     glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
     glm::vec3 color = {1,0,0};
+    float colorStep =0.001;
     do{
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if(color.x >= 1.0 && color.y < 1.0){
+            if(color.z > 0){
+                color.z -= colorStep;
+            }else{
+                color.y += colorStep;
+            }
+        }else if(color.y >= 1.0 && color.z < 1.0){
+            if(color.x > 0){
+                color.x -= colorStep;
+            }else{
+                color.z += colorStep;
+            }
+        }else if(color.z >= 1 && color.x < 1.0){
+            if(color.y > 0){
+                color.y -= colorStep;
+            }else{
+                color.x += colorStep;
+            }
+        }
 
 
         // 1rst attribute buffer : vertices
@@ -596,13 +682,17 @@ void test_09(){
                 0,                  // stride
                 (void*)0            // array buffer offset
         );
-// Draw the triangle !
-        shader.use();
-        window.drawObjectList(universe.objects);
+// Draw the triangle
+        circleShader.use();
+        glUniform4f(discColor, color.x, color.y, color.z, 1.0f);
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4); // Starting from vertex 0; 3 vertices total -> 1 triangle
         glDisableVertexAttribArray(0);
 
+        //shader.use();
+        //glUniform3f(textColorLocation, color.x, color.y, color.z);
+        //window.drawObjectList(universe.objects);
 
-        universe.physics_runtime_iteration();
+        //universe.physics_runtime_iteration();
 
         glfwSwapBuffers(window.GLFWpointer);
         glfwPollEvents();
@@ -612,4 +702,57 @@ void test_09(){
 
     // Close OpenGL window and terminate GLFW
     glfwTerminate();
+}
+void test_10(){
+
+    int universeWidth = 720;
+    int universeHeight = 480;
+
+    int AmountOfObjects = 3;
+
+    double pixRatio = 50;
+
+    Universe universe(universeWidth/pixRatio, universeHeight/pixRatio);
+    Window window = Window(&universe, pixRatio);
+
+    addRandomObjects(universe,1,AmountOfObjects);
+    glClearColor(0.2, 0.2, 0.3, 1.0);
+
+    unsigned int faces[4] = {0,1,2,3};
+    float vertices[12] = {0,0,0, 0,1,0, 1,1,0, 1,0,0};
+    float normals[12] = {0,0,1, 0,0,1, 0,0,1, 0,0,1};
+    float texcoords[8] = {0,0, 0,1, 1,1, 1,0};
+
+    Shader circleShader("shaders/circle.glvs", "shaders/circle.glfs");
+    GLuint discColor = glGetAttribLocation(circleShader.Program, "disc_color" );
+    GLuint mytex_location = glGetAttribLocation(circleShader.Program, "mytex" );
+
+    GLuint vaoid = createVAOandVBOs(faces,4,vertices,4,normals,texcoords);
+    GLuint texid = loadDDS("pie.dds");
+
+    do{
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glEnable(GL_TEXTURE_2D);
+        circleShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texid);
+        glUniform1i(mytex_location , (GLint)0); // make our shader use tex unit 0
+
+        glBindVertexArray(vaoid);
+        glDrawArrays(GL_TRIANGLE_FAN,0,4);
+        //glDrawArrays(GL_QUADS,0,4);
+        glBindVertexArray(0);
+
+        //glUseProgram(0);
+        //glBindTexture(GL_TEXTURE_2D,0);
+
+        // Swap buffers
+        glfwSwapBuffers(window.GLFWpointer);
+        glfwPollEvents();
+
+    } // Check if the ESC key was pressed or the window was closed
+    while( glfwGetKey(window.GLFWpointer, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
+           glfwWindowShouldClose(window.GLFWpointer) == 0 );
+
 }

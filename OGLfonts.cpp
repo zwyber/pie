@@ -1,6 +1,7 @@
 //
 // Created by Yvan on 25-8-2016.
 //
+// A class based on http://learnopengl.com/#!In-Practice/Text-Rendering
 
 #include "OGLfonts.h"
 
