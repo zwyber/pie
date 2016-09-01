@@ -78,12 +78,8 @@ void Window::stdInitWindow(){
     ///// Toggle the input mode.
     glfwSetInputMode(GLFWpointer, GLFW_STICKY_KEYS, GL_TRUE);
 
-    glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-    glTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
-    glEnable(GL_CULL_FACE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glEnable(GL_TEXTURE_2D);
     // Couple the pointer to this Window to that of the GLFW window pointer
     // This will be used in WindowResizeStaticCallback (see .h class definition)
     glfwSetWindowUserPointer(GLFWpointer, this);

@@ -522,7 +522,6 @@ void test_08() {
         myFont.renderText(text, 0, 0, 1, colour);
         // Draw the universe's objects on top of that
         //window.drawObjectList(universe.objects);
-
         // Do a physics iteration
         universe.physics_runtime_iteration();
 
@@ -714,73 +713,133 @@ void test_10(){
 
     double pixRatio = 50;
 
+    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+
     Universe universe(universeWidth/pixRatio, universeHeight/pixRatio);
     Window window = Window(&universe, pixRatio);
-
-    glEnable(GL_TEXTURE_2D);
 
     addRandomObjects(universe,1,AmountOfObjects);
     glClearColor(0.2, 0.2, 0.3, 1.0);
 
-    unsigned int faces[4] = {0,1,2,3};
-    float vertices[12] = {0,0,0, 0,1,0, 1,1,0, 1,0,0};
-    float texcoords[8] = {0,0, 0,1, 1,1, 1,0};
+    // Enable depth test
+    glEnable(GL_DEPTH_TEST);
+    // Accept fragment if it closer to the camera than the former one
+    glDepthFunc(GL_LESS);
+
+    static const GLfloat vertices[] = {
+            -1.0f,-1.0f,
+            -1.0f,1.0f,
+            1.0f,1.0f,
+            1.0f,-1.0f
+    };
+    static const GLfloat texcoords[] = {
+            0.0f,0.0f,
+            0.0f,1.0f,
+            1.0f,1.0f,
+            1.0f,0.0f
+    };
+
+    // Model matrix : an identity matrix (model will be at the origin)
+    glm::mat3 Model      = glm::mat3(1.0f);
+    // Our ModelViewProjection : multiplication of our 3 matrices
+    glm::mat3 MVP        = Model; // Remember, matrix multiplication is the other way around
 
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0.0f, 1.0f, 0.0f, 1.f, 1.f, -1.f);
+    // Enable depth test
+    glEnable(GL_DEPTH_TEST);
+    // Accept fragment if it closer to the camera than the former one
+    glDepthFunc(GL_LESS);
 
+    // Create and compile our GLSL program from the shaders
+    //GLuint programID = LoadShaders( "TransformVertexShader.vertexshader", "TextureFragmentShader.fragmentshader" );
     Shader myShader("shaders/texture.glvs", "shaders/texture.glfs");
+    GLuint programID = myShader.Program;
 
-    GLuint texID = loadDDS("Asteroid.dds");
-    /*
-    glActiveTexture(GL_TEXTURE0);
-    int texture_location = glGetUniformLocation(myShader.Program,"tex");
-    glUniform1i(texture_location, 0);
-    glEnable(GL_TEXTURE_2D);
-    glGenTextures(1, &texID);
-    glBindTexture(GL_TEXTURE_2D, texID);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    // Get a handle for our "MVP" uniform
+    GLuint MatrixID = glGetUniformLocation(programID, "MVP");
 
-    glEnableClientState(GL_COLOR_ARRAY);
-    glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer[1]);
-    glColorPointer(4,GL_FLOAT,0,0);
+    // Get a handle for our buffers
+    GLuint vertexPosition_modelspaceID = glGetAttribLocation(programID, "PositionVec");
+    GLuint vertexUVID = glGetAttribLocation(programID, "vertexUV");
 
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glBindBuffer(GL_ARRAY_BUFFER,vertexBuffer[0]);
-    glVertexPointer(3,GL_FLOAT,0,0);
+    GLuint Texture = loadDDS("Asteroid.DDS");
+
+    // Get a handle for our "myTextureSampler" uniform
+    GLuint TextureID  = glGetUniformLocation(programID, "myTextureSampler");
+
+    GLuint vertexbuffer;
+    glGenBuffers(1, &vertexbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    GLuint uvbuffer;
+    glGenBuffers(1, &uvbuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);
 
 
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-    glBindBuffer(GL_ARRAY_BUFFER,texcoords[0]);
-    glTexCoordPointer(2,GL_FLOAT,0,0);
-
-    GLubyte indices[] = {0,1,2,3};
-    glEnableClientState( GL_INDEX_ARRAY );
-    glIndexPointer( GL_UNSIGNED_BYTE, 0, indices );
-    */
+    float size;
+    double step = 0.01;
+    double phi = 0.003;
+    const GLfloat c = cos(phi);
+    const GLfloat s = sin(phi);
+    glm::mat3 rot = {
+            c, -s, 0,
+            s,  c, 0,
+            0,  0, 1
+    };
+    glm::mat3 newRot = rot;
     do{
+        size = cos(step+=0.001);
+        newRot = rot*newRot;
+        MVP = size*newRot*Model;
+        // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        //circleShader.use();
-        glEnable( GL_TEXTURE_2D );
-        glBindTexture (GL_TEXTURE_2D, texID);
-        glBegin(GL_QUADS);
-        // Front Face
-        glTexCoord2f(0.0f, 0.0f); glVertex3f(0.0f, 0.0f,  1.0f);  // Bottom Left Of The Texture and Quad
-        glTexCoord2f(1.0f, 0.0f); glVertex3f( 1.0f, 0.0f,  1.0f);  // Bottom Right Of The Texture and Quad
-        glTexCoord2f(1.0f, 1.0f); glVertex3f( 1.0f,  1.0f,  1.0f);  // Top Right Of The Texture and Quad
-        glTexCoord2f(0.0f, 1.0f); glVertex3f(0.0f,  1.0f,  1.0f);  // Top Left Of The Texture and Quad
-        glEnd();
+        // Use our shader
+        glUseProgram(programID);
 
-        //glBindVertexArray(vaoid);
-        //glDrawArrays(GL_TRIANGLE_FAN,0,4);
-        //glDrawArrays(GL_QUADS,0,4);
-        //glBindVertexArray(0);
+        // Send our transformation to the currently bound shader,
+        // in the "MVP" uniform
+        glUniformMatrix3fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-        //glUseProgram(0);
-        //glBindTexture(GL_TEXTURE_2D,0);
+        // Bind our texture in Texture Unit 0
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, Texture);
+        // Set our "myTextureSampler" sampler to user Texture Unit 0
+        glUniform1i(TextureID, 0);
+
+        // 1rst attribute buffer : vertices
+        glEnableVertexAttribArray(vertexPosition_modelspaceID);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+        glVertexAttribPointer(
+                vertexPosition_modelspaceID,  // The attribute we want to configure
+                2,                            // size
+                GL_FLOAT,                     // type
+                GL_FALSE,                     // normalized?
+                0,                            // stride
+                (void*)0                      // array buffer offset
+        );
+
+        // 2nd attribute buffer : UVs
+        glEnableVertexAttribArray(vertexUVID);
+        glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
+        glVertexAttribPointer(
+                vertexUVID,                   // The attribute we want to configure
+                2,                            // size : U+V => 2
+                GL_FLOAT,                     // type
+                GL_FALSE,                     // normalized?
+                0,                            // stride
+                (void*)0                      // array buffer offset
+        );
+
+        // Draw the triangles !
+        glDrawArrays(GL_TRIANGLE_FAN, 0, 4); // 12*3 indices starting at 0 -> 12 triangles
+
+        glDisableVertexAttribArray(vertexPosition_modelspaceID);
+        glDisableVertexAttribArray(vertexUVID);
 
         // Swap buffers
         glfwSwapBuffers(window.GLFWpointer);
@@ -790,4 +849,12 @@ void test_10(){
     while( glfwGetKey(window.GLFWpointer, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
            glfwWindowShouldClose(window.GLFWpointer) == 0 );
 
+    // Cleanup VBO and shader
+    glDeleteBuffers(1, &vertexbuffer);
+    glDeleteBuffers(1, &uvbuffer);
+    glDeleteProgram(programID);
+    glDeleteTextures(1, &TextureID);
+
+    // Close OpenGL window and terminate GLFW
+    glfwTerminate();
 }
