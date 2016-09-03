@@ -5,10 +5,10 @@
 
 #include "OGLfonts.h"
 
-FontTexHandler::FontTexHandler(std::string trueTypePath, unsigned pixSize, Shader* shader_, vec2d screenSize){
+FontTexHandler::FontTexHandler(std::string trueTypePath, unsigned pixSize, GLuint shader_, vec2d screenSize){
     halfWidth = screenSize[0]/2.0f;
     halfHeight = screenSize[1]/2.0f;
-    shader = shader;
+    shader = shader_;
     if (FT_Init_FreeType(&ft))
         std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
 
@@ -70,16 +70,24 @@ FontTexHandler::FontTexHandler(std::string trueTypePath, unsigned pixSize, Shade
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-    vertexPosLocation = glGetAttribLocation(shader->Program, "VertexPos" );
-    textColorLocation = glGetUniformLocation(shader->Program, "textColor");
+    vertexPosLocation = glGetAttribLocation(shader, "VertexPos" );
+    textColorLocation = glGetUniformLocation(shader, "textColor");
+    textLocation = glGetUniformLocation(shader, "text");
+    projectionLocation = glGetUniformLocation(shader, "projection");
+
+    windowProjection = glm::mat4(1.0f);
 }
 
-void FontTexHandler::renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
+void FontTexHandler::renderText(std::string text, GLfloat X, GLfloat Y, GLfloat scale, glm::vec3 color)
 {
+    GLfloat x = X;
+    GLfloat y = Y;
     // Activate corresponding render state
-    shader->use();
+    glUseProgram(shader);
     glUniform3f(textColorLocation, color.x, color.y, color.z);
+    glUniformMatrix4fv(projectionLocation,1,GL_FALSE,&windowProjection[0][0]);
     glActiveTexture(GL_TEXTURE0);
+    glUniform1f(textLocation, 0);
     glBindVertexArray(VAO);
 
     // Iterate through all characters
@@ -105,11 +113,11 @@ void FontTexHandler::renderText(std::string text, GLfloat x, GLfloat y, GLfloat 
         };
         // Render glyph texture over quad
         glBindTexture(GL_TEXTURE_2D, ch.textureID);
-        glEnableVertexAttribArray( 0 );
+        glEnableVertexAttribArray( vertexPosLocation );
         // Update content of VBO memory
         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, 4*sizeof(vertices), vertices);
-        //glVertexAttribPointer(vertexPosLocation, 2, GL_FLOAT, GL_FALSE);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+        glVertexAttribPointer(vertexPosLocation, 4, GL_FLOAT, GL_FALSE, 0,(void*)0);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         // Render quad
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -119,4 +127,5 @@ void FontTexHandler::renderText(std::string text, GLfloat x, GLfloat y, GLfloat 
     }
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
+    glUseProgram(0);
 }

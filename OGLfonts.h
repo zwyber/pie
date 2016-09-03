@@ -30,15 +30,16 @@ class FontTexHandler{
 public:
     GLfloat halfWidth;
     GLfloat halfHeight;
-    Shader* shader;
-    FontTexHandler(std::string trueTypePath,unsigned pixSize, Shader* shader_, vec2d screenSize);
+    GLuint shader;
+    FontTexHandler(std::string trueTypePath,unsigned pixSize, GLuint shader_, vec2d screenSize);
     void renderText(std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);
+    glm::mat4 windowProjection;
 private:
     std::map<GLchar, Character> Characters;
     FT_Library ft;
     FT_Face face;
     GLuint VAO, VBO;
-    GLuint textColorLocation, vertexPosLocation;
+    GLuint textColorLocation, vertexPosLocation, textLocation, projectionLocation;
 };
 
 #include "OGLfonts.cpp"

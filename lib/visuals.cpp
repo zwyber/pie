@@ -299,3 +299,261 @@ vec2d Window::length_to_px(vec2d length) {
 
     return length;
 }
+
+
+/*
+ * Shaders section
+ */
+Shader::Shader(const char *vertexShader, const char *fragmentShader, const char *vertexName, const char *tMatrixName) {
+    transformationMatrix = glm::mat3(1.0f);
+    programID = LoadShaders(vertexShader, fragmentShader);
+    vertexPositionID = glGetAttribLocation(programID, vertexName);
+
+    if(tMatrixName!=NULL){
+        tMatrixID = glGetUniformLocation(programID, tMatrixName);
+        tMatrixOn = true;
+    } else{
+        tMatrixOn = false;
+    }
+
+    static const GLfloat vertices[] = {
+            -1.0f,-1.0f,
+            -1.0f,1.0f,
+            1.0f,1.0f,
+            1.0f,-1.0f
+    };
+
+    vertexCount = sizeof(vertices)/(sizeof(GLfloat)*2);
+
+    glGenBuffers(1, &vertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+}
+Shader::~Shader(){
+    glDeleteBuffers(1, &vertexBuffer);
+    glDeleteProgram(programID);
+}
+void Shader::tMatrixReset(){
+    transformationMatrix = glm::mat3(1.0f);
+}
+void Shader::tMatrixRotate(GLfloat angle) {
+    const GLfloat c = cos(angle);
+    const GLfloat s = sin(angle);
+    transformationMatrix *= glm::mat3(
+            c, -s, 0,
+            s,  c, 0,
+            0,  0, 1
+    );
+}
+void Shader::tMatrixScale(vec2d scale) {
+    transformationMatrix *= glm::mat3(
+            scale[0], 0, 0,
+            0, scale[1], 0,
+            0,        0, 1
+    );
+}
+void Shader::tMatrixTranslate(vec2d &position) {
+    transformationMatrix *= glm::mat3(
+            1, 0, position[0],
+            0, 1, position[1],
+            0, 0, 1
+    );
+}
+void Shader::setNewVertices(GLuint arraySize, const GLfloat *vertexArray) {
+    vertexCount = arraySize/2;
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, vertexArray, GL_STATIC_DRAW);
+}
+void Shader::draw(){
+    glUseProgram(programID);
+
+    if(tMatrixOn) glUniformMatrix3fv(tMatrixID, 1, GL_FALSE, &transformationMatrix[0][0]);
+
+    glEnableVertexAttribArray(vertexPositionID);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glVertexAttribPointer(
+            vertexPositionID,  // The attribute we want to configure
+            2,                            // size
+            GL_FLOAT,                     // type
+            GL_FALSE,                     // normalized?
+            0,                            // stride
+            (void*)0                      // array buffer offset
+    );
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0,vertexCount);
+
+    glDisableVertexAttribArray(vertexPositionID);
+    glUseProgram(0);
+}
+
+TextureShader::TextureShader(GLuint texture_) : Shader("shaders/texture.glvs", "shaders/texture.glfs", "PositionVec", "MVP"){
+    texture = texture_;
+    vertexUVID = glGetAttribLocation(programID, "vertexUV");
+    textureID  = glGetUniformLocation(programID, "tex");
+
+    static const GLfloat texcoords[] = {
+            0.0f,0.0f,
+            0.0f,1.0f,
+            1.0f,1.0f,
+            1.0f,0.0f
+    };
+
+    glGenBuffers(1, &uvBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);
+
+}
+void TextureShader::setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray) {
+    unsigned uvCount = arraySize/2;
+    if(uvCount != vertexCount){
+        if(uvCount > vertexCount) {
+            std::cout << "[Warn]: in setNewUVCoordinates, there were given too many coordinates. Cut UV off at "
+                      << vertexCount
+                      << ". If you want to set UV and vertices at the same time, please use supply both pointers."
+                      << std::endl;
+        }else {
+            std::cout << "[Warn]: in setNewUVCoordinates, there were given too many coordinates. Cut vertices off at "
+                      << uvCount
+                      << ". If you want to set UV and vertices at the same time, please use supply both pointers."
+                      << std::endl;
+            vertexCount = arraySize / 2;
+        }
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*vertexCount*2, uvArray, GL_STATIC_DRAW);
+}
+void TextureShader::setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray, const GLfloat *vertexArray){
+    vertexCount = arraySize/2;
+
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, uvArray, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, vertexArray, GL_STATIC_DRAW);
+}
+TextureShader::~TextureShader(){
+    glDeleteBuffers(1, &uvBuffer);
+    glDeleteTextures(1, &textureID);
+}
+void TextureShader::draw(){
+    glUseProgram(programID);
+    glUniformMatrix3fv(tMatrixID, 1, GL_FALSE, &transformationMatrix[0][0]);
+
+    // Bind our texture in Texture Unit 0
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    // Set our "myTextureSampler" sampler to user Texture Unit 0
+    glUniform1i(textureID, 0);
+
+    glEnableVertexAttribArray(vertexPositionID);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glVertexAttribPointer(
+            vertexPositionID,  // The attribute we want to configure
+            2,                            // size
+            GL_FLOAT,                     // type
+            GL_FALSE,                     // normalized?
+            0,                            // stride
+            (void*)0                      // array buffer offset
+    );
+
+    glEnableVertexAttribArray(vertexUVID);
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+    glVertexAttribPointer(
+            vertexUVID,                   // The attribute we want to configure
+            2,                            // size : U+V => 2
+            GL_FLOAT,                     // type
+            GL_FALSE,                     // normalized?
+            0,                            // stride
+            (void*)0                      // array buffer offset
+    );
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0,vertexCount);
+
+    glDisableVertexAttribArray(vertexPositionID);
+    glDisableVertexAttribArray(vertexUVID);
+    glUseProgram(0);
+}
+
+
+CircleShader::CircleShader(glm::vec4 colour_) : Shader("shaders/circle.glvs", "shaders/circle.glfs", "inPosition", "projection"){
+    colour = colour_;
+    vertexUVID = glGetAttribLocation(programID, "inTexcoord");
+    colourID  = glGetUniformLocation(programID, "disc_color");
+
+    static const GLfloat texcoords[] = {
+            0.0f,0.0f,
+            0.0f,1.0f,
+            1.0f,1.0f,
+            1.0f,0.0f
+    };
+
+    glGenBuffers(1, &uvBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);
+
+}
+void CircleShader::setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray) {
+    unsigned uvCount = arraySize/2;
+    if(uvCount != vertexCount){
+        if(uvCount > vertexCount) {
+            std::cout << "[Warn]: in setNewUVCoordinates, there were given too many coordinates. Cut UV off at "
+                      << vertexCount
+                      << ". If you want to set UV and vertices at the same time, please use supply both pointers."
+                      << std::endl;
+        }else {
+            std::cout << "[Warn]: in setNewUVCoordinates, there were given too many coordinates. Cut vertices off at "
+                      << uvCount
+                      << ". If you want to set UV and vertices at the same time, please use supply both pointers."
+                      << std::endl;
+            vertexCount = arraySize / 2;
+        }
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*vertexCount*2, uvArray, GL_STATIC_DRAW);
+}
+void CircleShader::setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray, const GLfloat *vertexArray){
+    vertexCount = arraySize/2;
+
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, uvArray, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, vertexArray, GL_STATIC_DRAW);
+}
+CircleShader::~CircleShader(){
+    glDeleteBuffers(1, &uvBuffer);
+}
+void CircleShader::draw(){
+    glUseProgram(programID);
+    glUniformMatrix3fv(tMatrixID, 1, GL_FALSE, &transformationMatrix[0][0]);
+
+    glUniform4f(colourID, colour.r, colour.g, colour.b, colour.a);
+
+    glEnableVertexAttribArray(vertexPositionID);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glVertexAttribPointer(
+            vertexPositionID,  // The attribute we want to configure
+            2,                            // size
+            GL_FLOAT,                     // type
+            GL_FALSE,                     // normalized?
+            0,                            // stride
+            (void*)0                      // array buffer offset
+    );
+
+    glEnableVertexAttribArray(vertexUVID);
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+    glVertexAttribPointer(
+            vertexUVID,                   // The attribute we want to configure
+            2,                            // size : U+V => 2
+            GL_FLOAT,                     // type
+            GL_FALSE,                     // normalized?
+            0,                            // stride
+            (void*)0                      // array buffer offset
+    );
+
+    glDrawArrays(GL_TRIANGLE_FAN, 0,vertexCount);
+
+    glDisableVertexAttribArray(vertexPositionID);
+    glDisableVertexAttribArray(vertexUVID);
+    glUseProgram(0);
+}

@@ -512,18 +512,18 @@ void test_08() {
     std::string filename = "verdana.ttf";
     std::string text = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.";
 
-    Shader shader("shaders/text.glvs", "shaders/text.glfs");
-    FontTexHandler myFont = FontTexHandler(filename, 32, &shader, window.windowSize());
+    GLuint shader = LoadShaders("shaders/text.glvs", "shaders/text.glfs");
+    FontTexHandler myFont = FontTexHandler(filename, 16, shader, window.windowSize());
     glm::vec3 colour = glm::vec3(1.0, 0.0, 0.0);
 
     do{
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
         glClear(GL_COLOR_BUFFER_BIT);
-        myFont.renderText(text, 0, 0, 1, colour);
+        myFont.renderText(text, -200.0, 0, 1.0, colour);
         // Draw the universe's objects on top of that
         //window.drawObjectList(universe.objects);
         // Do a physics iteration
-        universe.physics_runtime_iteration();
+        //universe.physics_runtime_iteration();
 
         // Swap buffers
         glfwSwapBuffers(window.GLFWpointer);
@@ -612,23 +612,13 @@ void test_09(){
     addRandomObjects(universe,1,AmountOfObjects);
     glClearColor(0.2, 0.2, 0.3, 1.0);
 
-    Shader shader("shaders/test.glvs", "shaders/test.glfs");
-    GLuint vertexPosLocation = glGetAttribLocation(shader.Program, "VertexPos" );
-    GLuint textColorLocation = glGetUniformLocation(shader.Program, "textColor");
+    GLuint shader = LoadShaders("shaders/test.glvs", "shaders/test.glfs");
+    GLuint vertexPosLocation = glGetAttribLocation(shader, "VertexPos" );
+    GLuint textColorLocation = glGetUniformLocation(shader, "textColor");
 
-    Shader circleShader("shaders/circle.glvs", "shaders/circle.glfs");
-    GLuint discColor = glGetAttribLocation(circleShader.Program, "disc_color" );
-    /*
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(vertexPosLocation);
-    glVertexAttribPointer(vertexPosLocation, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-    */
+    GLuint circleShader = LoadShaders("shaders/circle.glvs", "shaders/circle.glfs");
+    GLuint discColor = glGetAttribLocation(circleShader, "disc_color" );
+
     GLuint VertexArrayID;
     glGenVertexArrays(1, &VertexArrayID);
     glBindVertexArray(VertexArrayID);
@@ -684,7 +674,7 @@ void test_09(){
                 (void*)0            // array buffer offset
         );
 // Draw the triangle
-        circleShader.use();
+        glUseProgram(circleShader);
         glUniform4f(discColor, color.x, color.y, color.z, 1.0f);
         glDrawArrays(GL_TRIANGLE_FAN, 0, 4); // Starting from vertex 0; 3 vertices total -> 1 triangle
         glDisableVertexAttribArray(0);
@@ -723,65 +713,16 @@ void test_10(){
     addRandomObjects(universe,1,AmountOfObjects);
     glClearColor(0.2, 0.2, 0.3, 1.0);
 
-    // Enable depth test
-    glEnable(GL_DEPTH_TEST);
-    // Accept fragment if it closer to the camera than the former one
-    glDepthFunc(GL_LESS);
-
-    static const GLfloat vertices[] = {
-            -1.0f,-1.0f,
-            -1.0f,1.0f,
-            1.0f,1.0f,
-            1.0f,-1.0f
-    };
-    static const GLfloat texcoords[] = {
-            0.0f,0.0f,
-            0.0f,1.0f,
-            1.0f,1.0f,
-            1.0f,0.0f
-    };
-
-    // Model matrix : an identity matrix (model will be at the origin)
-    glm::mat3 Model      = glm::mat3(1.0f);
-    // Our ModelViewProjection : multiplication of our 3 matrices
-    glm::mat3 MVP        = Model; // Remember, matrix multiplication is the other way around
-
-
-    // Enable depth test
-    glEnable(GL_DEPTH_TEST);
-    // Accept fragment if it closer to the camera than the former one
-    glDepthFunc(GL_LESS);
-
-    // Create and compile our GLSL program from the shaders
-    //GLuint programID = LoadShaders( "TransformVertexShader.vertexshader", "TextureFragmentShader.fragmentshader" );
-    Shader myShader("shaders/texture.glvs", "shaders/texture.glfs");
-    GLuint programID = myShader.Program;
-
-    // Get a handle for our "MVP" uniform
-    GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-
-    // Get a handle for our buffers
-    GLuint vertexPosition_modelspaceID = glGetAttribLocation(programID, "PositionVec");
-    GLuint vertexUVID = glGetAttribLocation(programID, "vertexUV");
 
     GLuint Texture = loadDDS("Asteroid.DDS");
 
-    // Get a handle for our "myTextureSampler" uniform
-    GLuint TextureID  = glGetUniformLocation(programID, "myTextureSampler");
-
-    GLuint vertexbuffer;
-    glGenBuffers(1, &vertexbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    GLuint uvbuffer;
-    glGenBuffers(1, &uvbuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);
-
-
-    float size;
-    double step = 0.01;
+    TextureShader myShader(Texture);
+    GLuint programID = myShader.programID;
+    // Get a handle for our "MVP" uniform
+    glm::vec4 colour = {1.0f, 0.0f,0.0f,1.0f};
+    CircleShader myCircle(colour);
+    double size;
+    double step = 0.001;
     double phi = 0.003;
     const GLfloat c = cos(phi);
     const GLfloat s = sin(phi);
@@ -790,57 +731,15 @@ void test_10(){
             s,  c, 0,
             0,  0, 1
     };
-    glm::mat3 newRot = rot;
     do{
-        size = cos(step+=0.001);
-        newRot = rot*newRot;
-        MVP = size*newRot*Model;
+        size = cos(step+=0.01);
+        myCircle.tMatrixReset();
+        myCircle.tMatrixScale({size,size});
+        myShader.transformationMatrix *= rot;
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // Use our shader
-        glUseProgram(programID);
-
-        // Send our transformation to the currently bound shader,
-        // in the "MVP" uniform
-        glUniformMatrix3fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
-
-        // Bind our texture in Texture Unit 0
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, Texture);
-        // Set our "myTextureSampler" sampler to user Texture Unit 0
-        glUniform1i(TextureID, 0);
-
-        // 1rst attribute buffer : vertices
-        glEnableVertexAttribArray(vertexPosition_modelspaceID);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-        glVertexAttribPointer(
-                vertexPosition_modelspaceID,  // The attribute we want to configure
-                2,                            // size
-                GL_FLOAT,                     // type
-                GL_FALSE,                     // normalized?
-                0,                            // stride
-                (void*)0                      // array buffer offset
-        );
-
-        // 2nd attribute buffer : UVs
-        glEnableVertexAttribArray(vertexUVID);
-        glBindBuffer(GL_ARRAY_BUFFER, uvbuffer);
-        glVertexAttribPointer(
-                vertexUVID,                   // The attribute we want to configure
-                2,                            // size : U+V => 2
-                GL_FLOAT,                     // type
-                GL_FALSE,                     // normalized?
-                0,                            // stride
-                (void*)0                      // array buffer offset
-        );
-
-        // Draw the triangles !
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 4); // 12*3 indices starting at 0 -> 12 triangles
-
-        glDisableVertexAttribArray(vertexPosition_modelspaceID);
-        glDisableVertexAttribArray(vertexUVID);
-
+        myShader.draw();
+        myCircle.draw();
         // Swap buffers
         glfwSwapBuffers(window.GLFWpointer);
         glfwPollEvents();
@@ -849,11 +748,6 @@ void test_10(){
     while( glfwGetKey(window.GLFWpointer, GLFW_KEY_ESCAPE ) != GLFW_PRESS &&
            glfwWindowShouldClose(window.GLFWpointer) == 0 );
 
-    // Cleanup VBO and shader
-    glDeleteBuffers(1, &vertexbuffer);
-    glDeleteBuffers(1, &uvbuffer);
-    glDeleteProgram(programID);
-    glDeleteTextures(1, &TextureID);
 
     // Close OpenGL window and terminate GLFW
     glfwTerminate();

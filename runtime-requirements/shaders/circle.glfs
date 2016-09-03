@@ -1,38 +1,29 @@
+#version 120
 
-//uniform sampler2D text;
-//uniform sampler2D tex0;
-
-#if __VERSION__ >= 130
-
-//in vec2 TexCoords;
-out vec4 gl_FragColor;
-
-#else
-
-//varying vec2 TexCoords;
 varying vec2 texCoord;
-varying vec3 outNormal;
-varying vec3 lightDir;
-
-#endif
 
 uniform vec4 disc_color; // vec4(1.0, 1.0, 1.0, 1.0)
-uniform sampler2D mytex;
+//uniform sampler2D mytex;
 
 void main()
 {
 
     //vec4 sampled = vec4(1.0, 1.0, 1.0, texture2D(text, TexCoords).r);
     //gl_FragColor = vec4(textColor, 1.0) * sampled;
-    //vec2 uv = gl_TexCoord[0].st;
+    vec2 uv = texCoord;
 
     //vec4 bkg_color = texture2D(tex0,uv * vec2(1.0, -1.0));
-    //vec4 bkg_color = disc_color;
-    //bkg_color.a = 0;
-    //uv -= vec2(0.5, 0.5);
-    //float t = smoothstep(0.49f,0.5f,sqrt(dot(uv, uv)));
-    //gl_FragColor = mix(bkg_color, disc_color, t);
-
+    vec4 bkg_color = vec4(disc_color.r, disc_color.g, disc_color.b, 0.0f);
+    uv -= vec2(0.5f, 0.5f);
+    //GLSL 1.20 does not contain smoothstep, this line is equivalent
+    float t = clamp((sqrt(dot(uv, uv))-0.5f)/-0.01f,0.0f,1.0f);
+    t = t*t*(3-2*t);
+    gl_FragColor = mix(bkg_color, disc_color, t);
+    //if(sqrt(dot(uv, uv))> 0.5f){
+    //    gl_FragColor = bkg_color;
+    //}else{
+    //    gl_FragColor = disc_color;
+    //}
     //gl_FragColor = texture2D(mytex,  gl_TexCoord[0].st);
-    gl_FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    //gl_FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
 }
