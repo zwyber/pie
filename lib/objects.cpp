@@ -239,6 +239,9 @@ void Object::set_colour(std::array<double, 4> Colour){
 std::array<double, 4> Object::get_colour(){
     return colour;
 };
+glm::vec4 Object::get_colour_glm(){
+    return glm::vec4(colour[0],colour[1],colour[2],colour[3]);
+}
 
 bool Physics::check_collision(Object* A, Object* B) {
     vec2d A_v = A->get_velocity();

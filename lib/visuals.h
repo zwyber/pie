@@ -19,6 +19,52 @@ namespace vis{
     const unsigned ZOOM_UNIVERSE = 4;
 }
 
+class Shader{
+protected:
+    GLuint tMatrixID;
+    GLuint vertexPositionID;
+    GLuint vertexBuffer;
+    bool tMatrixOn;
+    unsigned vertexCount;
+public:
+    Shader(const char* vertexShader, const char* fragmentShader, const char* vertexName, const char* tMatrixName = NULL);
+    ~Shader();
+    glm::mat3 transformationMatrix;
+    void tMatrixReset();
+    void tMatrixRotate(GLfloat angle);
+    void tMatrixScale(vec2d scale);
+    void tMatrixTranslate(vec2d position);
+    void setNewVertices(GLuint arraySize, const GLfloat * vertexArray);
+    GLuint programID;
+    virtual void draw();
+};
+class TextureShader: public Shader{
+private:
+    GLuint vertexUVID;
+    GLuint textureID;
+    GLuint uvBuffer;
+    GLuint texture;
+public:
+    TextureShader(GLuint texture_);// : Shader("shaders/texture.glvs", "shaders/texture.glfs", "PositionVec", "MVP");
+    ~TextureShader();
+    void setNewUVCoordinates(GLuint arraySize, const GLfloat * uvArray);
+    void setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray, const GLfloat *vertexArray);
+    void draw();
+};
+class CircleShader: public Shader{
+private:
+    GLuint vertexUVID;
+    GLuint colourID;
+    GLuint uvBuffer;
+public:
+    CircleShader(glm::vec4 colour_ = glm::vec4(1.0));// : Shader("shaders/circle.glvs", "shaders/circle.glfs", "inPosition", "projection");
+    ~CircleShader();
+    glm::vec4 colour;
+    void setNewUVCoordinates(GLuint arraySize, const GLfloat * uvArray);
+    void setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray, const GLfloat *vertexArray);
+    void draw();
+};
+
 class Window{
 private:
     // Keep the following parameters protected but shared in the draw functions
@@ -61,7 +107,7 @@ public:
     void drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, std::array<double, 4> Colour);
 
 // Goes through the object list and draws all objects to the current active window
-    void drawObjectList(std::vector<Object *> &objects);
+    void drawObjectList(std::vector<Object *> &objects, CircleShader* circleShader = NULL);
 
     // Draws a simple red box in the middle of the screen.
     void drawBox(double Width, double Height);
@@ -87,51 +133,6 @@ public:
         // now we got our Window pointer and we can call functions from WITHIN the class.
         window->window_size_callback(width, height);
     }
-};
-class Shader{
-protected:
-    GLuint tMatrixID;
-    GLuint vertexPositionID;
-    GLuint vertexBuffer;
-    bool tMatrixOn;
-    unsigned vertexCount;
-public:
-    Shader(const char* vertexShader, const char* fragmentShader, const char* vertexName, const char* tMatrixName = NULL);
-    ~Shader();
-    glm::mat3 transformationMatrix;
-    void tMatrixReset();
-    void tMatrixRotate(GLfloat angle);
-    void tMatrixScale(vec2d scale);
-    void tMatrixTranslate(vec2d &position);
-    void setNewVertices(GLuint arraySize, const GLfloat * vertexArray);
-    GLuint programID;
-    virtual void draw();
-};
-class TextureShader: public Shader{
-private:
-    GLuint vertexUVID;
-    GLuint textureID;
-    GLuint uvBuffer;
-    GLuint texture;
-public:
-    TextureShader(GLuint texture_);// : Shader("shaders/texture.glvs", "shaders/texture.glfs", "PositionVec", "MVP");
-    ~TextureShader();
-    void setNewUVCoordinates(GLuint arraySize, const GLfloat * uvArray);
-    void setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray, const GLfloat *vertexArray);
-    void draw();
-};
-class CircleShader: public Shader{
-private:
-    GLuint vertexUVID;
-    GLuint colourID;
-    GLuint uvBuffer;
-public:
-    CircleShader(glm::vec4 colour_);// : Shader("shaders/circle.glvs", "shaders/circle.glfs", "inPosition", "projection");
-    ~CircleShader();
-    glm::vec4 colour;
-    void setNewUVCoordinates(GLuint arraySize, const GLfloat * uvArray);
-    void setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray, const GLfloat *vertexArray);
-    void draw();
 };
 #include "visuals.cpp"
 

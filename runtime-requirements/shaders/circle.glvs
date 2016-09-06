@@ -9,7 +9,8 @@ uniform mat3 projection;
 
 void main()
 {
-    gl_Position = vec4(projection * vec3(inPosition,0.0) ,1.0);
+    vec3 xyPos = projection * vec3(inPosition,1.0);
+    gl_Position = vec4(xyPos.xy+vec2(projection[0].z,projection[1].z),0.0,1.0);
     texCoord = inTexcoord;
 
 }

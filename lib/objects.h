@@ -58,6 +58,7 @@ public:
     // Getter and setter for colour, colours values needs to be between 0 and 1
     void set_colour(std::array<double, 4> Colour);
     std::array<double, 4> get_colour();
+    glm::vec4 get_colour_glm();
 
     // Calculate new position and velocity function
     virtual std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object*> &objects, Physics &physics);

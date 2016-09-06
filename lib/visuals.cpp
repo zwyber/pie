@@ -216,17 +216,33 @@ void Window::drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, std::ar
 /*
  * Function to draw all Objects from an object list to the current window
  */
-void Window::drawObjectList(std::vector<Object*> &objects){
-
-    for(int ii = 0; ii < objects.size(); ii++){
-        // Normalize the radius from universe to height [-1, 1];
-        GLdouble radius = pixRatio*2.0*objects[ii]->get_radius()/winHeight;
-        vec2d position = objects[ii]->get_position();
-        // Normalize the position from universe to [-1, 1];
-        position[0] *= pixRatio*2.0/winWidth;
-        position[1] *= pixRatio*2.0/winHeight;
-        // Draw the circle at the position
-        drawFilledCircle(position, radius, std::sqrt(objects[ii]->get_radius())*25, objects[ii]->get_colour());
+void Window::drawObjectList(std::vector<Object*> &objects, CircleShader* circleShader){
+    if(circleShader == NULL) {
+        for (int ii = 0; ii < objects.size(); ii++) {
+            // Normalize the radius from universe to height [-1, 1];
+            GLdouble radius = pixRatio * 2.0 * objects[ii]->get_radius() / winHeight;
+            vec2d position = objects[ii]->get_position();
+            // Normalize the position from universe to [-1, 1];
+            position[0] *= pixRatio * 2.0 / winWidth;
+            position[1] *= pixRatio * 2.0 / winHeight;
+            // Draw the circle at the position
+            drawFilledCircle(position, radius, std::sqrt(objects[ii]->get_radius()) * 25, objects[ii]->get_colour());
+        }
+    }else{
+        for (int ii = 0; ii < objects.size(); ii++) {
+            // Normalize the radius from universe to height [-1, 1];
+            double radius = pixRatio * 2.0 * objects[ii]->get_radius() / winHeight;
+            vec2d position = objects[ii]->get_position();
+            // Normalize the position from universe to [-1, 1];
+            position[0] *= pixRatio * 2.0 / winWidth;
+            position[1] *= pixRatio * 2.0 / winHeight;
+            circleShader->tMatrixReset();
+            circleShader->tMatrixScale((vec2d){radius/winWtHratio,radius});
+            circleShader->tMatrixTranslate(position);
+            circleShader->colour = objects[ii]->get_colour_glm();
+            // Draw the circle at the position
+            circleShader->draw();
+        }
     }
 }
 /*
@@ -352,7 +368,7 @@ void Shader::tMatrixScale(vec2d scale) {
             0,        0, 1
     );
 }
-void Shader::tMatrixTranslate(vec2d &position) {
+void Shader::tMatrixTranslate(vec2d position) {
     transformationMatrix *= glm::mat3(
             1, 0, position[0],
             0, 1, position[1],

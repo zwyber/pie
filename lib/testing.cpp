@@ -34,15 +34,15 @@ void addRandomObjects(Universe &universe, unsigned seed, int objectAmount){
     }else{
         srand(seed);
     }
-    std::array<double,2> radiusLim = {0.2, 1};
-    std::array<double,2> massLim = {0.1, 1};
+    std::array<double,2> radiusLim = {0.2, 0.3};
+    std::array<double,2> massLim = {0.1, 3};
     std::array<double,2> velocityLim = {-1, 1};
     for(int ii = 0; ii < objectAmount; ii++){
         Object* A = new Object;
         A->set_mass((std::rand()/(double)RAND_MAX)*(massLim[1]-massLim[0])+massLim[0]);
         A->set_velocity((std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0],(std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0]);
         A->set_radius((std::rand()/(double)RAND_MAX)*(radiusLim[1]-radiusLim[0])+radiusLim[0]);
-        //A->bouncyness = std::rand()/(double)RAND_MAX;
+        A->bouncyness = std::rand()/(double)RAND_MAX;
         std::array<double,2> xLim = {-universe.width/2+A->get_radius(), universe.width/2-A->get_radius()};
         std::array<double,2> yLim = {-universe.height/2+A->get_radius(), universe.height/2-A->get_radius()};
         do{
@@ -315,10 +315,10 @@ void test_06() {
     int width = 720;
     int height = 480;
     // universe dimensions [px]
-    int universeWidth = 640;
-    int universeHeight = 400;
+    int universeWidth = 900;
+    int universeHeight = 700;
 
-    int AmountOfObjects = 4;
+    int AmountOfObjects = 800;
 
     // window already makes GLFWpointer currentContext so no need to call it again later on.
 
@@ -344,6 +344,7 @@ void test_06() {
     Window window = Window(&universe, pixRatio);
     //// Look in the addRandomObjects function to find the parameter range of objects
     addRandomObjects(universe,0,AmountOfObjects);
+    CircleShader myCircleShader;
 
     // Add them to the universe
     //universe.add_object(A);
@@ -357,17 +358,17 @@ void test_06() {
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
         glClear(GL_COLOR_BUFFER_BIT);
         // Draw a grid with m/div
-        window.drawGrid(window.pixRatio);
+        //window.drawGrid(window.pixRatio);
         // Draw the universe's objects on top of that
-        window.drawObjectList(universe.objects);
+        window.drawObjectList(universe.objects,&myCircleShader);
         // Draw A box on the boundaries of the universe
-        window.drawBox(universe.width, universe.height);
+        //window.drawBox(universe.width, universe.height);
         // Do a physics iteration
         universe.physics_runtime_iteration();
         //posA = A->get_position();
         //posB = B->get_position();
         // std::cout << "Position of A: " << posA[0] << "," << posA[1] << " Position of B: " << posB[0] << "," << posB[1] << ";" << std::endl;
-
+        window.pace_frame();
         // Swap buffers
         glfwSwapBuffers(window.GLFWpointer);
         glfwPollEvents();
@@ -509,22 +510,23 @@ void test_08() {
 
     addRandomObjects(universe,1,AmountOfObjects);
 
-    std::string filename = "verdana.ttf";
+    std::string filename = "Courier New Bold.ttf";
     std::string text = "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.";
 
     GLuint shader = LoadShaders("shaders/text.glvs", "shaders/text.glfs");
-    FontTexHandler myFont = FontTexHandler(filename, 16, shader, window.windowSize());
+    FontTexHandler myFont = FontTexHandler(filename, 32, shader, window.windowSize());
     glm::vec3 colour = glm::vec3(1.0, 0.0, 0.0);
+    CircleShader myCircle;
 
     do{
         // Clear the buffers to set values (in our case only colour buffer needs to be cleared)
         glClear(GL_COLOR_BUFFER_BIT);
-        myFont.renderText(text, -200.0, 0, 1.0, colour);
+        myFont.renderText(text, -300.0, 0, 0.8, colour);
         // Draw the universe's objects on top of that
-        //window.drawObjectList(universe.objects);
+        window.drawObjectList(universe.objects,&myCircle);
         // Do a physics iteration
-        //universe.physics_runtime_iteration();
-
+        universe.physics_runtime_iteration();
+        window.pace_frame();
         // Swap buffers
         glfwSwapBuffers(window.GLFWpointer);
         glfwPollEvents();
@@ -721,6 +723,7 @@ void test_10(){
     // Get a handle for our "MVP" uniform
     glm::vec4 colour = {1.0f, 0.0f,0.0f,1.0f};
     CircleShader myCircle(colour);
+    //myCircle.colour=colour;
     double size;
     double step = 0.001;
     double phi = 0.003;
@@ -734,7 +737,9 @@ void test_10(){
     do{
         size = cos(step+=0.01);
         myCircle.tMatrixReset();
+        myCircle.tMatrixTranslate({size,0.0});
         myCircle.tMatrixScale({size,size});
+
         myShader.transformationMatrix *= rot;
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
