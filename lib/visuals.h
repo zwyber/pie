@@ -81,9 +81,12 @@ private:
     vec2d uniToWinRatio;
     void stdInitWindow();
 public:
+
+    Universe* universe = NULL;
+
     // Constructor that makes a window use ready.
     Window(Universe* uni, double pixRatio);
-    Window(int width, int height, Universe* uni, double pixelRatio,const unsigned flag);
+    Window(int width, int height, Universe* uni, double pixelRatio, const unsigned flag);
 
     double fps = 60;
     double lastTime = glfwGetTime();

@@ -63,7 +63,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 SOURCE_GROUP(common REGULAR_EXPRESSION ".*/external/opengltut_common/.*" )
 SOURCE_GROUP(shaders REGULAR_EXPRESSION ".*/.*shader$" )
 
-set(SOURCE_FILES main.cpp)
+set(SOURCE_FILES main.cpp lib/game.cpp lib/game.h)
 add_executable(pie ${SOURCE_FILES})
 target_link_libraries(pie
 		${ALL_LIBS}
