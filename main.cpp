@@ -4,11 +4,13 @@
 
 #include "framework.h"
 #include "lib/testing.h"
+#include "lib/game.h"
 
 int main() {
 
-    test_06();
+    Window thisGame = Window();
 
+    std::cout << "exit code " << show_menu(&thisGame) << endl;
     return 0;
 
 }

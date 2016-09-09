@@ -16,7 +16,14 @@ Window::Window(Universe* uni, double pixelRatio){
     activeFlag = vis::AUTO_SIZE_UNIVERSE;
     stdInitWindow();
 }
-
+Window::Window(int width, int  height, const unsigned flag){
+    winHeight = height;
+    winWidth = width;
+    winWtHratio = (double)width/height;
+    boundUniverse = NULL;
+    activeFlag = flag;
+    stdInitWindow();
+}
 Window::Window(int width, int height, Universe* uni, double pixelRatio, const unsigned flag){
     winHeight = height;
     winWidth = width;
@@ -110,8 +117,21 @@ void Window::pace_frame() {
 
 void Window::bindUniverse(Universe *uni) {
     boundUniverse = uni;
+    if(activeFlag == vis::AUTO_SIZE_UNIVERSE && boundUniverse!=NULL){
+        boundUniverse->resize(winWidth,winHeight);
+    }
     uniToWinRatio = {boundUniverse->width*pixRatio/winWidth, boundUniverse->height*pixRatio/winHeight};
     window_size_callback(winWidth, winHeight);
+}
+
+void Window::Resize(int width, int height){
+    if(width<1){
+        width = winWidth;
+    }
+    if(height<1){
+        height = winHeight;
+    }
+    window_size_callback(width,height);
 }
 
 void Window::changeResizeFlag(unsigned flag){
@@ -279,22 +299,24 @@ void Window::window_size_callback(int width, int height){
     winWtHratio = (double)width/height;
     // Update GL's canvas to fit the window.
     // Some changes to the universe based on user preferences (activeFlag)
-    switch(activeFlag) {
-        case vis::FIXED_SIZE_UNIVERSE:
-            break;
-        case vis::AUTO_SIZE_UNIVERSE:
-            boundUniverse->resize(width / pixRatio, height / pixRatio);
-            break;
-        case vis::PROP_SIZE_UNIVERSE:
-        case vis::NO_RESIZE:
-            boundUniverse->resize(uniToWinRatio[0] * width / pixRatio , uniToWinRatio[1] * height / pixRatio);
-            break;
-        case vis::ZOOM_UNIVERSE:
-            pixRatio = uniToWinRatio[0]*width /boundUniverse->width;
-           if(pixRatio > uniToWinRatio[1]*height/ boundUniverse->height){
-                pixRatio = uniToWinRatio[1]*height/ boundUniverse->height;
-           }
-            break;
+    if(boundUniverse != NULL) {
+        switch (activeFlag) {
+            case vis::FIXED_SIZE_UNIVERSE:
+                break;
+            case vis::AUTO_SIZE_UNIVERSE:
+                boundUniverse->resize(width / pixRatio, height / pixRatio);
+                break;
+            case vis::PROP_SIZE_UNIVERSE:
+            case vis::NO_RESIZE:
+                boundUniverse->resize(uniToWinRatio[0] * width / pixRatio, uniToWinRatio[1] * height / pixRatio);
+                break;
+            case vis::ZOOM_UNIVERSE:
+                pixRatio = uniToWinRatio[0] * width / boundUniverse->width;
+                if (pixRatio > uniToWinRatio[1] * height / boundUniverse->height) {
+                    pixRatio = uniToWinRatio[1] * height / boundUniverse->height;
+                }
+                break;
+        }
     }
     glViewport(0,0, width, height);
 }

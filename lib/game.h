@@ -27,11 +27,7 @@ int show_menu(Window* window);
 int show_about(Window* window);
 
 
-
-
-
-
-
+#include "game.cpp"
 #endif //TUTORIALS_GAME_H
 
 

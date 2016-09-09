@@ -82,9 +82,8 @@ private:
     void stdInitWindow();
 public:
 
-    Universe* universe = NULL;
-
     // Constructor that makes a window use ready.
+    Window(int width = 640, int  height = 480, const unsigned flag = vis::AUTO_SIZE_UNIVERSE);
     Window(Universe* uni, double pixRatio);
     Window(int width, int height, Universe* uni, double pixelRatio, const unsigned flag);
 
@@ -92,6 +91,7 @@ public:
     double lastTime = glfwGetTime();
 
     void bindUniverse(Universe* uni);
+    void Resize(int width =0, int height =0);
     void changeResizeFlag(unsigned flag);
     // The pointer to the actual GLFWwindow this class controls
     GLFWwindow* GLFWpointer;
