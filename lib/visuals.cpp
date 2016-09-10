@@ -473,7 +473,7 @@ TextureShader::~TextureShader(){
     glDeleteBuffers(1, &uvBuffer);
     glDeleteTextures(1, &textureID);
 }
-void TextureShader::draw(){
+void TextureShader::draw(unsigned texNum){
     glUseProgram(programID);
     glUniformMatrix3fv(tMatrixID, 1, GL_FALSE, &transformationMatrix[0][0]);
 
@@ -505,7 +505,7 @@ void TextureShader::draw(){
             (void*)0                      // array buffer offset
     );
 
-    glDrawArrays(GL_TRIANGLE_FAN, 0,vertexCount);
+    glDrawArrays(GL_TRIANGLE_FAN, texNum*4,4);
 
     glDisableVertexAttribArray(vertexPositionID);
     glDisableVertexAttribArray(vertexUVID);

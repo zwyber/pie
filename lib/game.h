@@ -20,11 +20,12 @@ const int SCENE_INGAME = 12;
 const int SCENE_PAUSE = 13;
 const int SCENE_DIED = 14;
 
-
 void maingame();
 
 int show_menu(Window* window);
 int show_about(Window* window);
+
+void loadMenuResources(TextureShader * myMultiTex);
 
 
 #include "game.cpp"

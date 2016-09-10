@@ -29,6 +29,7 @@
 #include <glm/glm.hpp>
 #include <ft2build.h>
 #include "external/opengltut_common/shader.hpp"
+#include "external/opengltut_common/texture.hpp"
 #include FT_FREETYPE_H
 //#include "external/ahrs-visualizer/png_texture.cpp"
 

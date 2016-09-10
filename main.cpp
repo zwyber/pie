@@ -10,7 +10,12 @@ int main() {
 
     Window thisGame = Window();
 
-    std::cout << "exit code " << show_menu(&thisGame) << endl;
+    GLuint menuTex = loadDDS("menuDummy.DDS");
+    TextureShader menuMultiTex(menuTex);
+
+    loadMenuResources(&menuMultiTex);
+
+    std::cout << "exit code " << show_menu(&thisGame, &menuMultiTex) << endl;
     return 0;
 
 }

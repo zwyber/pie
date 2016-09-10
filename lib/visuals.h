@@ -49,7 +49,7 @@ public:
     ~TextureShader();
     void setNewUVCoordinates(GLuint arraySize, const GLfloat * uvArray);
     void setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray, const GLfloat *vertexArray);
-    void draw();
+    void draw(unsigned texNum = 0);
 };
 class CircleShader: public Shader{
 private:
@@ -64,7 +64,9 @@ public:
     void setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray, const GLfloat *vertexArray);
     void draw();
 };
+class SharedTextureShader: public Shader{
 
+};
 class Window{
 private:
     // Keep the following parameters protected but shared in the draw functions
