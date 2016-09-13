@@ -9,6 +9,7 @@ uniform mat3 MVP;
 
 void main()
 {
-    gl_Position = vec4(MVP * vec3(PositionVec,0.0) ,1.0);
+    vec3 xyPos = MVP * vec3(PositionVec,1.0);
+    gl_Position = vec4(xyPos.xy+vec2(MVP[0].z,MVP[1].z),0.0,1.0);
     UV = vertexUV;
 }

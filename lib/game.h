@@ -22,10 +22,10 @@ const int SCENE_DIED = 14;
 
 void maingame();
 
-int show_menu(Window* window);
+int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat);
 int show_about(Window* window);
 
-void loadMenuResources(TextureShader * myMultiTex);
+std::vector<glm::mat3> loadMenuResources(TextureShader * myMultiTex);
 
 
 #include "game.cpp"

@@ -73,7 +73,7 @@ private:
     int winHeight;
     int winWidth;
     double winWtHratio;
-
+    vec2d cursorPos;
     //// properties in order to resolve universe and window conversions
     // Currently only a single universe can be bound to a window, if needed this can be easily changed to a vector
     Universe* boundUniverse;
@@ -100,7 +100,7 @@ public:
 
     // The function that gets called (eventually) when we rescale the window
     void window_size_callback(int width, int height);
-
+    void cursor_position_callback(double xpos, double ypos);
     // Variable that is the number of pixels per physics length unit.
     double pixRatio = 25.0;
 // Draws a grid in the current active window, the stepsize is the px size of the grid
@@ -127,6 +127,7 @@ public:
     vec2d length_to_px (vec2d length);
 
     vec2d windowSize();
+    vec2d cursorPosition();
     // Too avoid call back issues the method of http://gamedev.stackexchange.com/questions/58541/how-can-i-associate-a-key-callback-with-a-wrapper-class-instance
     // has been used to define functions in this class.
 
@@ -137,6 +138,11 @@ public:
         Window *window = static_cast<Window*>(glfwGetWindowUserPointer(win));
         // now we got our Window pointer and we can call functions from WITHIN the class.
         window->window_size_callback(width, height);
+    }
+    static void cursor_position_callback(GLFWwindow* win, double xpos, double ypos)
+    {
+        Window *window = static_cast<Window*>(glfwGetWindowUserPointer(win));
+        window->cursor_position_callback(xpos,ypos);
     }
 };
 #include "visuals.cpp"

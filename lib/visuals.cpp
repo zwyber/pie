@@ -94,6 +94,9 @@ void Window::stdInitWindow(){
     // Call th function WindowResizeStaticCallback (which refers to window_size_callback)
     // when the window gets rescaled.
     glfwSetWindowSizeCallback(GLFWpointer, WindowResizeStaticCallback);
+    cursorPos = {0,0};
+    glfwSetCursorPosCallback(GLFWpointer, cursor_position_callback);
+
 }
 
 void Window::pace_frame() {
@@ -320,6 +323,9 @@ void Window::window_size_callback(int width, int height){
     }
     glViewport(0,0, width, height);
 }
+void Window::cursor_position_callback(double xpos, double ypos){
+    cursorPos = {2*xpos/winWidth -1, -2*ypos/winHeight +1};
+}
 vec2d Window::windowSize() {return {(double)winWidth,(double)winHeight};}
 vec2d Window::px_to_length(vec2d px) {
     vec2d l = {0};
@@ -338,6 +344,9 @@ vec2d Window::length_to_px(vec2d length) {
     return length;
 }
 
+vec2d Window::cursorPosition(){
+    return cursorPos;
+}
 
 /*
  * Shaders section
