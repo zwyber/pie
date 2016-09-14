@@ -250,7 +250,7 @@ void addRandomObjects(Universe* universe, unsigned seed, int objectAmount) {
 bool CollidesWithAny(Object* obj, Universe* uni) {
     for(int ii = 0; ii < uni->objects.size(); ii++){
         if(uni->objects[ii] != obj){
-            if(uni->physics.check_collision(uni->objects[ii],obj)){
+            if(uni->physics.distance_between(uni->objects[ii],obj) < (uni->objects[ii]->radius + obj->radius) ){
                 return true;
             }
         }
