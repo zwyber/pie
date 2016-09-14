@@ -149,11 +149,6 @@ public:
     }
 };
 
-class Button {
-
-
-
-};
 
 #include "visuals.cpp"
 

@@ -40,7 +40,7 @@ typedef std::array<vec2d, 2> pos_vel;
 
 // Own libraries
 #include "lib/vecmath.h"
-#include "lib/objects.h"
+#include "lib/simulation.h"
 #include "lib/visuals.h"
 
 // Semi-own written libraries

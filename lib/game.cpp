@@ -57,6 +57,7 @@ void maingame() {
     while(scene != SCENE_QUIT);
 
 }
+
 std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
     //// Input for menu properties
     const GLfloat imageSize = 1024;
@@ -135,6 +136,7 @@ std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
     return outputTMatrices;
 
 }
+
 int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat){
     int exitFlag = SCENE_MENU;
 
@@ -190,7 +192,6 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
     return exitFlag;
 
 }
-
 
 void showMenuDebug(){
 

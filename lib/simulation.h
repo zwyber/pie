@@ -156,5 +156,7 @@ public:
 
 
 #include "objects.cpp"
+#include "physics.cpp"
+#include "universe.cpp"
 
 #endif //PIE_GITHUB_OBJECTS_H
