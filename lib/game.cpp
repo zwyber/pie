@@ -15,7 +15,7 @@ void maingame() {
 
     Universe universe(universeWidth/pixRatio, universeHeight/pixRatio);
 
-    Window thisGame = Window();
+    Window window = Window();
 
     do {
 
@@ -32,29 +32,24 @@ void maingame() {
 
             // Create a universe and bind it to the window
             Universe *universe = new Universe();
-            thisGame.bindUniverse(universe);
+            window.bindUniverse(universe);
 
             // Show the menu
-            scene = show_menu(&thisGame, menuMultiTex, tMats);
+            scene = show_menu(&window, menuMultiTex, tMats);
 
             // Clear all heap variables
             delete menuMultiTex;
             delete universe;
 
-            // Start again if correct button is pressed :D
-            if (scene == SCENE_ABOUT || scene == SCENE_GENESIS) {
-                scene = SCENE_MENU;
-            }
-
         }
 
         if (scene == SCENE_ABOUT) {
-
+            scene = SCENE_MENU;
 
         }
 
         if (scene == SCENE_GENESIS) {
-
+            scene = SCENE_MENU;
 
         }
 
