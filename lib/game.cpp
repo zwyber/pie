@@ -1,3 +1,4 @@
+//
 // Created by paul on 9/7/16.
 //
 
@@ -17,28 +18,29 @@ void maingame() {
 
     Window window = Window();
 
+    GLuint menuTex = loadDDS("menuDummy.DDS");
+
+    // Init shader to heap memory
+    TextureShader menuMultiTex = TextureShader(menuTex);
+    // Load menu resources
+    std::vector<glm::mat3> tMats = loadMenuResources(&menuMultiTex);
+
     do {
 
         // I don't like switch :(
         // Don't worry I think the if statements in a while loop makes more sense in our case ;)
         if (scene == SCENE_MENU) {
 
-            GLuint menuTex = loadDDS("menuDummy.DDS");
-
-            // Init shader to heap memory
-            TextureShader *menuMultiTex = new TextureShader(menuTex);
-            // Load menu resources
-            std::vector<glm::mat3> tMats = loadMenuResources(menuMultiTex);
 
             // Create a universe and bind it to the window
             Universe *universe = new Universe();
             window.bindUniverse(universe);
 
             // Show the menu
-            scene = show_menu(&window, menuMultiTex, tMats);
+            scene = show_menu(&window, &menuMultiTex, tMats);
 
             // Clear all heap variables
-            delete menuMultiTex;
+            window.bindUniverse(NULL);
             delete universe;
 
         }
@@ -60,9 +62,9 @@ void maingame() {
 
 std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
     //// Input for menu properties
-    const GLfloat imageSize = 1024;
+    const GLfloat imageSize = 1024;         // input image needs to be 2^n in width and height
     const GLfloat menuMeasHeight = 1024;
-    const GLfloat menuMeasWidth = menuMeasHeight;
+    const GLfloat menuMeasWidth = menuMeasHeight;   //The scales used for measuring the objects Origins and sizes
     GLfloat UVs[] = {       // UV uses the actual file supplied
             0, 0,       //Menu title
             0, 258,
@@ -148,6 +150,9 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
     int highlightedButton = -1;
     vec2d cursorPos;
     //GLdouble R = 0.1;
+    bool cursorMode = false;
+    GLFWcursor* arrowCursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
+    GLFWcursor* handCursor = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
     while(exitFlag == SCENE_MENU){
         // Do a physics step and draw the universe
         glClear(GL_COLOR_BUFFER_BIT);
@@ -163,6 +168,10 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
             if(cursorPos[0] > menuElementTMat[ii][0][2] - menuElementTMat[ii][0][0] && cursorPos[0] <menuElementTMat[ii][0][2] + menuElementTMat[ii][0][0]){
                 if(cursorPos[1] > menuElementTMat[ii][1][2] - menuElementTMat[ii][1][1] && cursorPos[1] <menuElementTMat[ii][1][2] + menuElementTMat[ii][1][1]){
                     highlightedButton = ii;
+                    if(ii >0) {
+                        menuMultiTex->transformationMatrix[0][0] *= 1.2;
+                        menuMultiTex->transformationMatrix[1][1] *= 1.2;
+                    }
                 }
             }
             menuMultiTex->draw(ii);
@@ -172,15 +181,22 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
         glfwSwapBuffers(window->GLFWpointer);
         glfwPollEvents();
         if(glfwGetMouseButton(window->GLFWpointer, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
-            std::cout << highlightedButton << std::endl;
             //// BUTTON MEANING
             switch(highlightedButton){
-                case -1: break; //no highlight
-                case 0: break;  //menu name highlight
-                case 1: exitFlag = SCENE_GENESIS; break;
+                case -1: //no highlight
+                case 0:  break;  //menu name highlight
+                case 1: exitFlag = SCENE_TUTORIAL; break;
                 case 2: exitFlag = SCENE_ABOUT; break;
                 case 3: exitFlag = SCENE_QUIT; break;
             }
+        }
+        if(cursorMode && highlightedButton<=0){
+            cursorMode = false;
+            glfwSetCursor(window->GLFWpointer,arrowCursor);
+        }
+        if(!cursorMode && highlightedButton >0){
+            cursorMode = true;
+            glfwSetCursor(window->GLFWpointer,handCursor);
         }
         if(glfwGetKey(window->GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS || glfwWindowShouldClose(window->GLFWpointer) != 0){
             exitFlag = SCENE_QUIT;
@@ -194,15 +210,21 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
 }
 
 void showMenuDebug(){
-
+    // easy generate a window
     Window thisGame = Window();
 
+    // load a texture from file and create a texture shader for it
     GLuint menuTex = loadDDS("menuDummy.DDS");
     TextureShader menuMultiTex(menuTex);
 
+    // convert the texture shader to a proper hardcoded multi-textureshader and get matrices of the positions.
     std::vector<glm::mat3> tMats = loadMenuResources(&menuMultiTex);
 
-    std::cout << "exit code " << show_menu(&thisGame, &menuMultiTex,tMats) << endl;
+    // Store initial size so resizing can be applied with the right reference of initiation.
+    vec2d initSize = thisGame.windowSize();
+
+    // test sho
+    std::cout << "show_menu exit code (next scene): " << show_menu(&thisGame, &menuMultiTex,tMats) << endl;
 }
 
 

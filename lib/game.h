@@ -32,6 +32,7 @@ void addRandomObjects(Universe* universe, unsigned seed, int objectAmount);
 bool CollidesWithAny(Object* obj, Universe* uni);
 
 
+void showMenuDebug();
 #include "game.cpp"
 #endif //TUTORIALS_GAME_H
 

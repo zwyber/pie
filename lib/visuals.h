@@ -142,6 +142,8 @@ public:
         // now we got our Window pointer and we can call functions from WITHIN the class.
         window->window_size_callback(width, height);
     }
+    // Similar method is used for the cursor position callback the even though the public internal function 'cur'
+    // only sets the position having this separated prevents accidental writes.
     static void cursor_position_callback(GLFWwindow* win, double xpos, double ypos)
     {
         Window *window = static_cast<Window*>(glfwGetWindowUserPointer(win));

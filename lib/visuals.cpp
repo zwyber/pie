@@ -120,11 +120,13 @@ void Window::pace_frame() {
 
 void Window::bindUniverse(Universe *uni) {
     boundUniverse = uni;
-    if(activeFlag == vis::AUTO_SIZE_UNIVERSE && boundUniverse!=NULL){
-        boundUniverse->resize(winWidth,winHeight);
+    if(boundUniverse!=NULL) {
+        if (activeFlag == vis::AUTO_SIZE_UNIVERSE && boundUniverse != NULL) {
+            boundUniverse->resize(winWidth, winHeight);
+        }
+        uniToWinRatio = {boundUniverse->width * pixRatio / winWidth, boundUniverse->height * pixRatio / winHeight};
+        window_size_callback(winWidth, winHeight);
     }
-    uniToWinRatio = {boundUniverse->width*pixRatio/winWidth, boundUniverse->height*pixRatio/winHeight};
-    window_size_callback(winWidth, winHeight);
 }
 
 void Window::Resize(int width, int height){
