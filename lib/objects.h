@@ -107,6 +107,9 @@ public:
     Universe();
     Universe(double Width, double Height);
 
+    // Destructor
+    ~Universe();
+
     Physics physics;
 
     const double &height;

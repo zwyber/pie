@@ -1,4 +1,3 @@
-//
 // Created by paul on 9/7/16.
 //
 
@@ -7,6 +6,7 @@
 void maingame() {
     // Initialise the scene switcher
     int scene = SCENE_MENU;
+
     // Initialise the window
     int universeWidth = 720;
     int universeHeight = 480;
@@ -15,30 +15,51 @@ void maingame() {
 
     Universe universe(universeWidth/pixRatio, universeHeight/pixRatio);
 
-    GLuint menuTex = loadDDS("menuDummy.DDS");
-    TextureShader menuMultiTex(menuTex);
+    Window thisGame = Window();
 
-    Window thisGame();
+    do {
 
-    loadMenuResources(&menuMultiTex);
-    // I don't like switch :(
-    // Don't worry I think the if statements in a while loop makes more sense in our case ;)
-    if (scene == SCENE_MENU) {
+        // I don't like switch :(
+        // Don't worry I think the if statements in a while loop makes more sense in our case ;)
+        if (scene == SCENE_MENU) {
+
+            GLuint menuTex = loadDDS("menuDummy.DDS");
+
+            // Init shader to heap memory
+            TextureShader *menuMultiTex = new TextureShader(menuTex);
+            // Load menu resources
+            std::vector<glm::mat3> tMats = loadMenuResources(menuMultiTex);
+
+            // Create a universe and bind it to the window
+            Universe *universe = new Universe();
+            thisGame.bindUniverse(universe);
+
+            // Show the menu
+            scene = show_menu(&thisGame, menuMultiTex, tMats);
+
+            // Clear all heap variables
+            delete menuMultiTex;
+            delete universe;
+
+            // Start again if correct button is pressed :D
+            if (scene == SCENE_ABOUT || scene == SCENE_GENESIS) {
+                scene = SCENE_MENU;
+            }
+
+        }
+
+        if (scene == SCENE_ABOUT) {
 
 
+        }
+
+        if (scene == SCENE_GENESIS) {
+
+
+        }
 
     }
-
-    if (scene == SCENE_ABOUT) {
-
-
-
-    }
-
-    if (scene == SCENE_GENESIS) {
-
-
-    }
+    while(scene != SCENE_QUIT);
 
 }
 std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
@@ -66,15 +87,15 @@ std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
     };
     GLfloat objectOriginCoords[]{ // objectOriginCoords uses the alignment we wish on screen (origin is top left corner)
             225, 123,
-            363, 437,
-            369, 615,
-            366, 787
+            360, 430,
+            360, 630,
+            360, 830
     };
     GLfloat  objectSizes[]{ // Width and hight of the objects
             585, 164,
-            298, 117,
-            300, 107,
-            298, 97
+            300, 100,
+            300, 100,
+            300, 100
     };
 
     //// Make the multi texture and get transformation matrices (so we can solve resizing later)
@@ -121,15 +142,24 @@ std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
 }
 int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat){
     int exitFlag = SCENE_MENU;
+
+    // Setup a few objects in the universe
+    addRandomObjects(window->boundUniverse, std::rand()/(double)RAND_MAX, 50);
+
     //get set resources;
     glClearColor(0.2, 0.2, 0.3, 1.0);
     int highlightedButton = -1;
     vec2d cursorPos;
     //GLdouble R = 0.1;
     while(exitFlag == SCENE_MENU){
-        //draw the menu;
+        // Do a physics step and draw the universe
         glClear(GL_COLOR_BUFFER_BIT);
+        window->drawObjectList();
+        window->boundUniverse->physics_runtime_iteration();
+
+        //draw the menu;
         highlightedButton = -1;
+
         cursorPos = window->cursorPosition();
         for(int ii = 0; ii < menuElementTMat.size(); ii++) {
             menuMultiTex->transformationMatrix = menuElementTMat[ii];
@@ -140,6 +170,7 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
             }
             menuMultiTex->draw(ii);
         };
+
         //window->drawFilledCircle(cursorPos,R,40,{0,1,0,1});
         glfwSwapBuffers(window->GLFWpointer);
         glfwPollEvents();
@@ -149,14 +180,17 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
             switch(highlightedButton){
                 case -1: break; //no highlight
                 case 0: break;  //menu name highlight
-                case 1: exitFlag = SCENE_TUTORIAL; break;
+                case 1: exitFlag = SCENE_GENESIS; break;
                 case 2: exitFlag = SCENE_ABOUT; break;
-                case 3: exitFlag = -1; break;
+                case 3: exitFlag = SCENE_QUIT; break;
             }
         }
         if(glfwGetKey(window->GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS || glfwWindowShouldClose(window->GLFWpointer) != 0){
-            exitFlag = -1;
+            exitFlag = SCENE_QUIT;
         }
+
+        // Do frame pacing
+        window->pace_frame();
     }
     return exitFlag;
 
@@ -173,4 +207,40 @@ void showMenuDebug(){
     std::vector<glm::mat3> tMats = loadMenuResources(&menuMultiTex);
 
     std::cout << "exit code " << show_menu(&thisGame, &menuMultiTex,tMats) << endl;
+}
+
+
+void addRandomObjects(Universe* universe, unsigned seed, int objectAmount) {
+    if(!seed){
+        srand(time(NULL));
+    }else{
+        srand(seed);
+    }
+    std::array<double,2> radiusLim = {0.2, 1};
+    std::array<double,2> massLim = {1, 3};
+    std::array<double,2> velocityLim = {-3, 3};
+    for(int ii = 0; ii < objectAmount; ii++){
+        Object* A = new Object;
+        A->set_mass((std::rand()/(double)RAND_MAX)*(massLim[1]-massLim[0])+massLim[0]);
+        A->set_velocity((std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0],(std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0]);
+        A->set_radius((std::rand()/(double)RAND_MAX)*(radiusLim[1]-radiusLim[0])+radiusLim[0]);
+        A->bouncyness = 0.9;
+        std::array<double,2> xLim = {-universe->width/2+A->get_radius(), universe->width/2-A->get_radius()};
+        std::array<double,2> yLim = {-universe->height/2+A->get_radius(), universe->height/2-A->get_radius()};
+        do{
+            A->set_position((std::rand()/(double)RAND_MAX)*(xLim[1]-xLim[0])+xLim[0], (std::rand()/(double)RAND_MAX)*(yLim[1]-yLim[0])+yLim[0]);
+        }while(CollidesWithAny(A, universe));
+        universe->add_object(A);
+    }
+}
+
+bool CollidesWithAny(Object* obj, Universe* uni) {
+    for(int ii = 0; ii < uni->objects.size(); ii++){
+        if(uni->objects[ii] != obj){
+            if(uni->physics.check_collision(uni->objects[ii],obj)){
+                return true;
+            }
+        }
+    }
+    return false;
 }

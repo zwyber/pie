@@ -76,13 +76,15 @@ private:
     vec2d cursorPos;
     //// properties in order to resolve universe and window conversions
     // Currently only a single universe can be bound to a window, if needed this can be easily changed to a vector
-    Universe* boundUniverse;
+
     unsigned activeFlag;
 
     //
     vec2d uniToWinRatio;
     void stdInitWindow();
 public:
+
+    Universe* boundUniverse;
 
     // Constructor that makes a window use ready.
     Window(int width = 640, int  height = 480, const unsigned flag = vis::AUTO_SIZE_UNIVERSE);
@@ -113,6 +115,7 @@ public:
 
 // Goes through the object list and draws all objects to the current active window
     void drawObjectList(std::vector<Object *> &objects, CircleShader* circleShader = NULL);
+    void drawObjectList(CircleShader* circleShader = NULL);
 
     // Draws a simple red box in the middle of the screen.
     void drawBox(double Width, double Height);
@@ -145,6 +148,13 @@ public:
         window->cursor_position_callback(xpos,ypos);
     }
 };
+
+class Button {
+
+
+
+};
+
 #include "visuals.cpp"
 
 #endif //TUTORIALS_VISUALS_H

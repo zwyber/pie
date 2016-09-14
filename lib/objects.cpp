@@ -107,8 +107,20 @@ void Universe::remove_object(Object* obj)  {
     for (int ii = 0; ii < objects.size(); ++ii) {
         if (objects[ii] == obj) {
             this->remove_object_by_index(ii);
+            return;
         }
     }
+}
+
+Universe::~Universe() {
+    // Delete all objects stored in the universe
+    int n = this->objects.size();
+
+    // Remove the first item n times
+    for (int ii = 0; ii < n; ++ii) {
+        this->remove_object_by_index(0);
+    }
+
 }
 
 // Get object functions

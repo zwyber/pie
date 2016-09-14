@@ -16,16 +16,7 @@ void debug_display_world (Universe &universe) {
     }
 }
 
-bool CollidesWithAny(Object* obj, Universe &uni){
-    for(int ii = 0; ii < uni.objects.size(); ii++){
-        if(uni.objects[ii] != obj){
-            if(uni.physics.check_collision(uni.objects[ii],obj)){
-                return true;
-            }
-        }
-    }
-    return false;
-}
+
 
 void addRandomObjects(Universe &universe, unsigned seed, int objectAmount){
     if(!seed){

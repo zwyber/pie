@@ -11,6 +11,7 @@
 #ifndef TUTORIALS_GAME_H
 #define TUTORIALS_GAME_H
 
+const int SCENE_QUIT = -1;
 const int SCENE_MENU = 0;
 const int SCENE_ABOUT = 1;
 
@@ -26,6 +27,9 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
 int show_about(Window* window);
 
 std::vector<glm::mat3> loadMenuResources(TextureShader * myMultiTex);
+
+void addRandomObjects(Universe* universe, unsigned seed, int objectAmount);
+bool CollidesWithAny(Object* obj, Universe* uni);
 
 
 #include "game.cpp"

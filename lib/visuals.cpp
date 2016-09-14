@@ -239,6 +239,10 @@ void Window::drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, std::ar
 /*
  * Function to draw all Objects from an object list to the current window
  */
+void Window::drawObjectList(CircleShader* circleShader) {
+    this->drawObjectList(this->boundUniverse->objects, circleShader);
+}
+
 void Window::drawObjectList(std::vector<Object*> &objects, CircleShader* circleShader){
     if(circleShader == NULL) {
         for (int ii = 0; ii < objects.size(); ii++) {

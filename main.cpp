@@ -6,7 +6,7 @@
 #include "lib/game.h"
 
 int main() {
-    showMenuDebug();
+    maingame();
     return 0;
 
 }
