@@ -15,10 +15,13 @@ void maingame() {
 
     Window window = Window();
 
-    GLuint menuTex = loadDDS("menuDummy.DDS");
+    GLuint menuTex = loadDDS("MenuTextures.DDS");
 
     // Init shader
     TextureShader menuMultiTex = TextureShader(menuTex);
+    //// I'd suggest building a circle shader for universes to use.
+    //CircleShader allDebrisShader
+
     // Load menu resources
     std::vector<glm::mat3> tMats = loadMenuResources(&menuMultiTex);
 
@@ -74,7 +77,6 @@ void maingame() {
 
 
 int show_ingame (Window* window) {
-
     int exitFlag = SCENE_INGAME;
 
     while(exitFlag == SCENE_INGAME){
@@ -88,6 +90,18 @@ int show_ingame (Window* window) {
 
         // Do frame pacing
         window->pace_frame();
+
+        //// Paul you forgot the Swap buffer command in your haste ;) that was all
+        glfwSwapBuffers(window->GLFWpointer);
+        glfwPollEvents();
+
+        if(glfwWindowShouldClose(window->GLFWpointer) != 0){
+            exitFlag = SCENE_QUIT;
+        }
+        if(glfwGetKey(window->GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS ){
+            //exitFlag = SCENE_PAUSE;
+            exitFlag = SCENE_MENU; // Use this until pause scene is available;
+        }
     }
 
     return exitFlag;
@@ -97,37 +111,37 @@ int show_ingame (Window* window) {
 std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
     //// Input for menu properties
     const GLfloat imageSize = 1024;         // input image needs to be 2^n in width and height
-    const GLfloat menuMeasHeight = 1024;
-    const GLfloat menuMeasWidth = menuMeasHeight;   //The scales used for measuring the objects Origins and sizes
+    const GLfloat menuMeasHeight = 900;
+    const GLfloat menuMeasWidth = 1200;   //The scales used for measuring the objects Origins and sizes
     GLfloat UVs[] = {       // UV uses the actual file supplied
-            0, 0,       //Menu title
-            0, 258,
-            923, 258,
-            923, 0,
-            0, 256,     //Button 1
-            0, 434,
-            468, 434,
-            468, 256,
-            480, 264,   //Button 2
-            480, 434,
-            953, 434,
-            953, 264,
-            0, 438,     //Button 3
-            0, 590,
-            468, 590,
-            468, 438
+            1, 160,       //Menu title
+            1, 160+131,
+            1+1020, 160+131,
+            1+1020, 160,
+            554, 5,     //Button 1
+            554, 5+52,
+            554+183, 5+52,
+            554+183, 5,
+            741, 1,   //Button 2
+            741, 1+71,
+            741+156, 1+71,
+            741+156, 1,
+            900, 1,     //Button 3
+            900, 1+48,
+            900+123, 1+48,
+            900+123, 1
     };
     GLfloat objectOriginCoords[]{ // objectOriginCoords uses the alignment we wish on screen (origin is top left corner)
-            225, 123,
-            360, 430,
-            360, 630,
-            360, 830
+            68, 183,
+            484, 402,
+            496, 520,
+            511, 655
     };
     GLfloat  objectSizes[]{ // Width and hight of the objects
-            585, 164,
-            300, 100,
-            300, 100,
-            300, 100
+            1053, 136,
+            183, 52,
+            156, 71,
+            123, 48
     };
 
     //// Make the multi texture and get transformation matrices (so we can solve resizing later)
@@ -216,8 +230,8 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
             switch(highlightedButton){
                 case -1: //no highlight
                 case 0:  break;  //menu name highlight
-                case 1: exitFlag = SCENE_GENESIS; break;
-                case 2: exitFlag = SCENE_ABOUT; break;
+                case 1: exitFlag = SCENE_ABOUT; break;
+                case 2: exitFlag = SCENE_GENESIS; break;
                 case 3: exitFlag = SCENE_QUIT; break;
             }
         }
@@ -245,7 +259,7 @@ void showMenuDebug(){
     Window thisGame = Window();
 
     // load a texture from file and create a texture shader for it
-    GLuint menuTex = loadDDS("menuDummy.DDS");
+    GLuint menuTex = loadDDS("MenuTextures.DDS");
     TextureShader menuMultiTex(menuTex);
 
     // convert the texture shader to a proper hardcoded multi-textureshader and get matrices of the positions.
@@ -257,7 +271,6 @@ void showMenuDebug(){
     // test sho
     std::cout << "show_menu exit code (next scene): " << show_menu(&thisGame, &menuMultiTex,tMats) << endl;
 }
-
 
 void addRandomObjects(Universe* universe, unsigned seed, int objectAmount) {
     if(!seed){
