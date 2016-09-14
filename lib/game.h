@@ -25,6 +25,7 @@ void maingame();
 
 int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat);
 int show_about(Window* window);
+int show_ingame(Window* window);
 
 std::vector<glm::mat3> loadMenuResources(TextureShader * myMultiTex);
 

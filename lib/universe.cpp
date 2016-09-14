@@ -70,7 +70,7 @@ Universe::Universe(double width, double height) : height(_height), width(_width)
  * Add a copy of obj to the objects list of the current universe. Returns the id of the object
  * in the universe.
  */
-void Universe::add_object (Object* &obj) {
+void Universe::add_object (Object* obj) {
     // Add a copy of the object to the vector of objects in the universe.
     objects.push_back(obj);
 }

@@ -31,6 +31,9 @@ void maingame() {
             Universe *universe = new Universe();
             window.bindUniverse(universe);
 
+            // Setup a few objects in the universe
+            addRandomObjects(window.boundUniverse, std::rand()/(double)RAND_MAX, 50);
+
             // Show the menu
             scene = show_menu(&window, &menuMultiTex, tMats);
 
@@ -46,7 +49,21 @@ void maingame() {
         }
 
         if (scene == SCENE_GENESIS) {
-            scene = SCENE_MENU;
+            // Generate a standard universe
+            Universe *universe = new Universe();
+            window.bindUniverse(universe);
+
+            addRandomObjects(window.boundUniverse, std::rand()/(double)RAND_MAX, 5);
+
+            Player* player = new Player();
+
+            window.boundUniverse->add_object(player);
+
+            scene = SCENE_INGAME;
+        }
+
+        if (scene == SCENE_INGAME) {
+            scene = show_ingame(&window);
 
         }
 
@@ -54,6 +71,28 @@ void maingame() {
     while(scene != SCENE_QUIT);
 
 }
+
+
+int show_ingame (Window* window) {
+
+    int exitFlag = SCENE_INGAME;
+
+    while(exitFlag == SCENE_INGAME){
+        // Do a physics step and draw the universe
+        glClear(GL_COLOR_BUFFER_BIT);
+        window->drawObjectList();
+        window->boundUniverse->physics_runtime_iteration();
+
+        // Handle user input
+
+
+        // Do frame pacing
+        window->pace_frame();
+    }
+
+    return exitFlag;
+}
+
 
 std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
     //// Input for menu properties
@@ -136,9 +175,6 @@ std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
 
 int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat){
     int exitFlag = SCENE_MENU;
-
-    // Setup a few objects in the universe
-    addRandomObjects(window->boundUniverse, std::rand()/(double)RAND_MAX, 50);
 
     //get set resources;
     glClearColor(0.2, 0.2, 0.3, 1.0);
@@ -255,5 +291,6 @@ bool CollidesWithAny(Object* obj, Universe* uni) {
             }
         }
     }
+
     return false;
 }

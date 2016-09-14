@@ -130,7 +130,7 @@ public:
     std::vector<Object*> objects = {};
 
     // Add a new object, return the new id of the object
-    void add_object (Object* &obj);
+    void add_object (Object* obj);
     Object* add_object ();
 
     // Remove objects, either by id or by index
