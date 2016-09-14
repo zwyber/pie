@@ -21,39 +21,50 @@ class Object {
 
 private:
     // Position array of two doubles [m]
-    vec2d position = {{ 0 }};
+    vec2d _position = {{ 0 }};
+
     // Velocity array of two doubles [m/s]
-    vec2d velocity = {{ 0 }};
+    vec2d _velocity = {{ 0 }};
+
     // Mass of object [kg]
-    double mass = 1;
+    double _mass = 1;
+
     // Radius of object [m]
-    double radius = 1;
+    double _radius = 1;
+
+    // Coefficient of resitution factor between 0 and (including) 1
+    double _bouncyness = 1;
+
     // Colour vector of this object {Red, Green, Blue, alpha}. All values are between 1 and 0
     std::array<double, 4> colour = {{(double)std::rand()/RAND_MAX,(double)std::rand()/RAND_MAX,(double)std::rand()/RAND_MAX,1.0}};
 
 
 public:
+    // Constructor
+    Object();
 
-    // Bouncyness, the coefficient of restitution for this object
-    double bouncyness = 1;
+    // Definition of parameters
+    const double &bouncyness;
+    const double &mass;
+    const double &radius;
+    const vec2d &position;
+    const vec2d &velocity;
 
     // Get and setters for the position
     void set_position(double new_x, double new_y);
     void set_position(vec2d new_pos);
-    vec2d get_position ();
+
+    void set_bouncyness(double bouncyness);
 
     // Get and setters for the velocity
     void set_velocity(double new_vx, double new_vy);
     void set_velocity(vec2d new_v);
-    vec2d get_velocity ();
 
     // Get and setters for the mass, cannot be negative
     void set_mass(double m);
-    double get_mass();
 
     // Get and setters for the radius, cannot be negative
     void set_radius(double r);
-    double get_radius();
 
     // Getter and setter for colour, colours values needs to be between 0 and 1
     void set_colour(std::array<double, 4> Colour);
@@ -99,13 +110,13 @@ class Universe {
 
 private:
     // To keep track of what the next available object_id is
-    double _Height;
-    double _Width;
+    double _height;
+    double _width;
 
 public:
     // Constructor function, currently not really used
     Universe();
-    Universe(double Width, double Height);
+    Universe(double width, double weight);
 
     // Destructor
     ~Universe();

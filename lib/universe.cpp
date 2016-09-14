@@ -54,14 +54,14 @@
  *     return 0;
  * }
  */
-Universe::Universe() : height(_Height), width(_Width) {
-    this->_Width = 640;
-    this->_Height = 480;
+Universe::Universe() : height(_height), width(_width) {
+    this->_width = 640;
+    this->_height = 480;
 }
 
-Universe::Universe(double Width, double Height) : height(_Height), width(_Width){
-    this->_Width = Width;
-    this->_Height = Height;
+Universe::Universe(double width, double height) : height(_height), width(_width){
+    this->_width = width;
+    this->_height = height;
 }
 
 /*
@@ -148,12 +148,12 @@ std::vector<Object*> Universe::get_all_objects() {
 
 void Universe::resize(double width, double height) {
     if(width > 0){
-        _Width = width;
+        _width = width;
     }else{
         std::cerr << "[WARN] Tried to set resize universe width to invalid value " << width << ". Resize was not executed for width." << std::endl;
     }
     if(height > 0){
-        _Height = height;
+        _height = height;
     }else{
         std::cerr << "[WARN] Tried to set resize universe height to invalid value " << height << ". Resize was not executed for height." << std::endl;
     }
@@ -194,39 +194,39 @@ void Universe::physics_runtime_iteration () {
         }
 
         // Check if we are near a wall
-        vec2d pos = objects[ii]->get_position();
-        double r = objects[ii]->get_radius();
+        vec2d pos = objects[ii]->position;
+        double r = objects[ii]->radius;
 
         // If it exceeds the world
-        if (    pos[0] - r < -this->_Width/2  || pos[0] + r > this->_Width/2 || \
-                pos[1] - r < -this->_Height/2 || pos[1] + r > this->_Height/2 ) {
+        if (    pos[0] - r < -this->_width/2  || pos[0] + r > this->_width/2 || \
+                pos[1] - r < -this->_height/2 || pos[1] + r > this->_height/2 ) {
             // Make a mirror object at the
         }
 
         //// Durp wall collision is rather ugly now, put in subroutine
 
         // Colliding in the west wall
-        if ( pos[0] - r < -this->_Width/2 ) {
+        if ( pos[0] - r < -this->_width/2 ) {
             // Do the wall collision
-            physics.wall_collision(objects[ii], this->_Width, this->_Height, 4);
+            physics.wall_collision(objects[ii], this->_width, this->_height, 4);
         }
 
         // Colliding into the east wall
-        if ( pos[0] + r > this->_Width/2 ) {
+        if ( pos[0] + r > this->_width/2 ) {
             // Do the wall collision
-            physics.wall_collision(objects[ii], this->_Width, this->_Height, 2);
+            physics.wall_collision(objects[ii], this->_width, this->_height, 2);
         }
 
         // Collide into the north wall
-        if ( pos[1] + r > this->_Height/2 ) {
+        if ( pos[1] + r > this->_height/2 ) {
             // Do the wall collision
-            physics.wall_collision(objects[ii], this->_Width, this->_Height, 1);
+            physics.wall_collision(objects[ii], this->_width, this->_height, 1);
         }
 
         // Collide into the south wall
-        if ( pos[1] - r < -this->_Height/2 ) {
+        if ( pos[1] - r < -this->_height/2 ) {
             // Do the wall collision
-            physics.wall_collision(objects[ii], this->_Width, this->_Height, 3);
+            physics.wall_collision(objects[ii], this->_width, this->_height, 3);
         }
     }
 

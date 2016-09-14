@@ -249,19 +249,19 @@ void Window::drawObjectList(std::vector<Object*> &objects, CircleShader* circleS
     if(circleShader == NULL) {
         for (int ii = 0; ii < objects.size(); ii++) {
             // Normalize the radius from universe to height [-1, 1];
-            GLdouble radius = pixRatio * 2.0 * objects[ii]->get_radius() / winHeight;
-            vec2d position = objects[ii]->get_position();
+            GLdouble radius = pixRatio * 2.0 * objects[ii]->radius / winHeight;
+            vec2d position = objects[ii]->position;
             // Normalize the position from universe to [-1, 1];
             position[0] *= pixRatio * 2.0 / winWidth;
             position[1] *= pixRatio * 2.0 / winHeight;
             // Draw the circle at the position
-            drawFilledCircle(position, radius, std::sqrt(objects[ii]->get_radius()) * 25, objects[ii]->get_colour());
+            drawFilledCircle(position, radius, std::sqrt(objects[ii]->radius) * 25, objects[ii]->get_colour());
         }
     }else{
         for (int ii = 0; ii < objects.size(); ii++) {
             // Normalize the radius from universe to height [-1, 1];
-            double radius = pixRatio * 2.0 * objects[ii]->get_radius() / winHeight;
-            vec2d position = objects[ii]->get_position();
+            double radius = pixRatio * 2.0 * objects[ii]->radius / winHeight;
+            vec2d position = objects[ii]->position;
             // Normalize the position from universe to [-1, 1];
             position[0] *= pixRatio * 2.0 / winWidth;
             position[1] *= pixRatio * 2.0 / winHeight;

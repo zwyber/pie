@@ -1,4 +1,3 @@
-//
 // Created by paul on 9/7/16.
 //
 
@@ -14,13 +13,11 @@ void maingame() {
 
     double pixRatio = 50;
 
-    Universe universe(universeWidth/pixRatio, universeHeight/pixRatio);
-
     Window window = Window();
 
     GLuint menuTex = loadDDS("menuDummy.DDS");
 
-    // Init shader to heap memory
+    // Init shader
     TextureShader menuMultiTex = TextureShader(menuTex);
     // Load menu resources
     std::vector<glm::mat3> tMats = loadMenuResources(&menuMultiTex);
@@ -30,8 +27,6 @@ void maingame() {
         // I don't like switch :(
         // Don't worry I think the if statements in a while loop makes more sense in our case ;)
         if (scene == SCENE_MENU) {
-
-
             // Create a universe and bind it to the window
             Universe *universe = new Universe();
             window.bindUniverse(universe);
@@ -185,7 +180,7 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
             switch(highlightedButton){
                 case -1: //no highlight
                 case 0:  break;  //menu name highlight
-                case 1: exitFlag = SCENE_TUTORIAL; break;
+                case 1: exitFlag = SCENE_GENESIS; break;
                 case 2: exitFlag = SCENE_ABOUT; break;
                 case 3: exitFlag = SCENE_QUIT; break;
             }
@@ -242,9 +237,9 @@ void addRandomObjects(Universe* universe, unsigned seed, int objectAmount) {
         A->set_mass((std::rand()/(double)RAND_MAX)*(massLim[1]-massLim[0])+massLim[0]);
         A->set_velocity((std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0],(std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0]);
         A->set_radius((std::rand()/(double)RAND_MAX)*(radiusLim[1]-radiusLim[0])+radiusLim[0]);
-        A->bouncyness = 0.9;
-        std::array<double,2> xLim = {-universe->width/2+A->get_radius(), universe->width/2-A->get_radius()};
-        std::array<double,2> yLim = {-universe->height/2+A->get_radius(), universe->height/2-A->get_radius()};
+        A->set_bouncyness(0.9);
+        std::array<double,2> xLim = {-universe->width/2+A->radius, universe->width/2-A->radius};
+        std::array<double,2> yLim = {-universe->height/2+A->radius, universe->height/2-A->radius};
         do{
             A->set_position((std::rand()/(double)RAND_MAX)*(xLim[1]-xLim[0])+xLim[0], (std::rand()/(double)RAND_MAX)*(yLim[1]-yLim[0])+yLim[0]);
         }while(CollidesWithAny(A, universe));

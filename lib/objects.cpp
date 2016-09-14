@@ -6,7 +6,21 @@
 #include "simulation.h"
 #endif
 
+Object::Object () : mass(_mass), bouncyness(_bouncyness), radius(_radius), position(_position), velocity(_velocity) {
+    // Nothing to do, just the bindings
+}
 
+
+void Object::set_bouncyness(double bouncyness) {
+    if ( bouncyness > 0 && bouncyness <= 1 ) {
+        this->_bouncyness = bouncyness;
+    }
+    else {
+        // Invalid
+        std::cerr << "Invalid bouncyness entered, must be between 0 and including 1" << std::endl;
+    }
+
+}
 
 /*
  * set_position()
@@ -15,21 +29,12 @@
  */
 void Object::set_position(double new_x, double new_y) {
     // IMPLEMENT INPUT SANITATION CHECKS HERE?
-    position[0] = new_x;
-    position[1] = new_y;
+    _position[0] = new_x;
+    _position[1] = new_y;
 }
 
 void Object::set_position(vec2d new_pos) {
-    position = new_pos;
-}
-
-/*
- * get_position()
- *
- * Gets the position of the object, returns array of two doubles.
- */
-vec2d Object::get_position () {
-    return position;
+    _position = new_pos;
 }
 
 /*
@@ -39,48 +44,33 @@ vec2d Object::get_position () {
  */
 void Object::set_velocity(double new_vx, double new_vy) {
     // IMPLEMENT INPUT SANITATION CHECKS HERE?
-    velocity[0] = new_vx;
-    velocity[1] = new_vy;
+    _velocity[0] = new_vx;
+    _velocity[1] = new_vy;
 }
 void Object::set_velocity(vec2d new_v) {
-    velocity = new_v;
-}
-
-/*
- * get_velocity()
- *
- * Returns the object's velocity as an array of two doubles
- */
-vec2d Object::get_velocity () {
-    return velocity;
+    _velocity = new_v;
 }
 
 
-
-double Object::get_mass() {
-    return mass;
-}
 
 void Object::set_mass(double m) {
     if ( m > 0 ) {
-        mass = m;
+        _mass = m;
     }
     else{
         std::cout << "Attempting to set the mass of an object <= 0!";
     }
 }
 
-double Object::get_radius() {
-    return radius;
-}
-
 void Object::set_radius(double r){
     if( r > 0 ){
-        radius = r;
+        _radius = r;
     } else{
         std::cerr << "[WARN] Tried to set radius of object " << this << "to invalid value" << r << std::endl;
     }
 }
+
+
 void Object::set_colour(std::array<double, 4> Colour){
     for(int ii = 0; ii < colour.size(); ii++){
         if(Colour[ii]<0.0){

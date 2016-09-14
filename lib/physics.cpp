@@ -9,14 +9,14 @@
 
 
 bool Physics::check_collision(Object* A, Object* B) {
-    vec2d A_v = A->get_velocity();
-    vec2d A_x = A->get_position();
+    vec2d A_v = A->velocity;
+    vec2d A_x = A->position;
 
-    vec2d B_v = B->get_velocity();
-    vec2d B_x = B->get_position();
+    vec2d B_v = B->velocity;
+    vec2d B_x = B->position;
 
-    double A_r = A->get_radius();
-    double B_r = B->get_radius();
+    double A_r = A->radius;
+    double B_r = B->radius;
 
     // Check if objects are overlapping and moving aay from each other
     if(len(sub(A_x,B_x)) < (A_r+B_r) && A_x != B_x && dot(sub(A_v,B_v),sub(B_x,A_x)) > 0){
@@ -28,16 +28,16 @@ bool Physics::check_collision(Object* A, Object* B) {
 
 void Physics::resolve_collision(Object* A, Object* B) {
     // Using the math from Wikipedia: https://en.wikipedia.org/wiki/Elastic_collision
-    vec2d A_v = A->get_velocity();
-    vec2d A_x = A->get_position();
-    double A_r = A->get_radius();
+    vec2d A_v = A->velocity;
+    vec2d A_x = A->position;
+    double A_r = A->radius;
 
-    vec2d B_v = B->get_velocity();
-    vec2d B_x = B->get_position();
-    double B_r = B->get_radius();
+    vec2d B_v = B->velocity;
+    vec2d B_x = B->position;
+    double B_r = B->radius;
 
-    double A_m = A->get_mass();
-    double B_m = B->get_mass();
+    double A_m = A->mass;
+    double B_m = B->mass;
 
     double coeff; // Coefficient of restitution, the smallest of the two
     // (for now take the coefficient of restitution as a linear combination because it wouldn't make sense that the
@@ -101,48 +101,31 @@ void Physics::resolve_collision(Object* A, Object* B) {
 }
 
 void Physics::  wall_collision(Object* X, double width, double height, int wall) {
-    // Create a mirror object
-    Object mirror;
-    mirror.set_mass(X->get_mass());
-    mirror.set_radius(X->get_radius());
-    mirror.bouncyness = X->bouncyness;
-
-    // Get velocity of the object
-    vec2d pos = X->get_position();
-    vec2d vel = X->get_velocity();
 
     switch (wall) {
         case 1: // North
-            mirror.set_velocity(vel[0], -1 * std::abs(vel[1]) );
-            mirror.set_position(pos[0], height/2 + std::abs(height/2 - pos[1]) );
+            X->set_velocity(X->velocity[0], -1 * std::abs(X->velocity[1]) );
+            X->set_position(X->position[0], height/2 - std::abs(height/2 - X->position[1]) );
             break;
         case 2: // East
-            mirror.set_velocity(-1 * std::abs(vel[0]), vel[1]);
-            mirror.set_position(width/2 + std::abs(width/2 - pos[0]), pos[1]);
+            X->set_velocity(-1 * std::abs(X->velocity[0]), X->velocity[1]);
+            X->set_position(width/2 - std::abs(width/2 - X->position[0]), X->position[1]);
             break;
         case 3: // South
-            mirror.set_velocity(vel[0], std::abs(vel[1]) );
-            mirror.set_position(pos[0], -height/2 - std::abs(pos[1] + height/2) );
+            X->set_velocity(X->velocity[0], std::abs(X->velocity[1]) );
+            X->set_position(X->position[0], -height/2 + std::abs(X->position[1] + height/2) );
             break;
         case 4: // West
-            mirror.set_velocity(std::abs(vel[0]), vel[1]);
-            mirror.set_position(-width/2 - std::abs(pos[0] + width/2), pos[1]);
+            X->set_velocity(std::abs(X->velocity[0]), X->velocity[1]);
+            X->set_position(-width/2 + std::abs(X->position[0] + width/2), X->position[1]);
             break;
     }
 
-
-
-    // Perform a collision, only if sensible (prevents things getting stuck in a wall)
-    if ( this->check_collision(&mirror, X) ) {
-        this->resolve_collision(&mirror, X);
-    }
-
-    // Mirror object will clean up due to scope
 }
 
 double Physics::distance_between(Object* X, Object* Y) {
-    vec2d pos_X = X-> get_position();
-    vec2d pos_Y = Y-> get_position();
+    vec2d pos_X = X->position;
+    vec2d pos_Y = Y->position;
     double dist = std::sqrt( (pos_Y[0]-pos_X[0])*(pos_Y[0]-pos_X[0]) + (pos_Y[1]-pos_X[1])*(pos_Y[1]-pos_X[1]) );
 
     if ( dist <= 0 ) {
@@ -153,11 +136,11 @@ double Physics::distance_between(Object* X, Object* Y) {
 }
 
 vec2d Physics::acceleration (Object* X, Object* Y){
-    double dist = this -> distance_between (X , Y);
-    vec2d pos_X = X -> get_position();
-    vec2d pos_Y = Y -> get_position();
+    double dist = this->distance_between (X , Y);
+    vec2d pos_X = X->position;
+    vec2d pos_Y = Y->position;
     vec2d r = sub(pos_Y , pos_X);
-    double mass = Y -> get_mass();
+    double mass = Y->mass;
     vec2d acc = cmult(r,(this->G * mass/(dist*dist*dist)));
     return acc;
 }
@@ -188,7 +171,7 @@ std::array<vec2d, 2> Player::calc_new_pos_vel (std::vector<Object*> &objects, Ph
     // Get access to the users keyboard input
     GLFWwindow* window = glfwGetCurrentContext();
     vec2d input = {{0}};
-    double thruster_a = this->thruster_force / this->get_mass();
+    double thruster_a = this->thruster_force / this->mass;
     if ( glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS ) {
         input[1] = thruster_a;
     }
@@ -212,8 +195,8 @@ std::array<vec2d, 2> Physics::de_solver (vec2d &acceleration, Object* me) {
     std::array<vec2d, 2> new_pos_vel = {{0}};
 
     // Midpoint method :)
-    vec2d velocity = me->get_velocity();
-    vec2d position = me->get_position();
+    vec2d velocity = me->velocity;
+    vec2d position = me->position;
 
     vec2d velocity_half = add(velocity, cmult(acceleration, timestep/2));
     new_pos_vel[0] = add(position, cmult(velocity_half, timestep) );
@@ -229,5 +212,5 @@ std::array<vec2d, 2> Physics::de_solver (vec2d &acceleration, Object* me) {
 
 void Physics::lose_energy(Object* me, double factor) {
     // Rescale the velocity factor
-    me->set_velocity(cmult(me->get_velocity(), 1 - std::sqrt(factor)));
+    me->set_velocity(cmult(me->velocity, 1 - std::sqrt(factor)));
 }
