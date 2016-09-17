@@ -20,11 +20,12 @@ void maingame() {
     // Init shader
     TextureShader menuMultiTex = TextureShader(menuTex);
     //// I'd suggest building a circle shader for universes to use.
-    //CircleShader allDebrisShader
+    CircleShader allDebrisShader;
 
     // Load menu resources
     std::vector<glm::mat3> tMats = loadMenuResources(&menuMultiTex);
 
+    initScreenRatio = window.windowSize()[0]/(double)window.windowSize()[0];
     do {
 
         // I don't like switch :(
@@ -38,7 +39,7 @@ void maingame() {
             addRandomObjects(window.boundUniverse, std::rand()/(double)RAND_MAX, 50);
 
             // Show the menu
-            scene = show_menu(&window, &menuMultiTex, tMats);
+            scene = show_menu(&window, &menuMultiTex, tMats, &allDebrisShader);
 
             // Clear all heap variables
             window.bindUniverse(NULL);
@@ -66,7 +67,7 @@ void maingame() {
         }
 
         if (scene == SCENE_INGAME) {
-            scene = show_ingame(&window);
+            scene = show_ingame(&window, &allDebrisShader);
 
         }
 
@@ -76,13 +77,13 @@ void maingame() {
 }
 
 
-int show_ingame (Window* window) {
+int show_ingame (Window* window, CircleShader* circleShader) {
     int exitFlag = SCENE_INGAME;
 
     while(exitFlag == SCENE_INGAME){
         // Do a physics step and draw the universe
         glClear(GL_COLOR_BUFFER_BIT);
-        window->drawObjectList();
+        window->drawObjectList(circleShader);
         window->boundUniverse->physics_runtime_iteration();
 
         // Handle user input
@@ -187,7 +188,7 @@ std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
 
 }
 
-int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat){
+int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat, CircleShader * circleShader){
     int exitFlag = SCENE_MENU;
 
     //get set resources;
@@ -201,8 +202,9 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
     while(exitFlag == SCENE_MENU){
         // Do a physics step and draw the universe
         glClear(GL_COLOR_BUFFER_BIT);
-        window->drawObjectList();
+        window->drawObjectList(circleShader);
         window->boundUniverse->physics_runtime_iteration();
+        double newWidthScale = initScreenRatio/(window->windowSize()[0]/(double)window->windowSize()[1]);
 
         //draw the menu;
         highlightedButton = -1;
@@ -210,6 +212,7 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
         cursorPos = window->cursorPosition();
         for(int ii = 0; ii < menuElementTMat.size(); ii++) {
             menuMultiTex->transformationMatrix = menuElementTMat[ii];
+            menuMultiTex->tMatrixScale({newWidthScale,1});
             if(cursorPos[0] > menuElementTMat[ii][0][2] - menuElementTMat[ii][0][0] && cursorPos[0] <menuElementTMat[ii][0][2] + menuElementTMat[ii][0][0]){
                 if(cursorPos[1] > menuElementTMat[ii][1][2] - menuElementTMat[ii][1][1] && cursorPos[1] <menuElementTMat[ii][1][2] + menuElementTMat[ii][1][1]){
                     highlightedButton = ii;

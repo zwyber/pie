@@ -21,11 +21,13 @@ const int SCENE_INGAME = 12;
 const int SCENE_PAUSE = 13;
 const int SCENE_DIED = 14;
 
+double initScreenRatio = 4.0/3.0;
+
 void maingame();
 
-int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat);
+int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat, CircleShader * circleShader = NULL);
 int show_about(Window* window);
-int show_ingame(Window* window);
+int show_ingame(Window* window, CircleShader* circleShader = NULL);
 
 std::vector<glm::mat3> loadMenuResources(TextureShader * myMultiTex);
 

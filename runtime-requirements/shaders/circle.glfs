@@ -3,22 +3,25 @@
 varying vec2 texCoord;
 
 uniform vec4 disc_color; // vec4(1.0, 1.0, 1.0, 1.0)
-//uniform sampler2D mytex;
+uniform mat3 projection;
 
 void main()
 {
-
-    //vec4 sampled = vec4(1.0, 1.0, 1.0, texture2D(text, TexCoords).r);
-    //gl_FragColor = vec4(textColor, 1.0) * sampled;
     vec2 uv = texCoord;
-
-    //vec4 bkg_color = texture2D(tex0,uv * vec2(1.0, -1.0));
-    vec4 bkg_color = vec4(disc_color.r, disc_color.g, disc_color.b, 0.0f);
     uv -= vec2(0.5f, 0.5f);
+
+    vec2 lightPos = vec2(-projection[0].z/2.0, -projection[1].z/2.0);
+    vec2 distLightPos = uv - lightPos;
+
+    vec4 colorLim = vec4(1.0) - disc_color;
+    vec4 useColor = disc_color+ colorLim*(0.5-sqrt(dot(distLightPos,distLightPos)));
+    vec4 bkg_color = vec4(useColor.r, useColor.g, useColor.b, 0.0f);
+
     //GLSL 1.20 does not contain smoothstep, this line is equivalent
-    float t = clamp((sqrt(dot(uv, uv))-0.5f)/-0.01f,0.0f,1.0f);
+    //float clampScale = projection[0].x+projection[1].y;
+    float t = clamp((sqrt(dot(uv, uv))-0.5f)/-0.05f,0.0f,1.0f);
     t = t*t*(3-2*t);
-    gl_FragColor = mix(bkg_color, disc_color, t);
+    gl_FragColor = mix(bkg_color, useColor, t);
     //if(sqrt(dot(uv, uv))> 0.5f){
     //    gl_FragColor = bkg_color;
     //}else{
