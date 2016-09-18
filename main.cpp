@@ -7,6 +7,7 @@
 
 int main() {
     maingame();
+    //timerDebug();
     return 0;
 
 }

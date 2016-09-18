@@ -69,11 +69,13 @@ void maingame() {
         if (scene == SCENE_INGAME) {
             scene = show_ingame(&window, &allDebrisShader);
 
+            // do not forget to delete universe (although this is better to do after SCENE_DIED)
+            delete window.boundUniverse;
         }
 
     }
     while(scene != SCENE_QUIT);
-
+    glfwTerminate();
 }
 
 
@@ -195,7 +197,6 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
     glClearColor(0.2, 0.2, 0.3, 1.0);
     int highlightedButton = -1;
     vec2d cursorPos;
-    //GLdouble R = 0.1;
     bool cursorMode = false;
     GLFWcursor* arrowCursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
     GLFWcursor* handCursor = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
@@ -225,7 +226,6 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
             menuMultiTex->draw(ii);
         };
 
-        //window->drawFilledCircle(cursorPos,R,40,{0,1,0,1});
         glfwSwapBuffers(window->GLFWpointer);
         glfwPollEvents();
         if(glfwGetMouseButton(window->GLFWpointer, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
@@ -253,6 +253,8 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
         // Do frame pacing
         window->pace_frame();
     }
+    // Set the cursor back to normal after the button is pressed
+    glfwSetCursor(window->GLFWpointer,arrowCursor);
     return exitFlag;
 
 }
@@ -273,6 +275,32 @@ void showMenuDebug(){
 
     // test sho
     std::cout << "show_menu exit code (next scene): " << show_menu(&thisGame, &menuMultiTex,tMats) << endl;
+}
+
+void timerDebug(){
+    Window thisGame = Window();
+
+    GLuint textShader = LoadShaders("shaders/text.glvs", "shaders/text.glfs");
+
+    FontTexHandler myText("frabk.ttf",32, textShader, thisGame.windowSize());
+    bool exit = false;
+    int thisTime;
+    std::string text;
+    glfwSetTime(0.0);
+    while(!exit){
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        thisTime = 10*glfwGetTime();
+        thisTime *= 10;
+        text = std::to_string(thisTime);
+        myText.renderText(text,240,210,1.0,{1.0,0.0,0.0});
+
+        glfwSwapBuffers(thisGame.GLFWpointer);
+        glfwPollEvents();
+        if(glfwWindowShouldClose(thisGame.GLFWpointer) != 0 || glfwGetKey(thisGame.GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS){
+            exit = true;
+        }
+    }
 }
 
 void addRandomObjects(Universe* universe, unsigned seed, int objectAmount) {
