@@ -31,6 +31,7 @@ int show_ingame(Window* window, CircleShader* circleShader = NULL);
 
 std::vector<glm::mat3> loadMenuResources(TextureShader * myMultiTex);
 
+void addRandomObject(Universe* universe, unsigned seed = 0);
 void addRandomObjects(Universe* universe, unsigned seed, int objectAmount);
 bool CollidesWithAny(Object* obj, Universe* uni);
 

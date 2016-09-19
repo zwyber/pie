@@ -18,6 +18,7 @@
 #include<fstream>
 #include<cstdlib>
 #include<ctime>
+#include<chrono>
 #include<unistd.h>
 
 // Used PNG library

@@ -82,11 +82,37 @@ void maingame() {
 int show_ingame (Window* window, CircleShader* circleShader) {
     int exitFlag = SCENE_INGAME;
 
+
+    // Initialise a few variables
+    std::chrono::steady_clock::time_point now_time;
+    std::chrono::steady_clock::duration time_elapsed;
+    std::chrono::seconds seconds_passed;
+    int score = 0;
+    int NEW_OBJECT_DELAY = 1;
+    int MORE_OBJECTS_DELAY = 2;
+    bool addedAlready = false;
+
     while(exitFlag == SCENE_INGAME){
         // Do a physics step and draw the universe
         glClear(GL_COLOR_BUFFER_BIT);
         window->drawObjectList(circleShader);
         window->boundUniverse->physics_runtime_iteration();
+
+        // Determine if we want to add another piece of debris
+        now_time = std::chrono::steady_clock::now();
+        time_elapsed = now_time - window->boundUniverse->begin_time;
+        seconds_passed = std::chrono::duration_cast<std::chrono::seconds>(time_elapsed);
+        score = seconds_passed.count();
+
+        if (score % MORE_OBJECTS_DELAY == 0 && !addedAlready && score > NEW_OBJECT_DELAY ) {
+            addRandomObject(window->boundUniverse);
+
+            addedAlready = true;
+        }
+
+        if (score % MORE_OBJECTS_DELAY != 0) {
+            addedAlready = false;
+        }
 
         // Handle user input
 
@@ -247,7 +273,7 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
             glfwSetCursor(window->GLFWpointer,handCursor);
         }
         if(glfwGetKey(window->GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS || glfwWindowShouldClose(window->GLFWpointer) != 0){
-            exitFlag = SCENE_QUIT;
+            // exitFlag = SCENE_QUIT;
         }
 
         // Do frame pacing
@@ -303,27 +329,39 @@ void timerDebug(){
     }
 }
 
-void addRandomObjects(Universe* universe, unsigned seed, int objectAmount) {
+void addRandomObject(Universe* universe, unsigned seed) {
     if(!seed){
         srand(time(NULL));
     }else{
         srand(seed);
     }
+
     std::array<double,2> radiusLim = {0.2, 1};
     std::array<double,2> massLim = {1, 3};
-    std::array<double,2> velocityLim = {-3, 3};
+    std::array<double,2> velocityLim = {-20, 20};
+
+    Object* A = new Object;
+    A->set_mass((std::rand()/(double)RAND_MAX)*(massLim[1]-massLim[0])+massLim[0]);
+    A->set_velocity((std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0],(std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0]);
+    A->set_radius((std::rand()/(double)RAND_MAX)*(radiusLim[1]-radiusLim[0])+radiusLim[0]);
+
+    A->set_bouncyness(0.6);
+
+    std::array<double,2> xLim = {-universe->width/2+A->radius, universe->width/2-A->radius};
+    std::array<double,2> yLim = {-universe->height/2+A->radius, universe->height/2-A->radius};
+    do{
+        A->set_position((std::rand()/(double)RAND_MAX)*(xLim[1]-xLim[0])+xLim[0], (std::rand()/(double)RAND_MAX)*(yLim[1]-yLim[0])+yLim[0]);
+    }
+
+    while(CollidesWithAny(A, universe));
+    universe->add_object(A);
+
+}
+
+void addRandomObjects(Universe* universe, unsigned seed, int objectAmount) {
+
     for(int ii = 0; ii < objectAmount; ii++){
-        Object* A = new Object;
-        A->set_mass((std::rand()/(double)RAND_MAX)*(massLim[1]-massLim[0])+massLim[0]);
-        A->set_velocity((std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0],(std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0]);
-        A->set_radius((std::rand()/(double)RAND_MAX)*(radiusLim[1]-radiusLim[0])+radiusLim[0]);
-        A->set_bouncyness(0.9);
-        std::array<double,2> xLim = {-universe->width/2+A->radius, universe->width/2-A->radius};
-        std::array<double,2> yLim = {-universe->height/2+A->radius, universe->height/2-A->radius};
-        do{
-            A->set_position((std::rand()/(double)RAND_MAX)*(xLim[1]-xLim[0])+xLim[0], (std::rand()/(double)RAND_MAX)*(yLim[1]-yLim[0])+yLim[0]);
-        }while(CollidesWithAny(A, universe));
-        universe->add_object(A);
+        addRandomObject(universe, seed);
     }
 }
 

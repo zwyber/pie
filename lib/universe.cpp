@@ -54,14 +54,18 @@
  *     return 0;
  * }
  */
-Universe::Universe() : height(_height), width(_width) {
+Universe::Universe() : height(_height), width(_width), score(_score) {
     this->_width = 640;
     this->_height = 480;
+
+    this->begin_time = std::chrono::steady_clock::now();
 }
 
-Universe::Universe(double width, double height) : height(_height), width(_width){
+Universe::Universe(double width, double height) : height(_height), width(_width), score(_score) {
     this->_width = width;
     this->_height = height;
+
+    this->begin_time = std::chrono::steady_clock::now();
 }
 
 /*
@@ -166,6 +170,9 @@ void Universe::resize(double width, double height) {
 void Universe::physics_runtime_iteration () {
     // Temporary result storage
     std::map<Object*,std::array<vec2d, 2>> new_pos_vel_universe;
+
+    // Increment the score, which is the amount of physics iterations
+    this->_score++;
 
     // Iterate over all objects
     for (int ii = 0; ii < objects.size(); ++ii) {

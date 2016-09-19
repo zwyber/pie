@@ -84,7 +84,7 @@ public:
 class Physics {
 public:
 
-    double G = 5;
+    double G = 50;
     double timestep = double(1.0/60)/5;
     double distance_between(Object* A, Object* B);
 
@@ -113,6 +113,9 @@ private:
     double _height;
     double _width;
 
+    long unsigned _score = 0;
+
+
 public:
     // Constructor function, currently not really used
     Universe();
@@ -125,6 +128,7 @@ public:
 
     const double &height;
     const double &width;
+    const long unsigned &score;
 
     // A vector of objects. This contains the objects in the world!
     std::vector<Object*> objects = {};
@@ -144,6 +148,9 @@ public:
     // Resize the universe
     void resize(double width, double height);
 
+    // To keep track of the time the universe is alive
+    std::chrono::steady_clock::time_point begin_time;
+
     // Physics engine
     void physics_runtime_iteration ();
     void simulate_one_time_unit (double fps);
@@ -154,7 +161,7 @@ class Player : public Object {
 
 public:
 
-    double thruster_force = 50;
+    double thruster_force = 250;
 
     void add_thrust () {this->thruster_force += 10;}
 
