@@ -20,6 +20,7 @@
 #include<ctime>
 #include<chrono>
 #include<unistd.h>
+#include<string>
 
 // Used PNG library
 //#include <png.h>
