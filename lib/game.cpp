@@ -301,31 +301,7 @@ void showMenuDebug(){
     std::cout << "show_menu exit code (next scene): " << show_menu(&thisGame, &menuMultiTex,tMats) << endl;
 }
 
-void timerDebug(){
-    Window thisGame = Window();
 
-    GLuint textShader = LoadShaders("shaders/text.glvs", "shaders/text.glfs");
-
-    FontTexHandler myText("frabk.ttf",32, textShader, thisGame.windowSize());
-    bool exit = false;
-    int thisTime;
-    std::string text;
-    glfwSetTime(0.0);
-    while(!exit){
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        thisTime = 10*glfwGetTime();
-        thisTime *= 10;
-        text = std::to_string(thisTime);
-        myText.renderText(text,240,210,1.0,{1.0,0.0,0.0});
-
-        glfwSwapBuffers(thisGame.GLFWpointer);
-        glfwPollEvents();
-        if(glfwWindowShouldClose(thisGame.GLFWpointer) != 0 || glfwGetKey(thisGame.GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS){
-            exit = true;
-        }
-    }
-}
 
 void addRandomObject(Universe* universe, unsigned seed) {
     if(!seed){
