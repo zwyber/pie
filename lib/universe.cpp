@@ -171,9 +171,6 @@ void Universe::physics_runtime_iteration () {
     // Temporary result storage
     std::map<Object*,std::array<vec2d, 2>> new_pos_vel_universe;
 
-    // Increment the score, which is the amount of physics iterations
-    this->_score++;
-
     // Iterate over all objects
     for (int ii = 0; ii < objects.size(); ++ii) {
         std::array<vec2d, 2> new_pos_vel = objects[ii]->calc_new_pos_vel(objects, this->physics);
@@ -249,5 +246,6 @@ void Universe::simulate_one_time_unit(double fps) {
         this->physics_runtime_iteration();
     }
 
+    this->_score++;
 }
 

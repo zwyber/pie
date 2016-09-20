@@ -84,8 +84,8 @@ public:
 class Physics {
 public:
 
-    double G = 50;
-    double timestep = double(1.0/60)/5;
+    double G = 4;
+    double timestep = double(1.0/60)/4;
     double distance_between(Object* A, Object* B);
 
     vec2d acceleration (Object* X, Object* Y);
@@ -161,7 +161,7 @@ class Player : public Object {
 
 public:
 
-    double thruster_force = 250;
+    double thruster_force = 20;
 
     void add_thrust () {this->thruster_force += 10;}
 
@@ -171,7 +171,6 @@ public:
     void on_collide (Object* target, Physics &physics);
 
 };
-
 
 #include "objects.cpp"
 #include "physics.cpp"

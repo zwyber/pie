@@ -57,9 +57,8 @@ void maingame() {
             Universe *universe = new Universe();
             window.bindUniverse(universe);
 
-            addRandomObjects(window.boundUniverse, std::rand()/(double)RAND_MAX, 5);
-
             Player* player = new Player();
+            player->set_colour({1.0, 0., 0., 1.});
 
             window.boundUniverse->add_object(player);
 
@@ -82,7 +81,6 @@ void maingame() {
 int show_ingame (Window* window, CircleShader* circleShader) {
     int exitFlag = SCENE_INGAME;
 
-
     // Initialise a few variables
     std::chrono::steady_clock::time_point now_time;
     std::chrono::steady_clock::duration time_elapsed;
@@ -96,7 +94,7 @@ int show_ingame (Window* window, CircleShader* circleShader) {
         // Do a physics step and draw the universe
         glClear(GL_COLOR_BUFFER_BIT);
         window->drawObjectList(circleShader);
-        window->boundUniverse->physics_runtime_iteration();
+        window->boundUniverse->simulate_one_time_unit(window->fps);
 
         // Determine if we want to add another piece of debris
         now_time = std::chrono::steady_clock::now();
@@ -230,7 +228,7 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
         // Do a physics step and draw the universe
         glClear(GL_COLOR_BUFFER_BIT);
         window->drawObjectList(circleShader);
-        window->boundUniverse->physics_runtime_iteration();
+        window->boundUniverse->simulate_one_time_unit(window->fps);
         double newWidthScale = initScreenRatio/(window->windowSize()[0]/(double)window->windowSize()[1]);
 
         //draw the menu;
@@ -338,7 +336,7 @@ void addRandomObject(Universe* universe, unsigned seed) {
 
     std::array<double,2> radiusLim = {0.2, 1};
     std::array<double,2> massLim = {1, 3};
-    std::array<double,2> velocityLim = {-20, 20};
+    std::array<double,2> velocityLim = {-5, 5};
 
     Object* A = new Object;
     A->set_mass((std::rand()/(double)RAND_MAX)*(massLim[1]-massLim[0])+massLim[0]);
@@ -359,9 +357,8 @@ void addRandomObject(Universe* universe, unsigned seed) {
 }
 
 void addRandomObjects(Universe* universe, unsigned seed, int objectAmount) {
-
     for(int ii = 0; ii < objectAmount; ii++){
-        addRandomObject(universe, seed);
+        addRandomObject(universe, seed+ii);
     }
 }
 
