@@ -84,8 +84,8 @@ public:
 class Physics {
 public:
 
-    double G = 4;
-    double timestep = double(1.0/60)/4;
+    double G = 2;
+    double timestep = double(1.0/60)/6;
     double distance_between(Object* A, Object* B);
 
     vec2d acceleration (Object* X, Object* Y);
@@ -162,8 +162,7 @@ class Player : public Object {
 public:
 
     double thruster_force = 20;
-
-    void add_thrust () {this->thruster_force += 10;}
+    bool i_collided = false;
 
     // Calculate new position and velocity function
     std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object*> &objects, Physics &physics);

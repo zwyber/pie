@@ -22,9 +22,6 @@
 #include<unistd.h>
 #include<string>
 
-// Used PNG library
-//#include <png.h>
-
 // Used GL libraries
 #include <GL/glew.h>
 #include <glfw3.h>
