@@ -112,6 +112,7 @@ void Object::lose_energy(double factor, Physics &physics) {
 void Object::on_collide (Object* target, Physics &physics) {
     // Do nothing yet
     target->lose_energy(0, physics);
+
 }
 
 
@@ -122,4 +123,7 @@ void Object::on_collide (Object* target, Physics &physics) {
 void Player::on_collide (Object* target, Physics &physics) {
     // Make the other object slow down!
     target->lose_energy(0, physics);
+
+    // Scream that we collided, e.g. the game should end!
+    this->i_collided = true;
 }

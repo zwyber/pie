@@ -3,6 +3,9 @@
 
 #include "game.h"
 
+// Player pointer
+Player* boundPlayer = NULL;
+
 void maingame() {
     // Initialise the scene switcher
     int scene = SCENE_MENU;
@@ -57,12 +60,23 @@ void maingame() {
             Universe *universe = new Universe();
             window.bindUniverse(universe);
 
-            Player* player = new Player();
-            player->set_colour({1.0, 0., 0., 1.});
+            generateStandardUniverse(&window);
 
-            window.boundUniverse->add_object(player);
+            scene = SCENE_TUTORIAL;
+        }
+
+        if (scene == SCENE_TUTORIAL) {
+            glClear(GL_COLOR_BUFFER_BIT);
+            window.drawObjectList(&allDebrisShader);
+            glfwSwapBuffers(window.GLFWpointer);
+            glfwPollEvents();
+
+
+            // Wait for 5 seconds, or wait until mouse is clicked, whatever
+            usleep(5E6);
 
             scene = SCENE_INGAME;
+
         }
 
         if (scene == SCENE_INGAME) {
@@ -70,6 +84,15 @@ void maingame() {
 
             // do not forget to delete universe (although this is better to do after SCENE_DIED)
             delete window.boundUniverse;
+        }
+
+        if (scene == SCENE_DIED) {
+            // Display the score!
+            std::cout << window.boundUniverse->score << std::endl;
+
+            usleep(2E6);
+
+            scene = SCENE_MENU;
         }
 
     }
@@ -85,35 +108,38 @@ int show_ingame (Window* window, CircleShader* circleShader) {
     std::chrono::steady_clock::time_point now_time;
     std::chrono::steady_clock::duration time_elapsed;
     std::chrono::seconds seconds_passed;
-    int score = 0;
-    int NEW_OBJECT_DELAY = 1;
+    int seconds_count = 0;
+    int NEW_OBJECT_DELAY = 7;
     int MORE_OBJECTS_DELAY = 2;
     bool addedAlready = false;
 
     while(exitFlag == SCENE_INGAME){
         // Do a physics step and draw the universe
         glClear(GL_COLOR_BUFFER_BIT);
-        window->drawObjectList(circleShader);
         window->boundUniverse->simulate_one_time_unit(window->fps);
+        window->drawObjectList(circleShader);
 
         // Determine if we want to add another piece of debris
         now_time = std::chrono::steady_clock::now();
         time_elapsed = now_time - window->boundUniverse->begin_time;
         seconds_passed = std::chrono::duration_cast<std::chrono::seconds>(time_elapsed);
-        score = seconds_passed.count();
+        seconds_count = seconds_passed.count();
 
-        if (score % MORE_OBJECTS_DELAY == 0 && !addedAlready && score > NEW_OBJECT_DELAY ) {
+        if (seconds_count % MORE_OBJECTS_DELAY == 0 && !addedAlready && seconds_count > NEW_OBJECT_DELAY ) {
             addRandomObject(window->boundUniverse);
 
             addedAlready = true;
         }
 
-        if (score % MORE_OBJECTS_DELAY != 0) {
+        if (seconds_count % MORE_OBJECTS_DELAY != 0) {
             addedAlready = false;
         }
 
-        // Handle user input
-
+        // Check if we should end the game
+        if (boundPlayer->i_collided == true) {
+            exitFlag = SCENE_DIED;
+            return exitFlag;
+        }
 
         // Do frame pacing
         window->pace_frame();
@@ -270,8 +296,8 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
             cursorMode = true;
             glfwSetCursor(window->GLFWpointer,handCursor);
         }
-        if(glfwGetKey(window->GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS || glfwWindowShouldClose(window->GLFWpointer) != 0){
-            // exitFlag = SCENE_QUIT;
+        if(glfwWindowShouldClose(window->GLFWpointer) != 0){
+            exitFlag = SCENE_QUIT;
         }
 
         // Do frame pacing
@@ -281,6 +307,36 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
     glfwSetCursor(window->GLFWpointer,arrowCursor);
     return exitFlag;
 
+}
+
+void generateStandardUniverse (Window* window) {
+
+    Object* A = window->boundUniverse->add_object();
+    Object* B = window->boundUniverse->add_object();
+    Object* C = window->boundUniverse->add_object();
+
+    A->set_position(5, 5);
+    B->set_position(-5, 3);
+    C->set_position(0, 7);
+
+    A->set_velocity(2, 3);
+    B->set_velocity(-2, 0);
+    C->set_velocity(-4, -4);
+
+    A->set_radius(0.6);
+    B->set_radius(1.2);
+    C->set_radius(0.4);
+
+    A->set_colour({0.3, 0.5, 0.1, 1.});
+    B->set_colour({0.6, 0.2, 0.8, 1.});
+    C->set_colour({0.2, 0.2, 0.9, 1.});
+
+    // Add a player
+    Player* player = new Player();
+    player->set_colour({1.0, 0., 0., 1.});
+    window->boundUniverse->add_object(player);
+
+    boundPlayer = player;
 }
 
 void showMenuDebug(){
@@ -334,7 +390,7 @@ void addRandomObject(Universe* universe, unsigned seed) {
         srand(seed);
     }
 
-    std::array<double,2> radiusLim = {0.2, 1};
+    std::array<double,2> radiusLim = {0.5, 0.8};
     std::array<double,2> massLim = {1, 3};
     std::array<double,2> velocityLim = {-5, 5};
 
