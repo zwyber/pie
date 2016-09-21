@@ -1,0 +1,23 @@
+
+uniform mat4 projection;
+
+#if __VERSION__ >= 130
+
+in vec4 VertexPos;
+out vec2 TexCoords;
+
+#else
+
+attribute vec4 VertexPos;
+
+varying vec2 TexCoords;
+
+#endif
+
+
+
+void main()
+{
+    gl_Position = projection * vec4(VertexPos.xy,0.0,1.0);
+    TexCoords = VertexPos.zw;
+}

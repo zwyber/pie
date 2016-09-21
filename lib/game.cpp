@@ -360,23 +360,25 @@ void showMenuDebug(){
 void timerDebug(){
     Window thisGame = Window();
 
-    GLuint textShader = LoadShaders("shaders/text.glvs", "shaders/text.glfs");
+    GLuint textShader = LoadShaders("shaders/textOld.glvs", "shaders/text.glfs");
 
     FontTexHandler myText("frabk.ttf",32, textShader, thisGame.windowSize());
+    TextShader newText("verdana.ttf");
+    newText.colour = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
     bool exit = false;
     int thisTime;
-    std::string text;
+    std::stringstream text;
     glfwSetTime(0.0);
     while(!exit){
         glClear(GL_COLOR_BUFFER_BIT);
-
         thisTime = 10*glfwGetTime();
         thisTime *= 10;
-        text = std::to_string(thisTime);
-        myText.renderText(text,240,210,1.0,{1.0,0.0,0.0});
-
+        text << "Score: " <<thisTime;
+        //myText.renderText(text.str(),240,210,1.0,{1.0,0.0,0.0});
+        newText.draw(text.str(),{0.95, 0.9},DRAWTEXT::ALIGN_RIGHT,thisGame.windowSize(),0.03);
         glfwSwapBuffers(thisGame.GLFWpointer);
         glfwPollEvents();
+        text.str(std::string());
         if(glfwWindowShouldClose(thisGame.GLFWpointer) != 0 || glfwGetKey(thisGame.GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS){
             exit = true;
         }

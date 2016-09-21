@@ -6,8 +6,9 @@
 #include "lib/game.h"
 
 int main() {
-    maingame();
-    //timerDebug();
+    //maingame();
+    timerDebug();
+
     return 0;
 
 }
