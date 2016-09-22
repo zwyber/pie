@@ -6,9 +6,9 @@
 // Player pointer
 Player* boundPlayer = NULL;
 
-void maingame() {
+void maingame(int startScene) {
     // Initialise the scene switcher
-    int scene = SCENE_MENU;
+    int scene = startScene;
 
     // Initialise the window
     int universeWidth = 720;
@@ -113,11 +113,19 @@ int show_ingame (Window* window, CircleShader* circleShader) {
     int MORE_OBJECTS_DELAY = 2;
     bool addedAlready = false;
 
+    TextShader newText("verdana.ttf");
+    newText.colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
     while(exitFlag == SCENE_INGAME){
         // Do a physics step and draw the universe
         glClear(GL_COLOR_BUFFER_BIT);
         window->boundUniverse->simulate_one_time_unit(window->fps);
         window->drawObjectList(circleShader);
+
+        // Draw the score at the bottom
+        std::stringstream scoreText;
+        scoreText << "Score: " << window->boundUniverse->score;
+        newText.draw(scoreText.str() ,{0, -0.92},DRAWTEXT::ALIGN_CENTER, window->windowSize() , 0.02);
 
         // Determine if we want to add another piece of debris
         now_time = std::chrono::steady_clock::now();
@@ -393,8 +401,8 @@ void addRandomObject(Universe* universe, unsigned seed) {
     }
 
     std::array<double,2> radiusLim = {0.5, 0.8};
-    std::array<double,2> massLim = {1, 3};
-    std::array<double,2> velocityLim = {-5, 5};
+    std::array<double,2> massLim = {0.3, 3};
+    std::array<double,2> velocityLim = {-8, 8};
 
     Object* A = new Object;
     A->set_mass((std::rand()/(double)RAND_MAX)*(massLim[1]-massLim[0])+massLim[0]);

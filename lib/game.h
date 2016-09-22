@@ -23,7 +23,7 @@ const int SCENE_DIED = 14;
 
 double initScreenRatio = 4.0/3.0;
 
-void maingame();
+void maingame(int startScene = SCENE_MENU);
 
 int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat, CircleShader * circleShader = NULL);
 int show_about(Window* window);
