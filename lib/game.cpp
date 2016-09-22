@@ -51,8 +51,8 @@ void maingame(int startScene) {
         }
 
         if (scene == SCENE_ABOUT) {
-            scene = SCENE_MENU;
-
+            scene = show_about(&window);
+            continue;
         }
 
         if (scene == SCENE_GENESIS) {
@@ -144,7 +144,7 @@ int show_ingame (Window* window, CircleShader* circleShader) {
         }
 
         // Check if we should end the game
-        if (boundPlayer->i_collided == true) {
+        if (boundPlayer->i_collided) {
             exitFlag = SCENE_DIED;
             return exitFlag;
         }
@@ -168,6 +168,70 @@ int show_ingame (Window* window, CircleShader* circleShader) {
     return exitFlag;
 }
 
+int show_about (Window* window) {
+    int exitFlag = SCENE_ABOUT;
+
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    TextShader newText("verdana.ttf");
+    newText.colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    std::stringstream aboutText;
+    aboutText << "Space Debris Evaders is a game developed for the course";
+    newText.draw(aboutText.str(), {0, 0.8}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(""); // To clear the stringstream
+
+    aboutText << "'Programming in Engineering' at the University of Twente";
+    newText.draw(aboutText.str(), {0, 0.7}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str("");
+
+    aboutText << "The goal is to learn C++ by developing a game.";
+    newText.draw(aboutText.str(), {0, 0.6}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str("");
+
+    aboutText << "Authors:";
+    newText.draw(aboutText.str(), {0, 0.4}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str("");
+
+    aboutText << "Arash Edresi";
+    newText.draw(aboutText.str(), {0, 0.3}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str("");
+
+    aboutText << "Yvan Klaver";
+    newText.draw(aboutText.str(), {0, 0.2}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str("");
+
+    aboutText << "Paul van Swinderen";
+    newText.draw(aboutText.str(), {0, 0.1}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str("");
+
+
+    aboutText << "Press ESC to return to the menu";
+    newText.draw(aboutText.str(), {0, -0.4}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str("");
+
+
+    glfwSwapBuffers(window->GLFWpointer);
+
+    do {
+        glfwPollEvents();
+
+        if(glfwWindowShouldClose(window->GLFWpointer) != 0){
+            exitFlag = SCENE_QUIT;
+            return exitFlag;
+        }
+        if(glfwGetKey(window->GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS ){
+            exitFlag = SCENE_MENU;
+            return exitFlag;
+        }
+
+        // Wait 100ms
+        usleep(1E5);
+    }
+    while (true);
+
+
+}
 
 std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
     //// Input for menu properties

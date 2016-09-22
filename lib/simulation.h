@@ -102,6 +102,7 @@ public:
     void wall_collision(Object* X, double width, double height, int wall);
 
     void lose_energy (Object* me, double factor);
+    void lose_collision_energy(Object* A, Object* B, double factor = 0.02);
 
 };
 

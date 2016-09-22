@@ -6,7 +6,7 @@
 #include "lib/game.h"
 
 int main() {
-    maingame(SCENE_GENESIS);
+    maingame();
     //timerDebug();
 
     return 0;

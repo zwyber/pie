@@ -111,7 +111,7 @@ void Object::lose_energy(double factor, Physics &physics) {
 
 void Object::on_collide (Object* target, Physics &physics) {
     // Do nothing yet
-    target->lose_energy(0, physics);
+    //physics.lose_collision_energy(this, target, 0.05);
 
 }
 

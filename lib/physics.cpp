@@ -214,3 +214,13 @@ void Physics::lose_energy(Object* me, double factor) {
     // Rescale the velocity factor
     me->set_velocity(cmult(me->velocity, 1 - std::sqrt(factor)));
 }
+
+void Physics::lose_collision_energy(Object* A, Object* B, double factor) {
+    // First determine the relative velocities towards the two objects.
+    vec2d relBtoA = sub(A->velocity, B->velocity);
+
+    // Subtract a bit of velocity
+    A->set_velocity(sub(A->velocity, cmult(relBtoA, factor)));
+    B->set_velocity(sub(B->velocity, cmult(relBtoA, -1*factor)));
+
+}
