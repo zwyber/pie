@@ -445,10 +445,10 @@ TextureShader::TextureShader(GLuint texture_) : Shader("shaders/texture.glvs", "
     textureID  = glGetUniformLocation(programID, "tex");
 
     static const GLfloat texcoords[] = {
-            0.0f,0.0f,
             0.0f,1.0f,
-            1.0f,1.0f,
-            1.0f,0.0f
+            0.0f,0.0f,
+            1.0f,0.0f,
+            1.0f,1.0f
     };
 
     glGenBuffers(1, &uvBuffer);
@@ -617,7 +617,7 @@ TextShader::TextShader(const char* trueTypePath, int numOfChars) : Shader("shade
 
     if (FT_New_Face(ft, trueTypePath, 0, &face))
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
-    pixSize = 32;
+    pixSize = 72;
     FT_Set_Pixel_Sizes(face, 0, pixSize);
     colour = glm::vec4(1.0f);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction

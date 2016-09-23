@@ -5,6 +5,7 @@
 
 // Player pointer
 Player* boundPlayer = NULL;
+std::vector<int> keyHandler;
 
 void maingame(int startScene) {
     // Initialise the scene switcher
@@ -19,11 +20,19 @@ void maingame(int startScene) {
     Window window = Window();
 
     GLuint menuTex = loadDDS("MenuTextures.DDS");
+    GLuint tutorialDDS = loadDDS("Tutorial.DDS");
 
     // Init shader
     TextureShader menuMultiTex = TextureShader(menuTex);
+    TextureShader tutorialTex = TextureShader(tutorialDDS);
+
+    vec2d tutorialSize = {640, 480};
     //// I'd suggest building a circle shader for universes to use.
     CircleShader allDebrisShader;
+
+    TextShader scoreText = TextShader("Courier New Bold.ttf");
+    //TextShader aboutText = TextShader("ARIALNB.ttf"); UT house font if capitalized
+    TextShader aboutText = TextShader("verdana.ttf");
 
     // Load menu resources
     std::vector<glm::mat3> tMats = loadMenuResources(&menuMultiTex);
@@ -51,7 +60,7 @@ void maingame(int startScene) {
         }
 
         if (scene == SCENE_ABOUT) {
-            scene = show_about(&window);
+            scene = show_about(&window,&aboutText);
             continue;
         }
 
@@ -66,21 +75,22 @@ void maingame(int startScene) {
         }
 
         if (scene == SCENE_TUTORIAL) {
+            /*
             glClear(GL_COLOR_BUFFER_BIT);
             window.drawObjectList(&allDebrisShader);
             glfwSwapBuffers(window.GLFWpointer);
             glfwPollEvents();
-
+            */
 
             // Wait for 5 seconds, or wait until mouse is clicked, whatever
-            usleep(5E6);
+            //usleep(5E6);
 
-            scene = SCENE_INGAME;
+            scene = show_tutorial(&window,&allDebrisShader,&tutorialTex,tutorialSize);
 
         }
 
         if (scene == SCENE_INGAME) {
-            scene = show_ingame(&window, &allDebrisShader);
+            scene = show_ingame(&window, &allDebrisShader,&scoreText);
 
             // do not forget to delete universe (although this is better to do after SCENE_DIED)
             delete window.boundUniverse;
@@ -101,7 +111,7 @@ void maingame(int startScene) {
 }
 
 
-int show_ingame (Window* window, CircleShader* circleShader) {
+int show_ingame (Window* window, CircleShader* circleShader, TextShader* textShader) {
     int exitFlag = SCENE_INGAME;
 
     // Initialise a few variables
@@ -113,20 +123,18 @@ int show_ingame (Window* window, CircleShader* circleShader) {
     int MORE_OBJECTS_DELAY = 2;
     bool addedAlready = false;
 
-    TextShader newText("verdana.ttf");
-    newText.colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
+    std::stringstream scoreText;
+    textShader->colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
     while(exitFlag == SCENE_INGAME){
         // Do a physics step and draw the universe
         glClear(GL_COLOR_BUFFER_BIT);
         window->boundUniverse->simulate_one_time_unit(window->fps);
         window->drawObjectList(circleShader);
-
-        // Draw the score at the bottom
-        std::stringstream scoreText;
-        scoreText << "Score: " << window->boundUniverse->score;
-        newText.draw(scoreText.str() ,{0, -0.92},DRAWTEXT::ALIGN_CENTER, window->windowSize() , 0.02);
-
+        if(textShader!=NULL) {
+            scoreText.str(std::string());
+            scoreText << "Score: " << window->boundUniverse->score;
+            textShader->draw(scoreText.str() ,{0, -0.92},DRAWTEXT::ALIGN_CENTER, window->windowSize() , 0.02);
+        }
         // Determine if we want to add another piece of debris
         now_time = std::chrono::steady_clock::now();
         time_elapsed = now_time - window->boundUniverse->begin_time;
@@ -168,47 +176,46 @@ int show_ingame (Window* window, CircleShader* circleShader) {
     return exitFlag;
 }
 
-int show_about (Window* window) {
+int show_about (Window* window, TextShader* newText) {
     int exitFlag = SCENE_ABOUT;
 
     glClear(GL_COLOR_BUFFER_BIT);
-
-    TextShader newText("verdana.ttf");
-    newText.colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    //// Paul please don't generate Textshaders multiple times although more efficient they still require some recourses
+    newText->colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     std::stringstream aboutText;
     aboutText << "Space Debris Evaders is a game developed for the course";
-    newText.draw(aboutText.str(), {0, 0.8}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
-    aboutText.str(""); // To clear the stringstream
+    newText->draw(aboutText.str(), {0, 0.8}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string()); // To clear the stringstream
 
     aboutText << "'Programming in Engineering' at the University of Twente";
-    newText.draw(aboutText.str(), {0, 0.7}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
-    aboutText.str("");
+    newText->draw(aboutText.str(), {0, 0.7}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
 
     aboutText << "The goal is to learn C++ by developing a game.";
-    newText.draw(aboutText.str(), {0, 0.6}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
-    aboutText.str("");
+    newText->draw(aboutText.str(), {0, 0.6}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
 
     aboutText << "Authors:";
-    newText.draw(aboutText.str(), {0, 0.4}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
-    aboutText.str("");
+    newText->draw(aboutText.str(), {0, 0.4}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
 
     aboutText << "Arash Edresi";
-    newText.draw(aboutText.str(), {0, 0.3}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
-    aboutText.str("");
+    newText->draw(aboutText.str(), {0, 0.3}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
 
     aboutText << "Yvan Klaver";
-    newText.draw(aboutText.str(), {0, 0.2}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
-    aboutText.str("");
+    newText->draw(aboutText.str(), {0, 0.2}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
 
     aboutText << "Paul van Swinderen";
-    newText.draw(aboutText.str(), {0, 0.1}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
-    aboutText.str("");
+    newText->draw(aboutText.str(), {0, 0.1}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
 
 
     aboutText << "Press ESC to return to the menu";
-    newText.draw(aboutText.str(), {0, -0.4}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
-    aboutText.str("");
+    newText->draw(aboutText.str(), {0, -0.4}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
 
 
     glfwSwapBuffers(window->GLFWpointer);
@@ -231,6 +238,37 @@ int show_about (Window* window) {
     while (true);
 
 
+}
+void tutorial_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+    if(action = GLFW_PRESS){
+        keyHandler.push_back(key);
+    }
+}
+
+int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tutorialTex, vec2d tutorialSize){
+    int exitFlag = SCENE_TUTORIAL;
+    vec2d winSize = {640, 480};
+    keyHandler = {};
+    glfwSetKeyCallback(window->GLFWpointer,tutorial_key_callback);
+    glfwSetTime(0);
+    while(exitFlag == SCENE_TUTORIAL){
+        glClear(GL_COLOR_BUFFER_BIT);
+        winSize = window->windowSize();
+        tutorialTex->tMatrixReset();
+        tutorialTex->tMatrixScale({tutorialSize[0]/winSize[0], tutorialSize[1]/winSize[1]});
+        window->drawObjectList(circleShader);
+        tutorialTex->draw();
+        glfwSwapBuffers(window->GLFWpointer);
+        glfwPollEvents();
+        if((keyHandler.size() && glfwGetTime() > 1)){
+            exitFlag = SCENE_INGAME;
+        }
+        if(glfwWindowShouldClose(window->GLFWpointer)){
+            exitFlag = SCENE_QUIT;
+        }
+    }
+    glfwSetKeyCallback(window->GLFWpointer, NULL);
+    return exitFlag;
 }
 
 std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){

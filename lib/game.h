@@ -26,10 +26,12 @@ double initScreenRatio = 4.0/3.0;
 void maingame(int startScene = SCENE_MENU);
 
 int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat, CircleShader * circleShader = NULL);
-int show_about(Window* window);
-int show_ingame(Window* window, CircleShader* circleShader = NULL);
+int show_about(Window* window, TextShader* newText);
+int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tutorialTex, vec2d tutorialSize);
+int show_ingame(Window* window, CircleShader* circleShader = NULL, TextShader* textShader =NULL);
 
 std::vector<glm::mat3> loadMenuResources(TextureShader * myMultiTex);
+void tutorial_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 void addRandomObject(Universe* universe, unsigned seed = 0);
 void addRandomObjects(Universe* universe, unsigned seed, int objectAmount);
