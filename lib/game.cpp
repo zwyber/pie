@@ -18,7 +18,6 @@ void maingame(int startScene) {
     double pixRatio = 50;
 
     Window window = Window();
-
     GLuint menuTex = loadDDS("MenuTextures.DDS");
     GLuint tutorialDDS = loadDDS("Tutorial.DDS");
 
@@ -48,7 +47,7 @@ void maingame(int startScene) {
             window.bindUniverse(universe);
 
             // Setup a few objects in the universe
-            addRandomObjects(window.boundUniverse, std::rand()/(double)RAND_MAX, 50);
+            addRandomObjects(window.boundUniverse, std::rand(), 50);
 
             // Show the menu
             scene = show_menu(&window, &menuMultiTex, tMats, &allDebrisShader);
@@ -92,8 +91,6 @@ void maingame(int startScene) {
         if (scene == SCENE_INGAME) {
             scene = show_ingame(&window, &allDebrisShader,&scoreText);
 
-            // do not forget to delete universe (although this is better to do after SCENE_DIED)
-            delete window.boundUniverse;
         }
 
         if (scene == SCENE_DIED) {
@@ -102,6 +99,8 @@ void maingame(int startScene) {
 
             usleep(2E6);
 
+            delete window.boundUniverse;
+
             scene = SCENE_MENU;
         }
 
@@ -109,7 +108,6 @@ void maingame(int startScene) {
     while(scene != SCENE_QUIT);
     glfwTerminate();
 }
-
 
 int show_ingame (Window* window, CircleShader* circleShader, TextShader* textShader) {
     int exitFlag = SCENE_INGAME;
@@ -125,6 +123,7 @@ int show_ingame (Window* window, CircleShader* circleShader, TextShader* textSha
 
     std::stringstream scoreText;
     textShader->colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
     while(exitFlag == SCENE_INGAME){
         // Do a physics step and draw the universe
         glClear(GL_COLOR_BUFFER_BIT);
@@ -240,7 +239,7 @@ int show_about (Window* window, TextShader* newText) {
 
 }
 void tutorial_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
-    if(action = GLFW_PRESS){
+    if(action == GLFW_PRESS){
         keyHandler.push_back(key);
     }
 }
@@ -251,6 +250,8 @@ int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tuto
     keyHandler = {};
     glfwSetKeyCallback(window->GLFWpointer,tutorial_key_callback);
     glfwSetTime(0);
+    bool joyOut = false;
+    int joyCount = 0;
     while(exitFlag == SCENE_TUTORIAL){
         glClear(GL_COLOR_BUFFER_BIT);
         winSize = window->windowSize();
@@ -260,7 +261,14 @@ int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tuto
         tutorialTex->draw();
         glfwSwapBuffers(window->GLFWpointer);
         glfwPollEvents();
-        if((keyHandler.size() && glfwGetTime() > 1)){
+        const float* axisStates = glfwGetJoystickAxes(GLFW_JOYSTICK_1,&joyCount);
+            for(int ii = 0; ii < joyCount; ii++){
+                if(axisStates[ii] > 0.2 || axisStates[ii] < -0.2){
+                    joyOut = true;
+                    break;
+                }
+            }
+        if((keyHandler.size()||joyOut) && glfwGetTime() > 1){
             exitFlag = SCENE_INGAME;
         }
         if(glfwWindowShouldClose(window->GLFWpointer)){
@@ -526,7 +534,7 @@ void addRandomObject(Universe* universe, unsigned seed) {
 
 void addRandomObjects(Universe* universe, unsigned seed, int objectAmount) {
     for(int ii = 0; ii < objectAmount; ii++){
-        addRandomObject(universe, seed+ii);
+        addRandomObject(universe, seed+ii*100);
     }
 }
 

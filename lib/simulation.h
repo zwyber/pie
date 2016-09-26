@@ -161,7 +161,7 @@ public:
 class Player : public Object {
 
 public:
-
+    bool joystick = glfwJoystickPresent(GLFW_JOYSTICK_1);
     double thruster_force = 20;
     bool i_collided = false;
 

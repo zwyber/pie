@@ -172,19 +172,32 @@ std::array<vec2d, 2> Player::calc_new_pos_vel (std::vector<Object*> &objects, Ph
     GLFWwindow* window = glfwGetCurrentContext();
     vec2d input = {{0}};
     double thruster_a = this->thruster_force / this->mass;
-    if ( glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS ) {
+
+    if(joystick) {
+        int count = 0;
+        const float *axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &count);
+        switch (count) {
+            default:
+            case 2:
+                input[1] = -axes[1] * thruster_a;
+            case 1:
+                input[0] = axes[0] * thruster_a;
+            case 0:
+                break;
+        }
+    }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
         input[1] = thruster_a;
     }
-    if ( glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS ) {
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
         input[1] = -thruster_a;
     }
-    if ( glfwGetKey( window, GLFW_KEY_LEFT ) == GLFW_PRESS ) {
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
         input[0] = -thruster_a;
     }
-    if ( glfwGetKey( window, GLFW_KEY_RIGHT ) == GLFW_PRESS ) {
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
         input[0] = thruster_a;
     }
-
     acceleration = add(acceleration, input);
 
     return physics.de_solver(acceleration, this);

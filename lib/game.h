@@ -32,6 +32,7 @@ int show_ingame(Window* window, CircleShader* circleShader = NULL, TextShader* t
 
 std::vector<glm::mat3> loadMenuResources(TextureShader * myMultiTex);
 void tutorial_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void escape_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 void addRandomObject(Universe* universe, unsigned seed = 0);
 void addRandomObjects(Universe* universe, unsigned seed, int objectAmount);
