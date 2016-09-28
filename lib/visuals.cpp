@@ -121,7 +121,7 @@ void Window::pace_frame() {
 void Window::bindUniverse(Universe *uni) {
     boundUniverse = uni;
     if(boundUniverse!=NULL) {
-        if (activeFlag == vis::AUTO_SIZE_UNIVERSE && boundUniverse != NULL) {
+        if (activeFlag == vis::AUTO_SIZE_UNIVERSE) {
             boundUniverse->resize(winWidth, winHeight);
         }
         uniToWinRatio = {boundUniverse->width * pixRatio / winWidth, boundUniverse->height * pixRatio / winHeight};
@@ -291,13 +291,6 @@ void Window::drawBox(double Width, double Height){
     glEnd();
 }
 
-void Window::drawFT_Bitmap(FT_Bitmap* image, int xleft, int ytop){
-    // OPTION ONE - limited to -bit-maps array of bits
-    //glBitmap(image->width,image->rows,(double)xleft/winWidth,(double)ytop/winHeight,image->width+xleft,image->rows+ytop,image->buffer);
-    // OPTION TWO - draws incorrectly on Alpha based bytes
-    glRasterPos2d((double)xleft/winWidth,(double)ytop/winHeight);
-    glDrawPixels(image->width,image->rows, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, image->buffer);
-}
 /*
  * Working function that is called when the window is resized.
  */
@@ -681,7 +674,12 @@ TextShader::TextShader(const char* trueTypePath, int numOfChars) : Shader("shade
     textColorID = glGetUniformLocation(programID, "textColor");
 
 }
-
+TextShader::~TextShader(){
+    glDeleteBuffers(1, &uvBuffer);
+    for (map<char,Character>::iterator c = Characters.begin(); c != Characters.end(); c++){
+        glDeleteTextures(1,&(*c).second.textureID);
+    }
+}
 void TextShader::draw(std::string text, vec2d position, unsigned alignment,vec2d screenDims, double height){
     // Activate corresponding render state
     glUseProgram(programID);

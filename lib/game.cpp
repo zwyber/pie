@@ -12,12 +12,17 @@ void maingame(int startScene) {
     int scene = startScene;
 
     // Initialise the window
-    int universeWidth = 720;
-    int universeHeight = 480;
+    double windowWidth = 1000;
+    double windowHeight = 900;
 
-    double pixRatio = 50;
+    double pixRatio = 25;
 
-    Window window = Window();
+    int universeWidth = windowWidth/pixRatio;
+    int universeHeight = windowHeight/pixRatio;
+
+
+    Window window = Window(pixRatio*universeWidth,pixRatio*universeHeight,vis::NO_RESIZE);
+    window.pixRatio = pixRatio;
     GLuint menuTex = loadDDS("MenuTextures.DDS");
     GLuint tutorialDDS = loadDDS("Tutorial.DDS");
 
@@ -43,7 +48,7 @@ void maingame(int startScene) {
         // Don't worry I think the if statements in a while loop makes more sense in our case ;)
         if (scene == SCENE_MENU) {
             // Create a universe and bind it to the window
-            Universe *universe = new Universe();
+            Universe *universe = new Universe(universeWidth,universeHeight);
             window.bindUniverse(universe);
 
             // Setup a few objects in the universe
@@ -65,7 +70,7 @@ void maingame(int startScene) {
 
         if (scene == SCENE_GENESIS) {
             // Generate a standard universe
-            Universe *universe = new Universe();
+            Universe *universe = new Universe(universeWidth,universeHeight);
             window.bindUniverse(universe);
 
             generateStandardUniverse(&window);
@@ -179,7 +184,7 @@ int show_about (Window* window, TextShader* newText) {
     int exitFlag = SCENE_ABOUT;
 
     glClear(GL_COLOR_BUFFER_BIT);
-    //// Paul please don't generate Textshaders multiple times although more efficient they still require some recourses
+    //// Paul please don't generate Textshaders multiple times, although more efficient they still require some recourses
     newText->colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
     std::stringstream aboutText;
@@ -252,7 +257,6 @@ int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tuto
     glfwSetTime(0);
     bool joyOut = false;
     int joyCount = 0;
-    while(exitFlag == SCENE_TUTORIAL){
         glClear(GL_COLOR_BUFFER_BIT);
         winSize = window->windowSize();
         tutorialTex->tMatrixReset();
@@ -260,6 +264,7 @@ int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tuto
         window->drawObjectList(circleShader);
         tutorialTex->draw();
         glfwSwapBuffers(window->GLFWpointer);
+    while(exitFlag == SCENE_TUTORIAL){
         glfwPollEvents();
         const float* axisStates = glfwGetJoystickAxes(GLFW_JOYSTICK_1,&joyCount);
             for(int ii = 0; ii < joyCount; ii++){

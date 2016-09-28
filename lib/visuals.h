@@ -81,8 +81,9 @@ private:
     GLuint textureID;
     int pixSize;
 public:
-    glm::vec4 colour;
     TextShader(const char* trueTypePath, int numOfChars = 128);// : Shader("shaders/text.glvs", "shaders/text.glfs", "VertexPos", "projection");
+    ~TextShader();
+    glm::vec4 colour;
     void draw(std::string text, vec2d position, unsigned alignment = DRAWTEXT::ALIGN_LEFT,vec2d screenDims = {0,0}, double height = 0.1);
 };
 
