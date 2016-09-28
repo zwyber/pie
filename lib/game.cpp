@@ -15,7 +15,7 @@ void maingame(int startScene) {
     double windowWidth = 1000;
     double windowHeight = 900;
 
-    double pixRatio = 25;
+    double pixRatio = 35;
 
     int universeWidth = windowWidth/pixRatio;
     int universeHeight = windowHeight/pixRatio;
@@ -79,15 +79,6 @@ void maingame(int startScene) {
         }
 
         if (scene == SCENE_TUTORIAL) {
-            /*
-            glClear(GL_COLOR_BUFFER_BIT);
-            window.drawObjectList(&allDebrisShader);
-            glfwSwapBuffers(window.GLFWpointer);
-            glfwPollEvents();
-            */
-
-            // Wait for 5 seconds, or wait until mouse is clicked, whatever
-            //usleep(5E6);
 
             scene = show_tutorial(&window,&allDebrisShader,&tutorialTex,tutorialSize);
 
@@ -129,8 +120,10 @@ int show_ingame (Window* window, CircleShader* circleShader, TextShader* textSha
     std::stringstream scoreText;
     textShader->colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
+    glfwSetKeyCallback(window->GLFWpointer,escape_key_callback);
     while(exitFlag == SCENE_INGAME){
         // Do a physics step and draw the universe
+        keyHandler = {};
         glClear(GL_COLOR_BUFFER_BIT);
         window->boundUniverse->simulate_one_time_unit(window->fps);
         window->drawObjectList(circleShader);
@@ -164,19 +157,19 @@ int show_ingame (Window* window, CircleShader* circleShader, TextShader* textSha
         // Do frame pacing
         window->pace_frame();
 
-        //// Paul you forgot the Swap buffer command in your haste ;) that was all
         glfwSwapBuffers(window->GLFWpointer);
         glfwPollEvents();
 
         if(glfwWindowShouldClose(window->GLFWpointer) != 0){
             exitFlag = SCENE_QUIT;
         }
-        if(glfwGetKey(window->GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS ){
+        if(keyHandler.size() ){
             //exitFlag = SCENE_PAUSE;
             exitFlag = SCENE_MENU; // Use this until pause scene is available;
         }
     }
 
+    glfwSetKeyCallback(window->GLFWpointer,NULL);
     return exitFlag;
 }
 
@@ -223,16 +216,21 @@ int show_about (Window* window, TextShader* newText) {
 
 
     glfwSwapBuffers(window->GLFWpointer);
-
+    glfwSetKeyCallback(window->GLFWpointer,escape_key_callback);
     do {
+        keyHandler ={};
         glfwPollEvents();
 
         if(glfwWindowShouldClose(window->GLFWpointer) != 0){
             exitFlag = SCENE_QUIT;
+
+            glfwSetKeyCallback(window->GLFWpointer,NULL);
             return exitFlag;
         }
-        if(glfwGetKey(window->GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS ){
+        if(keyHandler.size() ){
             exitFlag = SCENE_MENU;
+
+            glfwSetKeyCallback(window->GLFWpointer,NULL);
             return exitFlag;
         }
 
@@ -242,6 +240,11 @@ int show_about (Window* window, TextShader* newText) {
     while (true);
 
 
+}
+void escape_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS){
+        keyHandler.push_back(key);
+    }
 }
 void tutorial_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if(action == GLFW_PRESS){
@@ -260,7 +263,7 @@ int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tuto
         glClear(GL_COLOR_BUFFER_BIT);
         winSize = window->windowSize();
         tutorialTex->tMatrixReset();
-        tutorialTex->tMatrixScale({tutorialSize[0]/winSize[0], tutorialSize[1]/winSize[1]});
+        tutorialTex->tMatrixScale({tutorialSize[0]*window->pixRatio/(winSize[0]*25), tutorialSize[1]*window->pixRatio/(winSize[1]*25)});
         window->drawObjectList(circleShader);
         tutorialTex->draw();
         glfwSwapBuffers(window->GLFWpointer);
