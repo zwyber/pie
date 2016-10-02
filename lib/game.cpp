@@ -6,6 +6,7 @@
 // Player pointer
 Player* boundPlayer = NULL;
 std::vector<int> keyHandler;
+bool Joystick;
 
 void maingame(int startScene) {
     // Initialise the scene switcher
@@ -15,18 +16,17 @@ void maingame(int startScene) {
     double windowWidth = 1000;
     double windowHeight = 700;
 
-    double pixRatio = 35;
+    double pixRatio = 25;
 
     int universeWidth = windowWidth/pixRatio;
     int universeHeight = windowHeight/pixRatio;
 
     bool shownTutorial = false;
 
-
     Window window = Window(pixRatio*universeWidth,pixRatio*universeHeight,vis::NO_RESIZE);
     window.pixRatio = pixRatio;
-    GLuint menuTex = loadDDS("MenuTextures.DDS");
-    GLuint tutorialDDS = loadDDS("Tutorial.DDS");
+    GLuint menuTex = loadDDS("Textures/MenuTextures.DDS");
+    GLuint tutorialDDS = loadDDS("Textures/Tutorial.DDS");
 
     // Init shader
     TextureShader menuMultiTex = TextureShader(menuTex);
@@ -36,9 +36,9 @@ void maingame(int startScene) {
     //// I'd suggest building a circle shader for universes to use.
     CircleShader allDebrisShader;
 
-    TextShader scoreText = TextShader("Courier New Bold.ttf");
-    //TextShader aboutText = TextShader("ARIALNB.ttf"); UT house font if capitalized
-    TextShader aboutText = TextShader("verdana.ttf");
+    TextShader scoreText = TextShader("Fonts/Courier New Bold.ttf");
+    //TextShader aboutText = TextShader("Fonts/ARIALNB.ttf"); //UT house font if capitalized
+    TextShader aboutText = TextShader("Fonts/verdana.ttf");
 
     // Load menu resources
     std::vector<glm::mat3> tMats = loadMenuResources(&menuMultiTex);
@@ -76,6 +76,7 @@ void maingame(int startScene) {
             window.bindUniverse(universe);
 
             generateStandardUniverse(&window);
+            Joystick = glfwJoystickPresent(GLFW_JOYSTICK_1);
 
             if (!shownTutorial) {
                 scene = SCENE_TUTORIAL;
@@ -106,8 +107,8 @@ void maingame(int startScene) {
 
 
             glfwSetKeyCallback(window.GLFWpointer,escape_key_callback);
+            glfwSwapBuffers(window.GLFWpointer);
             do {
-                glfwSwapBuffers(window.GLFWpointer);
                 keyHandler ={};
                 glfwPollEvents();
 
@@ -308,17 +309,19 @@ int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tuto
 
     // Display the display buffer to the user
     glfwSwapBuffers(window->GLFWpointer);
-
+    const float* axisStates;
     // While not moving to another scene
     while(exitFlag == SCENE_TUTORIAL){
 
         // Poll keyboard events
         glfwPollEvents();
-        const float* axisStates = glfwGetJoystickAxes(GLFW_JOYSTICK_1,&joyCount);
-        for ( int ii = 0; ii < joyCount; ii++ ) {
-            if  ( axisStates[ii] > 0.2 || axisStates[ii] < -0.2 ) {
-                joyOut = true;
-                break;
+        if(Joystick){
+            axisStates = glfwGetJoystickAxes(GLFW_JOYSTICK_1,&joyCount);
+            for ( int ii = 0; ii < joyCount; ii++ ) {
+                if  ( axisStates[ii] > 0.2 || axisStates[ii] < -0.2 ) {
+                    joyOut = true;
+                    break;
+                }
             }
         }
         if ( (keyHandler.size()||joyOut) && glfwGetTime() > 1){
