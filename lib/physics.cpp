@@ -7,83 +7,42 @@
 #include "simulation.h"
 #endif
 
-
+/*
+ * check_collision()
+ *
+ * Check if two objects are colliding, which is when their distance is less then the two radii together, but not moving
+ * away from each other. Hence objects can overlap, but only when they are moving away from each other.
+ */
 bool Physics::check_collision(Object* A, Object* B) {
-    vec2d A_v = A->velocity;
-    vec2d A_x = A->position;
-
-    vec2d B_v = B->velocity;
-    vec2d B_x = B->position;
-
-    double A_r = A->radius;
-    double B_r = B->radius;
-
-    // Check if objects are overlapping and moving aay from each other
-    if(len(sub(A_x,B_x)) < (A_r+B_r) && A_x != B_x && dot(sub(A_v,B_v),sub(B_x,A_x)) > 0){
+    // Check if objects are overlapping and moving away from each other
+    if ( len(sub(A->position,B->position)) < (A->radius+B->radius) &&
+            A->position != B->position && dot(sub(A->velocity,B->velocity), sub(B->position,A->position)) > 0) {
         return true;
-    } else{
+    }
+    else {
         return false;
     }
 }
 
+/*
+ * resolve_collision()
+ *
+ * Do a physically acceptable object collision between objects A and B.
+ */
 void Physics::resolve_collision(Object* A, Object* B) {
-    // Using the math from Wikipedia: https://en.wikipedia.org/wiki/Elastic_collision
-    vec2d A_v = A->velocity;
-    vec2d A_x = A->position;
-    double A_r = A->radius;
+    // Use the average bouncyness coefficient
+    double coeff = (A->bouncyness + B->bouncyness)/2.0;
 
-    vec2d B_v = B->velocity;
-    vec2d B_x = B->position;
-    double B_r = B->radius;
-
-    double A_m = A->mass;
-    double B_m = B->mass;
-
-    double coeff; // Coefficient of restitution, the smallest of the two
-    // (for now take the coefficient of restitution as a linear combination because it wouldn't make sense that the
-    // energy absorbed would be equal when most bouncyness or inelastic.
-    coeff = (A->bouncyness + B->bouncyness)/2.0;
-    //if ( A->bouncyness < B->bouncyness )
-    //    coeff = A->bouncyness;
-    //else
-    //    coeff = B->bouncyness;
-
-    /*
-     * For the collision you can have 100% elastic or 100% inelastic. The final velocity vector is a
-     * linear combination of the two, where the bouncyness coefficient determines how much elastic
-     * the collision is.
-     *
-     * Not completely sure energy is conserved with this method :S
-     */
-
-    // Initialise the vectors
-    //vec2d A_v_e_new; // Object A, velocity, elastic, new
-    //vec2d A_v_i_new; // Object A, velocity, inelastic, new
-    //vec2d B_v_e_new; // etc
-    //vec2d B_v_i_new;
-
-    // Horrible long expression which calculates the new velocity! It is the equation on Wikipedia for the
+    // The expression which calculates the new velocity! It is the equation on Wikipedia using
     // vector notation of resolving a collision: https://en.wikipedia.org/wiki/Elastic_collision
-    vec2d A_v_new = sub(A_v, cmult(sub(A_x, B_x),
-                                     ((coeff+1) * B_m / (A_m + B_m)) * dot(sub(A_v, B_v), sub(A_x, B_x)) /
-                                    len_squared(sub(A_x, B_x))));
-    vec2d B_v_new = sub(B_v, cmult(sub(B_x, A_x),
-                                     ((coeff+1) * A_m / (A_m + B_m)) * dot(sub(B_v, A_v), sub(B_x, A_x)) /
-                                     len_squared(sub(B_x, A_x))));
-
-    // Fully inelastic expression, very simple derivation:
-    /*
-     * p momentum, v velocity, m mass, ' final state
-     * p1' + p2' = p1 + p2 // Conservation of momentum
-     * v1' = v2'           // Same final velocity
-     * --> v1' = p1 + p2/(m1 + m2)
-     */
-    //A_v_i_new = cmult(add(cmult(A_v, A_m), cmult(B_v, B_m)), 1/(A_m + B_m));
-    //B_v_i_new = A_v_i_new; // Same velocity, fully joined together in motion
-
-    // Create a linear combination of the two types of collision
-    //vec2d A_v_new = add(cmult(A_v_e_new, coeff), cmult(A_v_i_new, (1-coeff)));
-    //vec2d B_v_new = add(cmult(B_v_e_new, coeff), cmult(B_v_i_new, (1-coeff)));
+    vec2d A_v_new = sub(A->velocity, cmult(sub(A->position, B->position),
+                                     ((coeff+1) * B->mass / (A->mass + B->mass))
+                                     * dot(sub(A->velocity, B->velocity), sub(A->position, B->position))
+                                     / len_squared(sub(A->position, B->position))));
+    vec2d B_v_new = sub(B->velocity, cmult(sub(B->position, A->position),
+                                     ((coeff+1) * A->mass / (A->mass + B->mass))
+                                     * dot(sub(B->velocity, A->velocity), sub(B->position, A->position))
+                                     / len_squared(sub(B->position, A->position))));
 
     // Push these new vectors to the objects
     A->set_velocity(A_v_new);
@@ -91,16 +50,32 @@ void Physics::resolve_collision(Object* A, Object* B) {
 
     // Now also move them apart slightly, such that they are just touching. They
     // are moved apart perpendicular to the plane of contact
-    vec2d r = sub(B_x, A_x);
-    double l = (A_r + B_r) - len(r);
+    vec2d r = sub(B->position, A->position);
+    double l = (A->radius + B->radius) - len(r);
 
     // Move A and B apart
-    A->set_position(add(A_x, cmult(r, -l*A_m/(A_m + B_m))));
-    B->set_position(add(B_x, cmult(r, l*B_m/(A_m + B_m))));
+    A->set_position(add(A->position, cmult(r, -l * A->mass / (A->mass + B->mass) )));
+    B->set_position(add(B->position, cmult(r,  l * B->mass / (A->mass + B->mass) )));
 
 }
 
-void Physics::  wall_collision(Object* X, double width, double height, int wall) {
+/*
+ * wall_collision()
+ *
+ * Prevent an object from passing through a wall by setting the velocity away from the wall
+ * and moving it slightly to prevent wall contact.
+ */
+void Physics::wall_collision(Object* X, double width, double height, int wall) {
+    /*
+     * Wall collisions are resolved by the sign of the velocity component which is causing
+     * the object to collide into a wall. In that sense it is a perfectly elastic collision.
+     *
+     * Then the object is then moved away from the wall, so next physics iteration it will not
+     * collide again.
+     *
+     * Earlier versions of the code has inelastic collisions implemented as well, but that caused
+     * a "cold wall" effect, where the objects would quickly get stuck onto a wall.
+     */
 
     switch (wall) {
         case 1: // North
@@ -123,17 +98,37 @@ void Physics::  wall_collision(Object* X, double width, double height, int wall)
 
 }
 
+/*
+ * distance_between()
+ *
+ * Calculate the distance between two objects, but it will always be greater than 0.1 to prevent problems
+ * with infinite forces.
+ */
 double Physics::distance_between(Object* X, Object* Y) {
-    vec2d pos_X = X->position;
-    vec2d pos_Y = Y->position;
-    double dist = std::sqrt( (pos_Y[0]-pos_X[0])*(pos_Y[0]-pos_X[0]) + (pos_Y[1]-pos_X[1])*(pos_Y[1]-pos_X[1]) );
+    // For the case where any object is a default NULL object
+    if ( X == NULL || Y == NULL ) {
+        return 0;
+    }
 
+    // Calculate the distance between the two objects
+    double dist = std::sqrt( ( Y->position[0] - X->position[0] ) * ( Y->position[0] - X->position[0])
+                             + ( Y->position[1] - X->position[1] ) * ( Y->position[1] - X->position[1]) );
+
+    // To prevent exerting too large forces when two objects are near, or something weird happened
     if ( dist <= 0 ) {
         dist = 0.1;
     }
 
     return dist;
 }
+
+
+
+
+
+
+
+
 
 vec2d Physics::acceleration (Object* X, Object* Y){
     double dist = this->distance_between (X , Y);
@@ -145,7 +140,7 @@ vec2d Physics::acceleration (Object* X, Object* Y){
     return acc;
 }
 
-vec2d Physics::net_acceleration(std::vector<Object *> &objects, Object* me) {
+vec2d Physics::net_acceleration(std::vector<Object* > &objects, Object* me) {
     // Calculate the acceleration
     vec2d acceleration = {0,0};
     // Loop through all objects
@@ -157,6 +152,7 @@ vec2d Physics::net_acceleration(std::vector<Object *> &objects, Object* me) {
         }
 
         vec2d this_acc = this->acceleration(me, objects[ii]);
+
         // Here add up the contribution to the acceleration
         acceleration = add(acceleration, this_acc);
     }
@@ -164,44 +160,7 @@ vec2d Physics::net_acceleration(std::vector<Object *> &objects, Object* me) {
     return acceleration;
 }
 
-std::array<vec2d, 2> Player::calc_new_pos_vel (std::vector<Object*> &objects, Physics &physics) {
 
-    vec2d acceleration = physics.net_acceleration(objects, this);
-
-    // Get access to the users keyboard input
-    GLFWwindow* window = glfwGetCurrentContext();
-    vec2d input = {{0}};
-    double thruster_a = this->thruster_force / this->mass;
-
-    if(joystick) {
-        int count = 0;
-        const float *axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &count);
-        switch (count) {
-            default:
-            case 2:
-                input[1] = -axes[1] * thruster_a;
-            case 1:
-                input[0] = axes[0] * thruster_a;
-            case 0:
-                break;
-        }
-    }
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-        input[1] = thruster_a;
-    }
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        input[1] = -thruster_a;
-    }
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
-        input[0] = -thruster_a;
-    }
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
-        input[0] = thruster_a;
-    }
-    acceleration = add(acceleration, input);
-
-    return physics.de_solver(acceleration, this);
-};
 
 std::array<vec2d, 2> Physics::de_solver (vec2d &acceleration, Object* me) {
     // Initialize the result array
@@ -222,18 +181,3 @@ std::array<vec2d, 2> Physics::de_solver (vec2d &acceleration, Object* me) {
 
     return new_pos_vel;
 };
-
-void Physics::lose_energy(Object* me, double factor) {
-    // Rescale the velocity factor
-    me->set_velocity(cmult(me->velocity, 1 - std::sqrt(factor)));
-}
-
-void Physics::lose_collision_energy(Object* A, Object* B, double factor) {
-    // First determine the relative velocities towards the two objects.
-    vec2d relBtoA = sub(A->velocity, B->velocity);
-
-    // Subtract a bit of velocity
-    A->set_velocity(sub(A->velocity, cmult(relBtoA, factor)));
-    B->set_velocity(sub(B->velocity, cmult(relBtoA, -1*factor)));
-
-}

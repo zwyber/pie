@@ -13,12 +13,14 @@ void maingame(int startScene) {
 
     // Initialise the window
     double windowWidth = 1000;
-    double windowHeight = 900;
+    double windowHeight = 700;
 
     double pixRatio = 35;
 
     int universeWidth = windowWidth/pixRatio;
     int universeHeight = windowHeight/pixRatio;
+
+    bool shownTutorial = false;
 
 
     Window window = Window(pixRatio*universeWidth,pixRatio*universeHeight,vis::NO_RESIZE);
@@ -52,7 +54,7 @@ void maingame(int startScene) {
             window.bindUniverse(universe);
 
             // Setup a few objects in the universe
-            addRandomObjects(window.boundUniverse, std::rand(), 50);
+            addRandomObjects(window.boundUniverse, std::rand(), 40);
 
             // Show the menu
             scene = show_menu(&window, &menuMultiTex, tMats, &allDebrisShader);
@@ -75,11 +77,16 @@ void maingame(int startScene) {
 
             generateStandardUniverse(&window);
 
-            scene = SCENE_TUTORIAL;
+            if (!shownTutorial) {
+                scene = SCENE_TUTORIAL;
+            }
+            else {
+                scene = SCENE_INGAME;
+            }
         }
 
         if (scene == SCENE_TUTORIAL) {
-
+            shownTutorial = true;
             scene = show_tutorial(&window,&allDebrisShader,&tutorialTex,tutorialSize);
 
         }
@@ -90,13 +97,38 @@ void maingame(int startScene) {
         }
 
         if (scene == SCENE_DIED) {
-            // Display the score!
-            std::cout << window.boundUniverse->score << std::endl;
+            // Draw a gray background
 
-            usleep(2E6);
+            // Display the score
+            std::stringstream diedText;
+            diedText << "You hit something! Press the ESC key to return to the menu";
+            aboutText.draw(diedText.str(), {0,0}, DRAWTEXT::ALIGN_CENTER, window.windowSize(), 0.02);
 
+
+            glfwSetKeyCallback(window.GLFWpointer,escape_key_callback);
+            do {
+                glfwSwapBuffers(window.GLFWpointer);
+                keyHandler ={};
+                glfwPollEvents();
+
+                if(glfwWindowShouldClose(window.GLFWpointer) != 0){
+                    break;
+                }
+                if(keyHandler.size() ){
+                    glfwSetKeyCallback(window.GLFWpointer,NULL);
+                    break;
+                }
+
+                // Wait 100ms
+                usleep(1E5);
+            }
+            while(true);
+
+            // Clear up
+            boundPlayer = NULL;
             delete window.boundUniverse;
 
+            // Proceed to menu
             scene = SCENE_MENU;
         }
 
@@ -113,9 +145,12 @@ int show_ingame (Window* window, CircleShader* circleShader, TextShader* textSha
     std::chrono::steady_clock::duration time_elapsed;
     std::chrono::seconds seconds_passed;
     int seconds_count = 0;
-    int NEW_OBJECT_DELAY = 7;
+    int NEW_OBJECT_DELAY = 3;
     int MORE_OBJECTS_DELAY = 2;
     bool addedAlready = false;
+
+    // Reinitialize the universe time clock, so the start time
+    window->boundUniverse->begin_time = std::chrono::steady_clock::now();
 
     std::stringstream scoreText;
     textShader->colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -241,6 +276,135 @@ int show_about (Window* window, TextShader* newText) {
 
 
 }
+
+int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tutorialTex, vec2d tutorialSize){
+    // Default
+    int exitFlag = SCENE_TUTORIAL;
+
+    vec2d winSize = {640, 480};
+
+    // Setup a keyHandler, which is a list of buttons pressed
+    keyHandler = {};
+    glfwSetKeyCallback(window->GLFWpointer, tutorial_key_callback);
+    glfwSetTime(0);
+
+    // Setup joystick support
+    bool joyOut = false;
+    int joyCount = 0;
+
+    // Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // Scale the tutorial image to window size
+    winSize = window->windowSize();
+    tutorialTex->tMatrixReset();
+    tutorialTex->tMatrixScale({tutorialSize[0]*window->pixRatio/(winSize[0]*25), tutorialSize[1]*window->pixRatio/(winSize[1]*25)});
+
+    // Draw the universe objects
+    window->drawObjectList(circleShader);
+
+    // Draw the tutorial image
+    tutorialTex->draw();
+
+    // Display the display buffer to the user
+    glfwSwapBuffers(window->GLFWpointer);
+
+    // While not moving to another scene
+    while(exitFlag == SCENE_TUTORIAL){
+
+        // Poll keyboard events
+        glfwPollEvents();
+        const float* axisStates = glfwGetJoystickAxes(GLFW_JOYSTICK_1,&joyCount);
+        for ( int ii = 0; ii < joyCount; ii++ ) {
+            if  ( axisStates[ii] > 0.2 || axisStates[ii] < -0.2 ) {
+                joyOut = true;
+                break;
+            }
+        }
+        if ( (keyHandler.size()||joyOut) && glfwGetTime() > 1){
+            exitFlag = SCENE_INGAME;
+        }
+        if ( glfwWindowShouldClose(window->GLFWpointer) ) {
+            exitFlag = SCENE_QUIT;
+        }
+    }
+
+    // Reset the key callback function
+    glfwSetKeyCallback(window->GLFWpointer, NULL);
+
+    // Move on to the next screen
+    return exitFlag;
+}
+
+int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat, CircleShader * circleShader){
+    int exitFlag = SCENE_MENU;
+
+    //get set resources;
+    glClearColor(0.2, 0.2, 0.3, 1.0);
+    int highlightedButton = -1;
+    vec2d cursorPos;
+    bool cursorMode = false;
+    GLFWcursor* arrowCursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
+    GLFWcursor* handCursor = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
+    while(exitFlag == SCENE_MENU){
+        // Do a physics step and draw the universe
+        glClear(GL_COLOR_BUFFER_BIT);
+        window->drawObjectList(circleShader);
+        window->boundUniverse->simulate_one_time_unit(window->fps);
+        double newWidthScale = initScreenRatio/(window->windowSize()[0]/(double)window->windowSize()[1]);
+
+        //draw the menu;
+        highlightedButton = -1;
+
+        cursorPos = window->cursorPosition();
+        for(int ii = 0; ii < menuElementTMat.size(); ii++) {
+            menuMultiTex->transformationMatrix = menuElementTMat[ii];
+            menuMultiTex->tMatrixScale({newWidthScale,1});
+            if(cursorPos[0] > menuElementTMat[ii][0][2] - menuElementTMat[ii][0][0] && cursorPos[0] <menuElementTMat[ii][0][2] + menuElementTMat[ii][0][0]){
+                if(cursorPos[1] > menuElementTMat[ii][1][2] - menuElementTMat[ii][1][1] && cursorPos[1] <menuElementTMat[ii][1][2] + menuElementTMat[ii][1][1]){
+                    highlightedButton = ii;
+                    if(ii >0) {
+                        menuMultiTex->transformationMatrix[0][0] *= 1.2;
+                        menuMultiTex->transformationMatrix[1][1] *= 1.2;
+                    }
+                }
+            }
+            menuMultiTex->draw(ii);
+        };
+
+        glfwSwapBuffers(window->GLFWpointer);
+        glfwPollEvents();
+        if(glfwGetMouseButton(window->GLFWpointer, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
+            //// BUTTON MEANING
+            switch(highlightedButton){
+                case -1: //no highlight
+                case 0:  break;  //menu name highlight
+                case 1: exitFlag = SCENE_ABOUT; break;
+                case 2: exitFlag = SCENE_GENESIS; break;
+                case 3: exitFlag = SCENE_QUIT; break;
+            }
+        }
+        if(cursorMode && highlightedButton<=0){
+            cursorMode = false;
+            glfwSetCursor(window->GLFWpointer,arrowCursor);
+        }
+        if(!cursorMode && highlightedButton >0){
+            cursorMode = true;
+            glfwSetCursor(window->GLFWpointer,handCursor);
+        }
+        if(glfwWindowShouldClose(window->GLFWpointer) != 0){
+            exitFlag = SCENE_QUIT;
+        }
+
+        // Do frame pacing
+        window->pace_frame();
+    }
+    // Set the cursor back to normal after the button is pressed
+    glfwSetCursor(window->GLFWpointer,arrowCursor);
+    return exitFlag;
+
+}
+
 void escape_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS){
         keyHandler.push_back(key);
@@ -250,41 +414,6 @@ void tutorial_key_callback(GLFWwindow* window, int key, int scancode, int action
     if(action == GLFW_PRESS){
         keyHandler.push_back(key);
     }
-}
-
-int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tutorialTex, vec2d tutorialSize){
-    int exitFlag = SCENE_TUTORIAL;
-    vec2d winSize = {640, 480};
-    keyHandler = {};
-    glfwSetKeyCallback(window->GLFWpointer,tutorial_key_callback);
-    glfwSetTime(0);
-    bool joyOut = false;
-    int joyCount = 0;
-        glClear(GL_COLOR_BUFFER_BIT);
-        winSize = window->windowSize();
-        tutorialTex->tMatrixReset();
-        tutorialTex->tMatrixScale({tutorialSize[0]*window->pixRatio/(winSize[0]*25), tutorialSize[1]*window->pixRatio/(winSize[1]*25)});
-        window->drawObjectList(circleShader);
-        tutorialTex->draw();
-        glfwSwapBuffers(window->GLFWpointer);
-    while(exitFlag == SCENE_TUTORIAL){
-        glfwPollEvents();
-        const float* axisStates = glfwGetJoystickAxes(GLFW_JOYSTICK_1,&joyCount);
-            for(int ii = 0; ii < joyCount; ii++){
-                if(axisStates[ii] > 0.2 || axisStates[ii] < -0.2){
-                    joyOut = true;
-                    break;
-                }
-            }
-        if((keyHandler.size()||joyOut) && glfwGetTime() > 1){
-            exitFlag = SCENE_INGAME;
-        }
-        if(glfwWindowShouldClose(window->GLFWpointer)){
-            exitFlag = SCENE_QUIT;
-        }
-    }
-    glfwSetKeyCallback(window->GLFWpointer, NULL);
-    return exitFlag;
 }
 
 std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
@@ -366,74 +495,6 @@ std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
 
 }
 
-int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat, CircleShader * circleShader){
-    int exitFlag = SCENE_MENU;
-
-    //get set resources;
-    glClearColor(0.2, 0.2, 0.3, 1.0);
-    int highlightedButton = -1;
-    vec2d cursorPos;
-    bool cursorMode = false;
-    GLFWcursor* arrowCursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
-    GLFWcursor* handCursor = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
-    while(exitFlag == SCENE_MENU){
-        // Do a physics step and draw the universe
-        glClear(GL_COLOR_BUFFER_BIT);
-        window->drawObjectList(circleShader);
-        window->boundUniverse->simulate_one_time_unit(window->fps);
-        double newWidthScale = initScreenRatio/(window->windowSize()[0]/(double)window->windowSize()[1]);
-
-        //draw the menu;
-        highlightedButton = -1;
-
-        cursorPos = window->cursorPosition();
-        for(int ii = 0; ii < menuElementTMat.size(); ii++) {
-            menuMultiTex->transformationMatrix = menuElementTMat[ii];
-            menuMultiTex->tMatrixScale({newWidthScale,1});
-            if(cursorPos[0] > menuElementTMat[ii][0][2] - menuElementTMat[ii][0][0] && cursorPos[0] <menuElementTMat[ii][0][2] + menuElementTMat[ii][0][0]){
-                if(cursorPos[1] > menuElementTMat[ii][1][2] - menuElementTMat[ii][1][1] && cursorPos[1] <menuElementTMat[ii][1][2] + menuElementTMat[ii][1][1]){
-                    highlightedButton = ii;
-                    if(ii >0) {
-                        menuMultiTex->transformationMatrix[0][0] *= 1.2;
-                        menuMultiTex->transformationMatrix[1][1] *= 1.2;
-                    }
-                }
-            }
-            menuMultiTex->draw(ii);
-        };
-
-        glfwSwapBuffers(window->GLFWpointer);
-        glfwPollEvents();
-        if(glfwGetMouseButton(window->GLFWpointer, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
-            //// BUTTON MEANING
-            switch(highlightedButton){
-                case -1: //no highlight
-                case 0:  break;  //menu name highlight
-                case 1: exitFlag = SCENE_ABOUT; break;
-                case 2: exitFlag = SCENE_GENESIS; break;
-                case 3: exitFlag = SCENE_QUIT; break;
-            }
-        }
-        if(cursorMode && highlightedButton<=0){
-            cursorMode = false;
-            glfwSetCursor(window->GLFWpointer,arrowCursor);
-        }
-        if(!cursorMode && highlightedButton >0){
-            cursorMode = true;
-            glfwSetCursor(window->GLFWpointer,handCursor);
-        }
-        if(glfwWindowShouldClose(window->GLFWpointer) != 0){
-            exitFlag = SCENE_QUIT;
-        }
-
-        // Do frame pacing
-        window->pace_frame();
-    }
-    // Set the cursor back to normal after the button is pressed
-    glfwSetCursor(window->GLFWpointer,arrowCursor);
-    return exitFlag;
-
-}
 
 void generateStandardUniverse (Window* window) {
 
@@ -460,56 +521,12 @@ void generateStandardUniverse (Window* window) {
     // Add a player
     Player* player = new Player();
     player->set_colour({1.0, 0., 0., 1.});
+    player->set_bouncyness(0.5);
     window->boundUniverse->add_object(player);
 
     boundPlayer = player;
 }
 
-void showMenuDebug(){
-    // easy generate a window
-    Window thisGame = Window();
-
-    // load a texture from file and create a texture shader for it
-    GLuint menuTex = loadDDS("MenuTextures.DDS");
-    TextureShader menuMultiTex(menuTex);
-
-    // convert the texture shader to a proper hardcoded multi-textureshader and get matrices of the positions.
-    std::vector<glm::mat3> tMats = loadMenuResources(&menuMultiTex);
-
-    // Store initial size so resizing can be applied with the right reference of initiation.
-    vec2d initSize = thisGame.windowSize();
-
-    // test sho
-    std::cout << "show_menu exit code (next scene): " << show_menu(&thisGame, &menuMultiTex,tMats) << endl;
-}
-
-void timerDebug(){
-    Window thisGame = Window();
-
-    GLuint textShader = LoadShaders("shaders/textOld.glvs", "shaders/text.glfs");
-
-    FontTexHandler myText("frabk.ttf",32, textShader, thisGame.windowSize());
-    TextShader newText("verdana.ttf");
-    newText.colour = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-    bool exit = false;
-    int thisTime;
-    std::stringstream text;
-    glfwSetTime(0.0);
-    while(!exit){
-        glClear(GL_COLOR_BUFFER_BIT);
-        thisTime = 10*glfwGetTime();
-        thisTime *= 10;
-        text << "Score: " <<thisTime;
-        //myText.renderText(text.str(),240,210,1.0,{1.0,0.0,0.0});
-        newText.draw(text.str(),{0.95, 0.9},DRAWTEXT::ALIGN_RIGHT,thisGame.windowSize(),0.03);
-        glfwSwapBuffers(thisGame.GLFWpointer);
-        glfwPollEvents();
-        text.str(std::string());
-        if(glfwWindowShouldClose(thisGame.GLFWpointer) != 0 || glfwGetKey(thisGame.GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS){
-            exit = true;
-        }
-    }
-}
 
 void addRandomObject(Universe* universe, unsigned seed) {
     if(!seed){
@@ -518,24 +535,36 @@ void addRandomObject(Universe* universe, unsigned seed) {
         srand(seed);
     }
 
-    std::array<double,2> radiusLim = {0.5, 0.8};
-    std::array<double,2> massLim = {0.3, 3};
+    std::array<double,2> radiusLim = {0.5, 1};
+    std::array<double,2> massLim = {0.5, 3};
     std::array<double,2> velocityLim = {-8, 8};
+    std::array<double,2> bouncyLim = {0.5, 0.9};
+    double AVOID_RADIUS = 5;
 
     Object* A = new Object;
     A->set_mass((std::rand()/(double)RAND_MAX)*(massLim[1]-massLim[0])+massLim[0]);
     A->set_velocity((std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0],(std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0]);
     A->set_radius((std::rand()/(double)RAND_MAX)*(radiusLim[1]-radiusLim[0])+radiusLim[0]);
+    A->set_bouncyness((std::rand()/(double)RAND_MAX)*(bouncyLim[1]-bouncyLim[0])+bouncyLim[0]);
 
-    A->set_bouncyness(0.6);
 
     std::array<double,2> xLim = {-universe->width/2+A->radius, universe->width/2-A->radius};
     std::array<double,2> yLim = {-universe->height/2+A->radius, universe->height/2-A->radius};
     do{
-        A->set_position((std::rand()/(double)RAND_MAX)*(xLim[1]-xLim[0])+xLim[0], (std::rand()/(double)RAND_MAX)*(yLim[1]-yLim[0])+yLim[0]);
-    }
+        // Get a new position which is not close to the player, if it exists
+        if ( boundPlayer != NULL ) {
+            do {
+                A->set_position((std::rand()/(double)RAND_MAX)*(xLim[1]-xLim[0])+xLim[0], (std::rand()/(double)RAND_MAX)*(yLim[1]-yLim[0])+yLim[0]);
+            }
+            while (universe->physics.distance_between(A, boundPlayer) < AVOID_RADIUS);
+        }
+        else {
+            // Otherwise just prevent a collision
+            A->set_position((std::rand()/(double)RAND_MAX)*(xLim[1]-xLim[0])+xLim[0], (std::rand()/(double)RAND_MAX)*(yLim[1]-yLim[0])+yLim[0]);
+        }
 
-    while(CollidesWithAny(A, universe));
+    }
+    while(collidesWithAny(A, universe));
     universe->add_object(A);
 
 }
@@ -546,7 +575,7 @@ void addRandomObjects(Universe* universe, unsigned seed, int objectAmount) {
     }
 }
 
-bool CollidesWithAny(Object* obj, Universe* uni) {
+bool collidesWithAny(Object* obj, Universe* uni) {
     for(int ii = 0; ii < uni->objects.size(); ii++){
         if(uni->objects[ii] != obj){
             if(uni->physics.distance_between(uni->objects[ii],obj) < (uni->objects[ii]->radius + obj->radius) ){

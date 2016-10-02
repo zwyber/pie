@@ -107,11 +107,11 @@ void Window::pace_frame() {
         usleep(unsigned((1/fps - delta)*1E6));
 
         if (delta/(1.0/fps) > 0.75) {
-            //std::cerr << "WARNING at 75% of CPU time per frame" << std::endl;
+            std::cerr << "WARNING at 75% of CPU time per frame" << std::endl;
         }
     }
     else{
-        // std::cerr << "CANNOT REACH TARGET FPS" << std::endl;
+        std::cerr << "CANNOT REACH TARGET FPS" << std::endl;
     }
 
     lastTime = glfwGetTime();
@@ -255,7 +255,7 @@ void Window::drawObjectList(std::vector<Object*> &objects, CircleShader* circleS
             position[0] *= pixRatio * 2.0 / winWidth;
             position[1] *= pixRatio * 2.0 / winHeight;
             // Draw the circle at the position
-            drawFilledCircle(position, radius, std::sqrt(objects[ii]->radius) * 25, objects[ii]->get_colour());
+            drawFilledCircle(position, radius, std::sqrt(objects[ii]->radius) * 25, objects[ii]->colour);
         }
     }else{
         for (int ii = 0; ii < objects.size(); ii++) {
