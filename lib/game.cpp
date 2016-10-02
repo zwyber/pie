@@ -50,7 +50,7 @@ void maingame(int startScene) {
         // Don't worry I think the if statements in a while loop makes more sense in our case ;)
         if (scene == SCENE_MENU) {
             // Create a universe and bind it to the window
-            Universe *universe = new Universe(universeWidth,universeHeight);
+            Universe *universe = new Universe(universeWidth, universeHeight);
             window.bindUniverse(universe);
 
             // Setup a few objects in the universe
@@ -62,22 +62,22 @@ void maingame(int startScene) {
             // Clear all heap variables
             window.bindUniverse(NULL);
             delete universe;
-
         }
 
         if (scene == SCENE_ABOUT) {
-            scene = show_about(&window,&aboutText);
+            scene = show_about(&window, &aboutText);
             continue;
         }
 
         if (scene == SCENE_GENESIS) {
             // Generate a standard universe
-            Universe *universe = new Universe(universeWidth,universeHeight);
+            Universe *universe = new Universe(universeWidth, universeHeight);
             window.bindUniverse(universe);
 
             generateStandardUniverse(&window);
             Joystick = glfwJoystickPresent(GLFW_JOYSTICK_1);
 
+            // Only show the tutorial if it hasn't been done already
             if (!shownTutorial) {
                 scene = SCENE_TUTORIAL;
             }
@@ -94,7 +94,6 @@ void maingame(int startScene) {
 
         if (scene == SCENE_INGAME) {
             scene = show_ingame(&window, &allDebrisShader,&scoreText);
-
         }
 
         if (scene == SCENE_DIED) {
@@ -408,11 +407,13 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
 
 }
 
+
 void escape_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS){
         keyHandler.push_back(key);
     }
 }
+
 void tutorial_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
     if(action == GLFW_PRESS){
         keyHandler.push_back(key);
