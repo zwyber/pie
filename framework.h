@@ -16,6 +16,7 @@
 #include<map>
 #include<cmath>
 #include<fstream>
+#include<sstream>
 #include<cstdlib>
 #include<ctime>
 #include<chrono>
@@ -36,6 +37,13 @@
 // Type definitions
 typedef std::array<double, 2> vec2d;
 typedef std::array<vec2d, 2> pos_vel;
+
+struct Character{
+    GLuint textureID;
+    glm::ivec2 Size;
+    glm::ivec2 Bearing;
+    FT_Pos Advance;
+};
 
 // Own libraries
 #include "lib/vecmath.h"

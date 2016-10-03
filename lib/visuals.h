@@ -18,6 +18,11 @@ namespace vis{
     const unsigned NO_RESIZE = 3;
     const unsigned ZOOM_UNIVERSE = 4;
 }
+namespace DRAWTEXT{
+    const unsigned ALIGN_LEFT = 0;
+    const unsigned ALIGN_CENTER = 1;
+    const unsigned ALIGN_RIGHT = 2;
+}
 
 class Shader{
 protected:
@@ -64,9 +69,24 @@ public:
     void setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray, const GLfloat *vertexArray);
     void draw();
 };
-class SharedTextureShader: public Shader{
-
+//TextShader is a class inspired by: http://learnopengl.com/#!In-Practice/Text-Rendering
+class TextShader: public Shader{
+private:
+    std::map<GLchar, Character> Characters;
+    FT_Library ft;
+    FT_Face face;
+    GLuint textColorID;
+    GLuint uvBuffer;
+    GLuint vertexUVID;
+    GLuint textureID;
+    int pixSize;
+public:
+    TextShader(const char* trueTypePath, int numOfChars = 128);// : Shader("shaders/text.glvs", "shaders/text.glfs", "VertexPos", "projection");
+    ~TextShader();
+    glm::vec4 colour;
+    void draw(std::string text, vec2d position, unsigned alignment = DRAWTEXT::ALIGN_LEFT,vec2d screenDims = {0,0}, double height = 0.1);
 };
+
 class Window{
 private:
     // Keep the following parameters protected but shared in the draw functions

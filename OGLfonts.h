@@ -11,20 +11,6 @@
 #ifndef TUTORIALS_OGLFONTS_H
 #define TUTORIALS_OGLFONTS_H
 
-struct Character{
-    GLuint textureID;
-    glm::ivec2 Size;
-    glm::ivec2 Bearing;
-    FT_Pos Advance;
-};
-
-struct VertexPos{
-    GLfloat x;
-    GLfloat y;
-    GLfloat z;
-    GLfloat w;
-};
-
 
 class FontTexHandler{
 public:

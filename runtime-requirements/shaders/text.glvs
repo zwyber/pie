@@ -1,14 +1,17 @@
 
-uniform mat4 projection;
+uniform mat3 projection;
 
 #if __VERSION__ >= 130
 
-in vec4 VertexPos;
+in vec2 VertexPos;
+in vec2 vertexUV;
 out vec2 TexCoords;
 
 #else
 
-attribute vec4 VertexPos;
+attribute vec2 VertexPos;
+attribute vec2 vertexUV;
+
 varying vec2 TexCoords;
 
 #endif
@@ -17,6 +20,7 @@ varying vec2 TexCoords;
 
 void main()
 {
-    gl_Position = projection * vec4(VertexPos.xy, 0.0, 1.0);
-    TexCoords = VertexPos.zw;
+    vec3 xyPos = projection * vec3(VertexPos,1.0);
+    gl_Position = vec4(xyPos.xy+vec2(projection[0].z,projection[1].z),0.0,1.0);
+    TexCoords = vertexUV;
 }

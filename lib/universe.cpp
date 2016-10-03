@@ -6,16 +6,6 @@
 #include "simulation.h"
 #endif
 
-/*
- * Universe class functions
- *
- * The Universe is a class which keeps track of all objects in the game.
- * Also it will contain the physics engine etc.
- *
- * It has functions for adding objects, removing objects, getting objects, etc.
- *
- */
-
 // Constructors
 
 /*
@@ -55,9 +45,11 @@
  * }
  */
 Universe::Universe() : height(_height), width(_width), score(_score) {
+    // Without input arguments use the defaults
     this->_width = 640;
     this->_height = 480;
 
+    // Start a steady_clock
     this->begin_time = std::chrono::steady_clock::now();
 }
 
@@ -65,14 +57,15 @@ Universe::Universe(double width, double height) : height(_height), width(_width)
     this->_width = width;
     this->_height = height;
 
+    // Start a steady_clock
     this->begin_time = std::chrono::steady_clock::now();
 }
 
 /*
- * add_object(Object &obj)
+ * add_object()
  *
- * Add a copy of obj to the objects list of the current universe. Returns the id of the object
- * in the universe.
+ * Add an object to the universe. If an Object* is supplied use that object, otherwise
+ * create a new object (in heap memory) and return the pointer.
  */
 void Universe::add_object (Object* obj) {
     // Add a copy of the object to the vector of objects in the universe.
@@ -87,16 +80,11 @@ Object* Universe::add_object () {
     return obj;
 }
 
-// Remove object functions
-
 /*
- * remove_object_by_index(int obj_index)
+ * remove_object_by_index()
  *
- * The fastest way to remove an object from the universe. Removes the object
- * which is at index obj_index in the vector of objects. Shifts all other
- * objects to make the list continuous again. (uses std::vector.erase() to do so)
- *
- * Calls update_id_to_object_map() at the end
+ * Removes the object which is at index obj_index in the vector of objects. Also make sure
+ * that it is removed from heap memory
  */
 void Universe::remove_object_by_index(int obj_index) {
     Object* X = this->objects[obj_index];
@@ -108,6 +96,12 @@ void Universe::remove_object_by_index(int obj_index) {
     delete X;
 }
 
+/*
+ * remove_object()
+ *
+ * This function will find the index of the object in the vector of objects, and then call
+ * remove_object_by_index() to remove the object.
+ */
 void Universe::remove_object(Object* obj)  {
     // Find it in the list of stored objects
     for (int ii = 0; ii < objects.size(); ++ii) {
@@ -118,6 +112,11 @@ void Universe::remove_object(Object* obj)  {
     }
 }
 
+/*
+ * Universe deconstructor.
+ *
+ * Remove all objects in the objects vector, so that the heap memory is cleared
+ */
 Universe::~Universe() {
     // Delete all objects stored in the universe
     int n = this->objects.size();
@@ -129,27 +128,11 @@ Universe::~Universe() {
 
 }
 
-// Get object functions
-
 /*
- * get_object_by_index()
+ * resize()
  *
- * Returns the object pointer in this universe by index number. Usage of this function
- * is not recommended, use get_object_by_id() instead.
+ * Change the dimensions of the universe.
  */
-Object* Universe::get_object_by_index(int index) {
-    return objects[index];
-}
-
-/*
- * get_all_objects()
- *
- * Returns the vector of all objects in the universe.
- */
-std::vector<Object*> Universe::get_all_objects() {
-    return objects;
-}
-
 void Universe::resize(double width, double height) {
     if(width > 0){
         _width = width;
@@ -164,12 +147,17 @@ void Universe::resize(double width, double height) {
     // Optional add some code here that keeps objects within universe
 }
 
-
-// Object
-
+/*
+ * physics_runtime_iteration()
+ *
+ * Perform one iteration of the physics engine. Calculates new positions and velocities for all objects,
+ * as well as perform object collisions. Also prevent objects from exceeding the walls.
+ *
+ * Do not use this function for stepping the world! Use simulate_one_time_unit() for that.
+ */
 void Universe::physics_runtime_iteration () {
     // Temporary result storage
-    std::map<Object*,std::array<vec2d, 2>> new_pos_vel_universe;
+    std::map<Object*, std::array<vec2d, 2>> new_pos_vel_universe;
 
     // Iterate over all objects
     for (int ii = 0; ii < objects.size(); ++ii) {
@@ -207,8 +195,6 @@ void Universe::physics_runtime_iteration () {
             // Make a mirror object at the
         }
 
-        //// Durp wall collision is rather ugly now, put in subroutine
-
         // Colliding in the west wall
         if ( pos[0] - r < -this->_width/2 ) {
             // Do the wall collision
@@ -236,16 +222,22 @@ void Universe::physics_runtime_iteration () {
 
 }
 
+/*
+ * simulate_one_time_unit()
+ *
+ * Perform as many physics iterations as needed to simulate one time unit of game time. This
+ * resolves the problem where a higher DE solver precision would result in a slower passing of
+ * time in the game world.
+ */
 void Universe::simulate_one_time_unit(double fps) {
-
     // Call physics_runtime_iteration as many times as required to advance it one time "unit",
     // which is defined as 1/FPS
-
     int iterations = double(1.0/fps) / this->physics.timestep;
     for ( int ii = 0; ii < iterations; ++ii ) {
         this->physics_runtime_iteration();
     }
 
+    // Increment the score
     this->_score++;
 }
 

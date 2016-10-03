@@ -6,18 +6,23 @@
 #include "simulation.h"
 #endif
 
-Object::Object () : mass(_mass), bouncyness(_bouncyness), radius(_radius), position(_position), velocity(_velocity) {
-    // Nothing to do, just the bindings
+// Set the bindings from private _key to public reference key
+Object::Object () : mass(_mass), bouncyness(_bouncyness), radius(_radius), position(_position), velocity(_velocity), colour(_colour) {
+
 }
 
-
+/*
+ * set_bouncyness()
+ *
+ * Set the private bouncyness property to a value between 0 and including 1
+ */
 void Object::set_bouncyness(double bouncyness) {
     if ( bouncyness > 0 && bouncyness <= 1 ) {
         this->_bouncyness = bouncyness;
     }
     else {
-        // Invalid
-        std::cerr << "Invalid bouncyness entered, must be between 0 and including 1" << std::endl;
+        // Invalid value given
+        std::cerr << "[WARN] Invalid bouncyness entered, must be between 0 and including 1" << std::endl;
     }
 
 }
@@ -25,10 +30,12 @@ void Object::set_bouncyness(double bouncyness) {
 /*
  * set_position()
  *
- * Sets the position of the object to the new two double input parameters.
+ * Sets the position of the object to the new two double input parameters. Either with
+ * two doubles as position, or as a vec2d.
+ *
+ * No checks are performed to allow for some freedom with other functions.
  */
 void Object::set_position(double new_x, double new_y) {
-    // IMPLEMENT INPUT SANITATION CHECKS HERE?
     _position[0] = new_x;
     _position[1] = new_y;
 }
@@ -40,10 +47,11 @@ void Object::set_position(vec2d new_pos) {
 /*
  * set_velocity()
  *
- * Sets the velocity of the object
+ * Sets the velocity of the object, either with two doubles, or as a vec2d.
+ *
+ * No checks are performed to allow for some freedom with other functions.
  */
 void Object::set_velocity(double new_vx, double new_vy) {
-    // IMPLEMENT INPUT SANITATION CHECKS HERE?
     _velocity[0] = new_vx;
     _velocity[1] = new_vy;
 }
@@ -52,16 +60,25 @@ void Object::set_velocity(vec2d new_v) {
 }
 
 
-
+/*
+ * set_mass()
+ *
+ * Sets the mass of the object, which must be greater than zero
+ */
 void Object::set_mass(double m) {
     if ( m > 0 ) {
         _mass = m;
     }
     else{
-        std::cout << "Attempting to set the mass of an object <= 0!";
+        std::cout << "[WARN] Attempting to set the mass of an object <= 0!";
     }
 }
 
+/*
+ * set_radius()
+ *
+ * Sets the radius of the object, which must be greater than zero
+ */
 void Object::set_radius(double r){
     if( r > 0 ){
         _radius = r;
@@ -70,25 +87,32 @@ void Object::set_radius(double r){
     }
 }
 
-
-void Object::set_colour(std::array<double, 4> Colour){
-    for(int ii = 0; ii < colour.size(); ii++){
-        if(Colour[ii]<0.0){
-            colour[ii] = 0.0;
-            std::cerr << "[WARN] Tried to set a colour value of object " << this << " to invalid value" << Colour[ii] << " colour value was forced to 0" << std::endl;
-        }else if(Colour[ii]<=1.0) {
-            colour[ii] = Colour[ii];
-        }else{
-            colour[ii] = 1.0;
-            std::cerr << "[WARN] Tried to set a colour value of object " << this << " to invalid value" << Colour[ii] << " colour value was forced to 1" << std::endl;
+/*
+ * set_colour()
+ *
+ * Set the colour of an object to the four value array (rgba), with values between and including 0 to 1
+ */
+void Object::set_colour(std::array<double, 4> colour){
+    for ( int ii = 0; ii < 4; ii++ ) {
+        if (colour[ii] < 0.0) {
+            _colour[ii] = 0.0;
+            std::cerr << "[WARN] Tried to set a colour value of object " << this << " to invalid value" << colour[ii] << " colour value was forced to 0" << std::endl;
+        } else if ( colour[ii] <= 1.0 ) {
+            _colour[ii] = colour[ii];
+        } else {
+            _colour[ii] = 1.0;
+            std::cerr << "[WARN] Tried to set a colour value of object " << this << " to invalid value" << colour[ii] << " colour value was forced to 1" << std::endl;
         }
     }
 };
-std::array<double, 4> Object::get_colour(){
-    return colour;
-};
+
+/*
+ * get_colour_glm()
+ *
+ * Return the colour of this object as a glm::vec4 object.
+ */
 glm::vec4 Object::get_colour_glm(){
-    return glm::vec4(colour[0],colour[1],colour[2],colour[3]);
+    return glm::vec4(_colour[0],_colour[1],_colour[2],_colour[3]);
 }
 
 
@@ -104,14 +128,8 @@ std::array<vec2d, 2> Object::calc_new_pos_vel(std::vector<Object*> &objects, Phy
     return physics.de_solver(acceleration, this);
 };
 
-
-void Object::lose_energy(double factor, Physics &physics) {
-    physics.lose_energy(this, factor);
-}
-
 void Object::on_collide (Object* target, Physics &physics) {
-    // Do nothing yet
-    target->lose_energy(0, physics);
+    // Do nothing yet, allow inherited classes to use a different implementation
 
 }
 
@@ -119,11 +137,55 @@ void Object::on_collide (Object* target, Physics &physics) {
 
 //// Child classes Object
 
-
+/*
+ * Player has a different on_collide handler
+ */
 void Player::on_collide (Object* target, Physics &physics) {
-    // Make the other object slow down!
-    target->lose_energy(0, physics);
-
-    // Scream that we collided, e.g. the game should end!
+    // Set the property that this player collided, game logic will call end_game
     this->i_collided = true;
 }
+
+/*
+ * Player has a different handler for accelerations, because it can respond to keyboard input. It basically
+ * injects an acceleration superimposed on the attractive forces due to the other objects.
+ */
+std::array<vec2d, 2> Player::calc_new_pos_vel (std::vector<Object*> &objects, Physics &physics) {
+
+    vec2d acceleration = physics.net_acceleration(objects, this);
+
+    // Get access to the users keyboard input
+    GLFWwindow* window = glfwGetCurrentContext();
+    vec2d input = {{0}};
+    double thruster_a = this->thruster_force / this->mass;
+
+    if(joystick) {
+        int count = 0;
+        const float *axes = glfwGetJoystickAxes(GLFW_JOYSTICK_1, &count);
+        switch (count) {
+            default:
+            case 2:
+                input[1] = -axes[1] * thruster_a;
+            case 1:
+                input[0] = axes[0] * thruster_a;
+            case 0:
+                break;
+        }
+    }
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        input[1] = thruster_a;
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        input[1] = -thruster_a;
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+        input[0] = -thruster_a;
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        input[0] = thruster_a;
+    }
+
+    // Add the additional thruster acceleration to the calculated acceleration
+    acceleration = add(acceleration, input);
+
+    return physics.de_solver(acceleration, this);
+};
