@@ -89,20 +89,24 @@ public:
 class Window{
 private:
     // Keep the following parameters protected but shared in the draw functions
+    // Window size properties
     int winHeight;
     int winWidth;
     double winWtHratio;
-    vec2d cursorPos;
-    //// properties in order to resolve universe and window conversions
-    // Currently only a single universe can be bound to a window, if needed this can be easily changed to a vector
 
+    // Accesible storage for the cursor position (based on cursor callback)
+    vec2d cursorPos;
+
+    // Flag (see vis namespace) that defines the
     unsigned activeFlag;
 
-    //
+    // Saved universe to window ratio for rescaling
     vec2d uniToWinRatio;
+
+    // Basic initiation function called by all window constructors
     void stdInitWindow();
 public:
-
+    // The universe that is bound to the window (the window can control its size)
     Universe* boundUniverse;
 
     // Constructor that makes a window use ready.

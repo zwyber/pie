@@ -35,11 +35,9 @@ void maingame(int startScene) {
     TextureShader spaceTex = TextureShader(space);
 
     vec2d tutorialSize = {640, 480};
-    //// I'd suggest building a circle shader for universes to use.
     CircleShader allDebrisShader;
 
     TextShader scoreText = TextShader("Fonts/Courier New Bold.ttf");
-    //TextShader aboutText = TextShader("Fonts/ARIALNB.ttf"); //UT house font if capitalized
     TextShader aboutText = TextShader("Fonts/verdana.ttf");
 
     // Load menu resources

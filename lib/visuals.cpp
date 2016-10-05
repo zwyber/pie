@@ -7,6 +7,7 @@
 /*
  * Functions to initialise a new window that can be drawn on.
  */
+// Generate a window that fits the universe
 Window::Window(Universe* uni, double pixelRatio){
     pixRatio = pixelRatio;
     winHeight = uni->height*pixRatio;
@@ -16,6 +17,7 @@ Window::Window(Universe* uni, double pixelRatio){
     activeFlag = vis::AUTO_SIZE_UNIVERSE;
     stdInitWindow();
 }
+// Generate a window of width by height without a universe bound to it
 Window::Window(int width, int  height, const unsigned flag){
     winHeight = height;
     winWidth = width;
@@ -24,6 +26,7 @@ Window::Window(int width, int  height, const unsigned flag){
     activeFlag = flag;
     stdInitWindow();
 }
+// Generate a window of width by height with a bound universe
 Window::Window(int width, int height, Universe* uni, double pixelRatio, const unsigned flag){
     winHeight = height;
     winWidth = width;
