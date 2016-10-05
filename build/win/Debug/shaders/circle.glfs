@@ -1,0 +1,32 @@
+#version 120
+
+varying vec2 texCoord;
+
+uniform vec4 disc_color; // vec4(1.0, 1.0, 1.0, 1.0)
+uniform mat3 projection;
+
+void main()
+{
+    vec2 uv = texCoord;
+    uv -= vec2(0.5f, 0.5f);
+
+    vec2 lightPos = vec2(-projection[0].z/2.0, -projection[1].z/2.0);
+    vec2 distLightPos = uv - lightPos/1.1;
+
+    vec4 colorLim = 0.5*(vec4(1.0)-disc_color) +0.5* disc_color;
+    vec4 useColor = vec4(disc_color.rgb+ colorLim.rgb*(0.5-1.5*dot(distLightPos,distLightPos)),disc_color.a);
+    vec4 bkg_color = vec4(useColor.r, useColor.g, useColor.b, 0.0f);
+
+    //GLSL 1.20 does not contain smoothstep, this line is equivalent
+    float clampScale = 0.003f/(projection[0].x+projection[1].y);
+    float t = clamp((sqrt(dot(uv, uv))-0.5f*(1.0+clampScale))/-clampScale,0.0f,1.0f);
+    t = t*t*(3-2*t);
+    gl_FragColor = mix(bkg_color, useColor, t);
+    //if(sqrt(dot(uv, uv))> 0.5f){
+    //    gl_FragColor = bkg_color;
+    //}else{
+    //    gl_FragColor = disc_color;
+    //}
+    //gl_FragColor = texture2D(mytex,  gl_TexCoord[0].st);
+    //gl_FragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+}

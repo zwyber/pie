@@ -86,7 +86,6 @@ public:
     glm::vec4 colour;
     void draw(std::string text, vec2d position, unsigned alignment = DRAWTEXT::ALIGN_LEFT,vec2d screenDims = {0,0}, double height = 0.1);
 };
-
 class Window{
 private:
     // Keep the following parameters protected but shared in the draw functions

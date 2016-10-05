@@ -5,7 +5,7 @@
 #include "visuals.h"
 
 /*
- * Function to initialise a new window that can be drawn on.
+ * Functions to initialise a new window that can be drawn on.
  */
 Window::Window(Universe* uni, double pixelRatio){
     pixRatio = pixelRatio;
@@ -755,3 +755,4 @@ void TextShader::draw(std::string text, vec2d position, unsigned alignment,vec2d
     glBindTexture(GL_TEXTURE_2D, 0);
     glUseProgram(0);
 }
+

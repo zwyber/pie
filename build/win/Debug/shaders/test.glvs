@@ -1,0 +1,21 @@
+
+//uniform mat4 projection;
+
+#if __VERSION__ >= 130
+
+in vec4 VertexPos;
+
+#else
+
+attribute vec4 VertexPos;
+
+#endif
+
+
+
+void main()
+{
+
+    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
+    //gl_TexCoord[0] = gl_MultiTexCoord0;
+}

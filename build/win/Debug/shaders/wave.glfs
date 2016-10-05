@@ -1,0 +1,18 @@
+#version 120
+
+varying vec2 UV;
+
+uniform sampler2D tex;
+
+uniform vec4 colour;
+uniform int drawMode; //0 iterate new image, //1 draw image
+uniform long unsigned time;
+
+void main()
+{
+    if(!drawMode){
+
+    }else{
+        gl_FragColor = texture2D(tex, UV);
+    }
+}

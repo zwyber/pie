@@ -26,11 +26,13 @@ void maingame(int startScene) {
     Window window = Window(pixRatio*universeWidth,pixRatio*universeHeight,vis::NO_RESIZE);
     window.pixRatio = pixRatio;
     GLuint menuTex = loadDDS("Textures/MenuTextures.DDS");
-    GLuint tutorialDDS = loadDDS("Textures/Tutorial.DDS");
+    GLuint tutorialDDS = loadDDS("Textures/Tutorial2.DDS");
+    GLuint space = loadDDS("Textures/SpaceCrop.DDS");
 
     // Init shader
     TextureShader menuMultiTex = TextureShader(menuTex);
     TextureShader tutorialTex = TextureShader(tutorialDDS);
+    TextureShader spaceTex = TextureShader(space);
 
     vec2d tutorialSize = {640, 480};
     //// I'd suggest building a circle shader for universes to use.
@@ -57,7 +59,7 @@ void maingame(int startScene) {
             addRandomObjects(window.boundUniverse, std::rand(), 40);
 
             // Show the menu
-            scene = show_menu(&window, &menuMultiTex, tMats, &allDebrisShader);
+            scene = show_menu(&window, &menuMultiTex, tMats, &allDebrisShader,&spaceTex);
 
             // Clear all heap variables
             window.bindUniverse(NULL);
@@ -88,12 +90,12 @@ void maingame(int startScene) {
 
         if (scene == SCENE_TUTORIAL) {
             shownTutorial = true;
-            scene = show_tutorial(&window,&allDebrisShader,&tutorialTex,tutorialSize);
+            scene = show_tutorial(&window,&allDebrisShader,&tutorialTex,tutorialSize,&spaceTex);
 
         }
 
         if (scene == SCENE_INGAME) {
-            scene = show_ingame(&window, &allDebrisShader,&scoreText);
+            scene = show_ingame(&window, &allDebrisShader,&scoreText,&spaceTex);
         }
 
         if (scene == SCENE_DIED) {
@@ -137,7 +139,7 @@ void maingame(int startScene) {
     glfwTerminate();
 }
 
-int show_ingame (Window* window, CircleShader* circleShader, TextShader* textShader) {
+int show_ingame (Window* window, CircleShader* circleShader, TextShader* textShader, TextureShader* background) {
     int exitFlag = SCENE_INGAME;
 
     // Initialise a few variables
@@ -160,6 +162,9 @@ int show_ingame (Window* window, CircleShader* circleShader, TextShader* textSha
         // Do a physics step and draw the universe
         keyHandler = {};
         glClear(GL_COLOR_BUFFER_BIT);
+        if(background!=NULL){
+            background->draw();
+        }
         window->boundUniverse->simulate_one_time_unit(window->fps);
         window->drawObjectList(circleShader);
         if(textShader!=NULL) {
@@ -277,7 +282,7 @@ int show_about (Window* window, TextShader* newText) {
 
 }
 
-int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tutorialTex, vec2d tutorialSize){
+int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tutorialTex, vec2d tutorialSize, TextureShader* background){
     // Default
     int exitFlag = SCENE_TUTORIAL;
 
@@ -294,6 +299,9 @@ int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tuto
 
     // Clear the screen
     glClear(GL_COLOR_BUFFER_BIT);
+    if(background!=NULL){
+        background->draw();
+    }
 
     // Scale the tutorial image to window size
     winSize = window->windowSize();
@@ -338,7 +346,7 @@ int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tuto
     return exitFlag;
 }
 
-int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat, CircleShader * circleShader){
+int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat, CircleShader * circleShader, TextureShader* background){
     int exitFlag = SCENE_MENU;
 
     //get set resources;
@@ -351,6 +359,9 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
     while(exitFlag == SCENE_MENU){
         // Do a physics step and draw the universe
         glClear(GL_COLOR_BUFFER_BIT);
+        if(background!=NULL){
+            background->draw();
+        }
         window->drawObjectList(circleShader);
         window->boundUniverse->simulate_one_time_unit(window->fps);
         double newWidthScale = initScreenRatio/(window->windowSize()[0]/(double)window->windowSize()[1]);

@@ -1,0 +1,26 @@
+
+uniform mat3 projection;
+
+#if __VERSION__ >= 130
+
+in vec2 VertexPos;
+in vec2 vertexUV;
+out vec2 TexCoords;
+
+#else
+
+attribute vec2 VertexPos;
+attribute vec2 vertexUV;
+
+varying vec2 TexCoords;
+
+#endif
+
+
+
+void main()
+{
+    vec3 xyPos = projection * vec3(VertexPos,1.0);
+    gl_Position = vec4(xyPos.xy+vec2(projection[0].z,projection[1].z),0.0,1.0);
+    TexCoords = vertexUV;
+}

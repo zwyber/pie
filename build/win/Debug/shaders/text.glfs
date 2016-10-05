@@ -1,0 +1,21 @@
+
+uniform sampler2D text;
+uniform vec3 textColor;
+
+#if __VERSION__ >= 130
+
+in vec2 TexCoords;
+out vec4 gl_FragColor;
+
+#else
+
+varying vec2 TexCoords;
+
+#endif
+
+
+void main()
+{
+    vec4 sampled = texture2D(text, TexCoords);
+    gl_FragColor = vec4(textColor, sampled.r);
+}
