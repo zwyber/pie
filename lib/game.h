@@ -29,10 +29,10 @@ double initScreenRatio = 4.0/3.0;
 void maingame(int startScene = SCENE_MENU);
 
 // Scene functions
-int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat, CircleShader * circleShader = NULL);
+int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat, CircleShader * circleShader = NULL,TextureShader* background=NULL);
 int show_about(Window* window, TextShader* newText);
-int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tutorialTex, vec2d tutorialSize);
-int show_ingame(Window* window, CircleShader* circleShader = NULL, TextShader* textShader =NULL);
+int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tutorialTex, vec2d tutorialSize, TextureShader* background=NULL);
+int show_ingame(Window* window, CircleShader* circleShader = NULL, TextShader* textShader =NULL, TextureShader* background =NULL);
 
 // Load menu resources
 std::vector<glm::mat3> loadMenuResources(TextureShader * myMultiTex);

@@ -50,7 +50,4 @@ struct Character{
 #include "lib/simulation.h"
 #include "lib/visuals.h"
 
-// Semi-own written libraries
-#include "OGLfonts.h"
-
 #endif //PIE_GITHUB_FRAMEWORK_H

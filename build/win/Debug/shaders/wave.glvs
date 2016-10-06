@@ -1,0 +1,26 @@
+#version 120
+
+attribute vec2 PositionVec;
+attribute vec2 vertexUV;
+
+varying vec2 UV;
+varying vec4 newWave;
+
+uniform sampler2D kSpaceSeed;
+
+uniform vec2 screendim;
+uniform int drawMode; //0 iterate new image, //1 draw image
+//uniform mat3 MVP;
+
+void main()
+{
+    if(!drawMode){
+
+        UV = vertexUV
+    }else{
+        gl_Position = vec4(PositionVec,0.0,1.0);
+        texCoord = inTexcoord;
+
+        UV = vertexUV;
+    }
+}

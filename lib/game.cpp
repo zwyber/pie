@@ -19,11 +19,24 @@ void maingame() {
     Window window = Window();
 
     GLuint menuTex = loadDDS("MenuTextures.DDS");
+    bool shownTutorial = false;
+
+    Window window = Window(pixRatio*universeWidth,pixRatio*universeHeight,vis::NO_RESIZE);
+    window.pixRatio = pixRatio;
+    GLuint menuTex = loadDDS("Textures/MenuTextures.DDS");
+    GLuint tutorialDDS = loadDDS("Textures/Tutorial2.DDS");
+    GLuint space = loadDDS("Textures/SpaceCrop.DDS");
 
     // Init shader
     TextureShader menuMultiTex = TextureShader(menuTex);
-    //// I'd suggest building a circle shader for universes to use.
+    TextureShader tutorialTex = TextureShader(tutorialDDS);
+    TextureShader spaceTex = TextureShader(space);
+
+    vec2d tutorialSize = {640, 480};
     CircleShader allDebrisShader;
+
+    TextShader scoreText = TextShader("Fonts/Courier New Bold.ttf");
+    TextShader aboutText = TextShader("Fonts/verdana.ttf");
 
     // Load menu resources
     std::vector<glm::mat3> tMats = loadMenuResources(&menuMultiTex);
@@ -39,20 +52,19 @@ void maingame() {
             window.bindUniverse(universe);
 
             // Setup a few objects in the universe
-            addRandomObjects(window.boundUniverse, std::rand()/(double)RAND_MAX, 50);
+            addRandomObjects(window.boundUniverse, std::rand(), 40);
 
             // Show the menu
-            scene = show_menu(&window, &menuMultiTex, tMats, &allDebrisShader);
+            scene = show_menu(&window, &menuMultiTex, tMats, &allDebrisShader,&spaceTex);
 
             // Clear all heap variables
             window.bindUniverse(NULL);
             delete universe;
-
         }
 
         if (scene == SCENE_ABOUT) {
-            scene = SCENE_MENU;
-
+            scene = show_about(&window, &aboutText);
+            continue;
         }
 
         if (scene == SCENE_GENESIS) {
@@ -68,6 +80,25 @@ void maingame() {
         if (scene == SCENE_TUTORIAL) {
             glClear(GL_COLOR_BUFFER_BIT);
             window.drawObjectList(&allDebrisShader);
+            shownTutorial = true;
+            scene = show_tutorial(&window,&allDebrisShader,&tutorialTex,tutorialSize,&spaceTex);
+
+        }
+
+        if (scene == SCENE_INGAME) {
+            scene = show_ingame(&window, &allDebrisShader,&scoreText,&spaceTex);
+        }
+
+        if (scene == SCENE_DIED) {
+            // Draw a gray background
+
+            // Display the score
+            std::stringstream diedText;
+            diedText << "You hit something! Press the ESC key to return to the menu";
+            aboutText.draw(diedText.str(), {0,0}, DRAWTEXT::ALIGN_CENTER, window.windowSize(), 0.02);
+
+
+            glfwSetKeyCallback(window.GLFWpointer,escape_key_callback);
             glfwSwapBuffers(window.GLFWpointer);
             glfwPollEvents();
 
@@ -102,6 +133,7 @@ void maingame() {
 
 
 int show_ingame (Window* window, CircleShader* circleShader) {
+int show_ingame (Window* window, CircleShader* circleShader, TextShader* textShader, TextureShader* background) {
     int exitFlag = SCENE_INGAME;
 
     // Initialise a few variables
@@ -116,6 +148,9 @@ int show_ingame (Window* window, CircleShader* circleShader) {
     while(exitFlag == SCENE_INGAME){
         // Do a physics step and draw the universe
         glClear(GL_COLOR_BUFFER_BIT);
+        if(background!=NULL){
+            background->draw();
+        }
         window->boundUniverse->simulate_one_time_unit(window->fps);
         window->drawObjectList(circleShader);
 
@@ -160,6 +195,223 @@ int show_ingame (Window* window, CircleShader* circleShader) {
     return exitFlag;
 }
 
+int show_about (Window* window, TextShader* newText) {
+    int exitFlag = SCENE_ABOUT;
+
+    glClear(GL_COLOR_BUFFER_BIT);
+    //// Paul please don't generate Textshaders multiple times, although more efficient they still require some recourses
+    newText->colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    std::stringstream aboutText;
+    aboutText << "Space Debris Evaders is a game developed for the course";
+    newText->draw(aboutText.str(), {0, 0.8}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string()); // To clear the stringstream
+
+    aboutText << "'Programming in Engineering' at the University of Twente";
+    newText->draw(aboutText.str(), {0, 0.7}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
+
+    aboutText << "The goal is to learn C++ by developing a game.";
+    newText->draw(aboutText.str(), {0, 0.6}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
+
+    aboutText << "Authors:";
+    newText->draw(aboutText.str(), {0, 0.4}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
+
+    aboutText << "Arash Edresi";
+    newText->draw(aboutText.str(), {0, 0.3}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
+
+    aboutText << "Yvan Klaver";
+    newText->draw(aboutText.str(), {0, 0.2}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
+
+    aboutText << "Paul van Swinderen";
+    newText->draw(aboutText.str(), {0, 0.1}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
+
+
+    aboutText << "Press ESC to return to the menu";
+    newText->draw(aboutText.str(), {0, -0.4}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    aboutText.str(std::string());
+
+
+    glfwSwapBuffers(window->GLFWpointer);
+    glfwSetKeyCallback(window->GLFWpointer,escape_key_callback);
+    do {
+        keyHandler ={};
+        glfwPollEvents();
+
+        if(glfwWindowShouldClose(window->GLFWpointer) != 0){
+            exitFlag = SCENE_QUIT;
+
+            glfwSetKeyCallback(window->GLFWpointer,NULL);
+            return exitFlag;
+        }
+        if(keyHandler.size() ){
+            exitFlag = SCENE_MENU;
+
+            glfwSetKeyCallback(window->GLFWpointer,NULL);
+            return exitFlag;
+        }
+
+        // Wait 100ms
+        usleep(1E5);
+    }
+    while (true);
+
+
+}
+
+int show_tutorial(Window* window, CircleShader* circleShader,TextureShader* tutorialTex, vec2d tutorialSize, TextureShader* background){
+    // Default
+    int exitFlag = SCENE_TUTORIAL;
+
+    vec2d winSize = {640, 480};
+
+    // Setup a keyHandler, which is a list of buttons pressed
+    keyHandler = {};
+    glfwSetKeyCallback(window->GLFWpointer, tutorial_key_callback);
+    glfwSetTime(0);
+
+    // Setup joystick support
+    bool joyOut = false;
+    int joyCount = 0;
+
+    // Clear the screen
+    glClear(GL_COLOR_BUFFER_BIT);
+    if(background!=NULL){
+        background->draw();
+    }
+
+    // Scale the tutorial image to window size
+    winSize = window->windowSize();
+    tutorialTex->tMatrixReset();
+    tutorialTex->tMatrixScale({tutorialSize[0]*window->pixRatio/(winSize[0]*25), tutorialSize[1]*window->pixRatio/(winSize[1]*25)});
+
+    // Draw the universe objects
+    window->drawObjectList(circleShader);
+
+    // Draw the tutorial image
+    tutorialTex->draw();
+
+    // Display the display buffer to the user
+    glfwSwapBuffers(window->GLFWpointer);
+    const float* axisStates;
+    // While not moving to another scene
+    while(exitFlag == SCENE_TUTORIAL){
+
+        // Poll keyboard events
+        glfwPollEvents();
+        if(Joystick){
+            axisStates = glfwGetJoystickAxes(GLFW_JOYSTICK_1,&joyCount);
+            for ( int ii = 0; ii < joyCount; ii++ ) {
+                if  ( axisStates[ii] > 0.2 || axisStates[ii] < -0.2 ) {
+                    joyOut = true;
+                    break;
+                }
+            }
+        }
+        if ( (keyHandler.size()||joyOut) && glfwGetTime() > 1){
+            exitFlag = SCENE_INGAME;
+        }
+        if ( glfwWindowShouldClose(window->GLFWpointer) ) {
+            exitFlag = SCENE_QUIT;
+        }
+    }
+
+    // Reset the key callback function
+    glfwSetKeyCallback(window->GLFWpointer, NULL);
+
+    // Move on to the next screen
+    return exitFlag;
+}
+
+int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat, CircleShader * circleShader, TextureShader* background){
+    int exitFlag = SCENE_MENU;
+
+    //get set resources;
+    glClearColor(0.2, 0.2, 0.3, 1.0);
+    int highlightedButton = -1;
+    vec2d cursorPos;
+    bool cursorMode = false;
+    GLFWcursor* arrowCursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
+    GLFWcursor* handCursor = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
+    while(exitFlag == SCENE_MENU){
+        // Do a physics step and draw the universe
+        glClear(GL_COLOR_BUFFER_BIT);
+        if(background!=NULL){
+            background->draw();
+        }
+        window->drawObjectList(circleShader);
+        window->boundUniverse->simulate_one_time_unit(window->fps);
+        double newWidthScale = initScreenRatio/(window->windowSize()[0]/(double)window->windowSize()[1]);
+
+        //draw the menu;
+        highlightedButton = -1;
+
+        cursorPos = window->cursorPosition();
+        for(int ii = 0; ii < menuElementTMat.size(); ii++) {
+            menuMultiTex->transformationMatrix = menuElementTMat[ii];
+            menuMultiTex->tMatrixScale({newWidthScale,1});
+            if(cursorPos[0] > menuElementTMat[ii][0][2] - menuElementTMat[ii][0][0] && cursorPos[0] <menuElementTMat[ii][0][2] + menuElementTMat[ii][0][0]){
+                if(cursorPos[1] > menuElementTMat[ii][1][2] - menuElementTMat[ii][1][1] && cursorPos[1] <menuElementTMat[ii][1][2] + menuElementTMat[ii][1][1]){
+                    highlightedButton = ii;
+                    if(ii >0) {
+                        menuMultiTex->transformationMatrix[0][0] *= 1.2;
+                        menuMultiTex->transformationMatrix[1][1] *= 1.2;
+                    }
+                }
+            }
+            menuMultiTex->draw(ii);
+        };
+
+        glfwSwapBuffers(window->GLFWpointer);
+        glfwPollEvents();
+        if(glfwGetMouseButton(window->GLFWpointer, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
+            //// BUTTON MEANING
+            switch(highlightedButton){
+                case -1: //no highlight
+                case 0:  break;  //menu name highlight
+                case 1: exitFlag = SCENE_ABOUT; break;
+                case 2: exitFlag = SCENE_GENESIS; break;
+                case 3: exitFlag = SCENE_QUIT; break;
+            }
+        }
+        if(cursorMode && highlightedButton<=0){
+            cursorMode = false;
+            glfwSetCursor(window->GLFWpointer,arrowCursor);
+        }
+        if(!cursorMode && highlightedButton >0){
+            cursorMode = true;
+            glfwSetCursor(window->GLFWpointer,handCursor);
+        }
+        if(glfwWindowShouldClose(window->GLFWpointer) != 0){
+            exitFlag = SCENE_QUIT;
+        }
+
+        // Do frame pacing
+        window->pace_frame();
+    }
+    // Set the cursor back to normal after the button is pressed
+    glfwSetCursor(window->GLFWpointer,arrowCursor);
+    return exitFlag;
+
+}
+
+
+void escape_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS){
+        keyHandler.push_back(key);
+    }
+}
+
+void tutorial_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+    if(action == GLFW_PRESS){
+        keyHandler.push_back(key);
+    }
+}
 
 std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
     //// Input for menu properties

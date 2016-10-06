@@ -1,0 +1,16 @@
+#version 120
+
+attribute vec2 inPosition;
+attribute vec2 inTexcoord;
+
+varying vec2 texCoord;
+
+uniform mat3 projection;
+
+void main()
+{
+    vec3 xyPos = projection * vec3(inPosition,1.0);
+    gl_Position = vec4(xyPos.xy+vec2(projection[0].z,projection[1].z),0.0,1.0);
+    texCoord = inTexcoord;
+
+}
