@@ -5,7 +5,15 @@
 
 // Player pointer
 Player* boundPlayer = NULL;
+
+/*
+ * A keyhandler is basically a list of pressed keys. With that you can easily check
+ * if a key was pressed, and empty the list afterwards. It is updated with a callback
+ * function, which is executed after a glfwPollEvents().
+ */
 std::vector<int> keyHandler;
+
+// Joystick support is implemented, this variable controls holds if it is enabled or not.
 bool Joystick;
 
 void maingame(int startScene) {
@@ -143,7 +151,6 @@ int show_ingame (Window* window, CircleShader* circleShader, TextShader* textSha
     // Initialise a few variables
     std::chrono::steady_clock::time_point now_time;
     std::chrono::steady_clock::duration time_elapsed;
-    std::chrono::seconds seconds_passed;
     int seconds_count = 0;
     int NEW_OBJECT_DELAY = 3;
     int MORE_OBJECTS_DELAY = 2;
@@ -170,11 +177,11 @@ int show_ingame (Window* window, CircleShader* circleShader, TextShader* textSha
             scoreText << "Score: " << window->boundUniverse->score;
             textShader->draw(scoreText.str() ,{0, -0.92},DRAWTEXT::ALIGN_CENTER, window->windowSize() , 0.02);
         }
+
         // Determine if we want to add another piece of debris
         now_time = std::chrono::steady_clock::now();
         time_elapsed = now_time - window->boundUniverse->begin_time;
-        seconds_passed = std::chrono::duration_cast<std::chrono::seconds>(time_elapsed);
-        seconds_count = seconds_passed.count();
+        seconds_count = std::chrono::duration_cast<std::chrono::seconds>(time_elapsed).count();
 
         if (seconds_count % MORE_OBJECTS_DELAY == 0 && !addedAlready && seconds_count > NEW_OBJECT_DELAY ) {
             addRandomObject(window->boundUniverse);

@@ -10,6 +10,7 @@
 
 #ifndef TUTORIALS_VISUALS_H
 #define TUTORIALS_VISUALS_H
+
 // Constants defining the resize methods of the universe/window
 namespace vis{
     const unsigned FIXED_SIZE_UNIVERSE = 0; // Universe does not scale when window rescales
@@ -18,12 +19,14 @@ namespace vis{
     const unsigned NO_RESIZE = 3;           // No resize of window is possible (NOTE CAN ONLY BE SET AT INITIALISATION)
     const unsigned ZOOM_UNIVERSE = 4;       // When windows resizes the universe pixRatio scales to fit.
 }
+
 // constants defining the alignment methods of the textshader
 namespace DRAWTEXT{
     const unsigned ALIGN_LEFT = 0;
     const unsigned ALIGN_CENTER = 1;
     const unsigned ALIGN_RIGHT = 2;
 }
+
 // Base shader class for easy construction and drawing of shader based graphics.
 class Shader{
 protected:
@@ -44,6 +47,7 @@ public:
     GLuint programID;    // ID of the GLSL program
     virtual void draw();    // Draw the defined vertices with the GLSL program
 };
+
 // A shader class that handles textures
 class TextureShader: public Shader{
 private:
@@ -58,6 +62,7 @@ public:
     void setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray, const GLfloat *vertexArray); // change the UV coordinates and the vertex array stored in the Buffers (overload)
     void draw(unsigned texNum = 0);     // Draw a set of UV coordinates named by texNum
 };
+
 // A shader class to draw circles with a minimalistic lighting effect
 class CircleShader: public Shader{
 private:
@@ -72,6 +77,7 @@ public:
     void setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray, const GLfloat *vertexArray); // change the UV coordinates and the vertex array stored in the Buffers (overload)
     void draw();
 };
+
 //TextShader is a class inspired by: http://learnopengl.com/#!In-Practice/Text-Rendering
 class TextShader: public Shader{
 private:
@@ -90,6 +96,7 @@ public:
     // draw command to render text in a line with in FreeType generated spacing.
     void draw(std::string text, vec2d position, unsigned alignment = DRAWTEXT::ALIGN_LEFT,vec2d screenDims = {0,0}, double height = 0.1);
 };
+
 class Window{
 private:
     // Keep the following parameters protected but shared in the draw functions
@@ -109,6 +116,7 @@ private:
 
     // Basic initiation function called by all window constructors
     void stdInitWindow();
+
 public:
     // The universe that is bound to the window (the window can control its size)
     Universe* boundUniverse;
