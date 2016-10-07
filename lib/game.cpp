@@ -6,19 +6,29 @@
 // Player pointer
 Player* boundPlayer = NULL;
 
-void maingame() {
+/*
+ * A keyhandler is basically a list of pressed keys. With that you can easily check
+ * if a key was pressed, and empty the list afterwards. It is updated with a callback
+ * function, which is executed after a glfwPollEvents().
+ */
+std::vector<int> keyHandler;
+
+// Joystick support is implemented, this variable controls holds if it is enabled or not.
+bool Joystick;
+
+void maingame(int startScene) {
     // Initialise the scene switcher
-    int scene = SCENE_MENU;
+    int scene = startScene;
 
     // Initialise the window
-    int universeWidth = 720;
-    int universeHeight = 480;
+    double windowWidth = 1000;
+    double windowHeight = 700;
 
-    double pixRatio = 50;
+    double pixRatio = 25;
 
-    Window window = Window();
+    int universeWidth = windowWidth/pixRatio;
+    int universeHeight = windowHeight/pixRatio;
 
-    GLuint menuTex = loadDDS("MenuTextures.DDS");
     bool shownTutorial = false;
 
     Window window = Window(pixRatio*universeWidth,pixRatio*universeHeight,vis::NO_RESIZE);
@@ -48,7 +58,7 @@ void maingame() {
         // Don't worry I think the if statements in a while loop makes more sense in our case ;)
         if (scene == SCENE_MENU) {
             // Create a universe and bind it to the window
-            Universe *universe = new Universe();
+            Universe *universe = new Universe(universeWidth, universeHeight);
             window.bindUniverse(universe);
 
             // Setup a few objects in the universe
@@ -69,17 +79,22 @@ void maingame() {
 
         if (scene == SCENE_GENESIS) {
             // Generate a standard universe
-            Universe *universe = new Universe();
+            Universe *universe = new Universe(universeWidth, universeHeight);
             window.bindUniverse(universe);
 
             generateStandardUniverse(&window);
+            Joystick = glfwJoystickPresent(GLFW_JOYSTICK_1);
 
-            scene = SCENE_TUTORIAL;
+            // Only show the tutorial if it hasn't been done already
+            if (!shownTutorial) {
+                scene = SCENE_TUTORIAL;
+            }
+            else {
+                scene = SCENE_INGAME;
+            }
         }
 
         if (scene == SCENE_TUTORIAL) {
-            glClear(GL_COLOR_BUFFER_BIT);
-            window.drawObjectList(&allDebrisShader);
             shownTutorial = true;
             scene = show_tutorial(&window,&allDebrisShader,&tutorialTex,tutorialSize,&spaceTex);
 
@@ -100,29 +115,28 @@ void maingame() {
 
             glfwSetKeyCallback(window.GLFWpointer,escape_key_callback);
             glfwSwapBuffers(window.GLFWpointer);
-            glfwPollEvents();
+            do {
+                keyHandler ={};
+                glfwPollEvents();
 
+                if(glfwWindowShouldClose(window.GLFWpointer) != 0){
+                    break;
+                }
+                if(keyHandler.size() ){
+                    glfwSetKeyCallback(window.GLFWpointer,NULL);
+                    break;
+                }
 
-            // Wait for 5 seconds, or wait until mouse is clicked, whatever
-            usleep(5E6);
+                // Wait 100ms
+                usleep(1E5);
+            }
+            while(true);
 
-            scene = SCENE_INGAME;
-
-        }
-
-        if (scene == SCENE_INGAME) {
-            scene = show_ingame(&window, &allDebrisShader);
-
-            // do not forget to delete universe (although this is better to do after SCENE_DIED)
+            // Clear up
+            boundPlayer = NULL;
             delete window.boundUniverse;
-        }
 
-        if (scene == SCENE_DIED) {
-            // Display the score!
-            std::cout << window.boundUniverse->score << std::endl;
-
-            usleep(2E6);
-
+            // Proceed to menu
             scene = SCENE_MENU;
         }
 
@@ -131,34 +145,43 @@ void maingame() {
     glfwTerminate();
 }
 
-
-int show_ingame (Window* window, CircleShader* circleShader) {
 int show_ingame (Window* window, CircleShader* circleShader, TextShader* textShader, TextureShader* background) {
     int exitFlag = SCENE_INGAME;
 
     // Initialise a few variables
     std::chrono::steady_clock::time_point now_time;
     std::chrono::steady_clock::duration time_elapsed;
-    std::chrono::seconds seconds_passed;
     int seconds_count = 0;
-    int NEW_OBJECT_DELAY = 7;
+    int NEW_OBJECT_DELAY = 3;
     int MORE_OBJECTS_DELAY = 2;
     bool addedAlready = false;
 
+    // Reinitialize the universe time clock, so the start time
+    window->boundUniverse->begin_time = std::chrono::steady_clock::now();
+
+    std::stringstream scoreText;
+    textShader->colour = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+    glfwSetKeyCallback(window->GLFWpointer,escape_key_callback);
     while(exitFlag == SCENE_INGAME){
         // Do a physics step and draw the universe
+        keyHandler = {};
         glClear(GL_COLOR_BUFFER_BIT);
         if(background!=NULL){
             background->draw();
         }
         window->boundUniverse->simulate_one_time_unit(window->fps);
         window->drawObjectList(circleShader);
+        if(textShader!=NULL) {
+            scoreText.str(std::string());
+            scoreText << "Score: " << window->boundUniverse->score;
+            textShader->draw(scoreText.str() ,{0, -0.92},DRAWTEXT::ALIGN_CENTER, window->windowSize() , 0.02);
+        }
 
         // Determine if we want to add another piece of debris
         now_time = std::chrono::steady_clock::now();
         time_elapsed = now_time - window->boundUniverse->begin_time;
-        seconds_passed = std::chrono::duration_cast<std::chrono::seconds>(time_elapsed);
-        seconds_count = seconds_passed.count();
+        seconds_count = std::chrono::duration_cast<std::chrono::seconds>(time_elapsed).count();
 
         if (seconds_count % MORE_OBJECTS_DELAY == 0 && !addedAlready && seconds_count > NEW_OBJECT_DELAY ) {
             addRandomObject(window->boundUniverse);
@@ -171,7 +194,7 @@ int show_ingame (Window* window, CircleShader* circleShader, TextShader* textSha
         }
 
         // Check if we should end the game
-        if (boundPlayer->i_collided == true) {
+        if (boundPlayer->i_collided) {
             exitFlag = SCENE_DIED;
             return exitFlag;
         }
@@ -179,19 +202,19 @@ int show_ingame (Window* window, CircleShader* circleShader, TextShader* textSha
         // Do frame pacing
         window->pace_frame();
 
-        //// Paul you forgot the Swap buffer command in your haste ;) that was all
         glfwSwapBuffers(window->GLFWpointer);
         glfwPollEvents();
 
         if(glfwWindowShouldClose(window->GLFWpointer) != 0){
             exitFlag = SCENE_QUIT;
         }
-        if(glfwGetKey(window->GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS ){
+        if(keyHandler.size() ){
             //exitFlag = SCENE_PAUSE;
             exitFlag = SCENE_MENU; // Use this until pause scene is available;
         }
     }
 
+    glfwSetKeyCallback(window->GLFWpointer,NULL);
     return exitFlag;
 }
 
@@ -492,74 +515,6 @@ std::vector<glm::mat3> loadMenuResources(TextureShader* myMultiTex){
 
 }
 
-int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat3> menuElementTMat, CircleShader * circleShader){
-    int exitFlag = SCENE_MENU;
-
-    //get set resources;
-    glClearColor(0.2, 0.2, 0.3, 1.0);
-    int highlightedButton = -1;
-    vec2d cursorPos;
-    bool cursorMode = false;
-    GLFWcursor* arrowCursor = glfwCreateStandardCursor(GLFW_ARROW_CURSOR);
-    GLFWcursor* handCursor = glfwCreateStandardCursor(GLFW_HAND_CURSOR);
-    while(exitFlag == SCENE_MENU){
-        // Do a physics step and draw the universe
-        glClear(GL_COLOR_BUFFER_BIT);
-        window->drawObjectList(circleShader);
-        window->boundUniverse->simulate_one_time_unit(window->fps);
-        double newWidthScale = initScreenRatio/(window->windowSize()[0]/(double)window->windowSize()[1]);
-
-        //draw the menu;
-        highlightedButton = -1;
-
-        cursorPos = window->cursorPosition();
-        for(int ii = 0; ii < menuElementTMat.size(); ii++) {
-            menuMultiTex->transformationMatrix = menuElementTMat[ii];
-            menuMultiTex->tMatrixScale({newWidthScale,1});
-            if(cursorPos[0] > menuElementTMat[ii][0][2] - menuElementTMat[ii][0][0] && cursorPos[0] <menuElementTMat[ii][0][2] + menuElementTMat[ii][0][0]){
-                if(cursorPos[1] > menuElementTMat[ii][1][2] - menuElementTMat[ii][1][1] && cursorPos[1] <menuElementTMat[ii][1][2] + menuElementTMat[ii][1][1]){
-                    highlightedButton = ii;
-                    if(ii >0) {
-                        menuMultiTex->transformationMatrix[0][0] *= 1.2;
-                        menuMultiTex->transformationMatrix[1][1] *= 1.2;
-                    }
-                }
-            }
-            menuMultiTex->draw(ii);
-        };
-
-        glfwSwapBuffers(window->GLFWpointer);
-        glfwPollEvents();
-        if(glfwGetMouseButton(window->GLFWpointer, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS){
-            //// BUTTON MEANING
-            switch(highlightedButton){
-                case -1: //no highlight
-                case 0:  break;  //menu name highlight
-                case 1: exitFlag = SCENE_ABOUT; break;
-                case 2: exitFlag = SCENE_GENESIS; break;
-                case 3: exitFlag = SCENE_QUIT; break;
-            }
-        }
-        if(cursorMode && highlightedButton<=0){
-            cursorMode = false;
-            glfwSetCursor(window->GLFWpointer,arrowCursor);
-        }
-        if(!cursorMode && highlightedButton >0){
-            cursorMode = true;
-            glfwSetCursor(window->GLFWpointer,handCursor);
-        }
-        if(glfwWindowShouldClose(window->GLFWpointer) != 0){
-            exitFlag = SCENE_QUIT;
-        }
-
-        // Do frame pacing
-        window->pace_frame();
-    }
-    // Set the cursor back to normal after the button is pressed
-    glfwSetCursor(window->GLFWpointer,arrowCursor);
-    return exitFlag;
-
-}
 
 void generateStandardUniverse (Window* window) {
 
@@ -586,91 +541,62 @@ void generateStandardUniverse (Window* window) {
     // Add a player
     Player* player = new Player();
     player->set_colour({1.0, 0., 0., 1.});
+    player->set_bouncyness(0.5);
     window->boundUniverse->add_object(player);
 
     boundPlayer = player;
 }
 
-void showMenuDebug(){
-    // easy generate a window
-    Window thisGame = Window();
-
-    // load a texture from file and create a texture shader for it
-    GLuint menuTex = loadDDS("MenuTextures.DDS");
-    TextureShader menuMultiTex(menuTex);
-
-    // convert the texture shader to a proper hardcoded multi-textureshader and get matrices of the positions.
-    std::vector<glm::mat3> tMats = loadMenuResources(&menuMultiTex);
-
-    // Store initial size so resizing can be applied with the right reference of initiation.
-    vec2d initSize = thisGame.windowSize();
-
-    // test sho
-    std::cout << "show_menu exit code (next scene): " << show_menu(&thisGame, &menuMultiTex,tMats) << endl;
-}
-
-void timerDebug(){
-    Window thisGame = Window();
-
-    GLuint textShader = LoadShaders("shaders/text.glvs", "shaders/text.glfs");
-
-    FontTexHandler myText("frabk.ttf",32, textShader, thisGame.windowSize());
-    bool exit = false;
-    int thisTime;
-    std::string text;
-    glfwSetTime(0.0);
-    while(!exit){
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        thisTime = 10*glfwGetTime();
-        thisTime *= 10;
-        text = std::to_string(thisTime);
-        myText.renderText(text,240,210,1.0,{1.0,0.0,0.0});
-
-        glfwSwapBuffers(thisGame.GLFWpointer);
-        glfwPollEvents();
-        if(glfwWindowShouldClose(thisGame.GLFWpointer) != 0 || glfwGetKey(thisGame.GLFWpointer, GLFW_KEY_ESCAPE) == GLFW_PRESS){
-            exit = true;
-        }
-    }
-}
 
 void addRandomObject(Universe* universe, unsigned seed) {
     if(!seed){
-        srand(time(NULL));
+        srand(time(NULL)*1234);
+        std::cout << "Srand seed: " << time(NULL) <<std::endl;
     }else{
         srand(seed);
     }
 
-    std::array<double,2> radiusLim = {0.5, 0.8};
-    std::array<double,2> massLim = {1, 3};
-    std::array<double,2> velocityLim = {-5, 5};
+    std::array<double,2> radiusLim = {0.5, 1};
+    std::array<double,2> massLim = {0.5, 3};
+    std::array<double,2> velocityLim = {-8, 8};
+    std::array<double,2> bouncyLim = {0.5, 0.9};
+    double AVOID_RADIUS = 5;
 
     Object* A = new Object;
     A->set_mass((std::rand()/(double)RAND_MAX)*(massLim[1]-massLim[0])+massLim[0]);
     A->set_velocity((std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0],(std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0]);
     A->set_radius((std::rand()/(double)RAND_MAX)*(radiusLim[1]-radiusLim[0])+radiusLim[0]);
-
-    A->set_bouncyness(0.6);
+    A->set_bouncyness((std::rand()/(double)RAND_MAX)*(bouncyLim[1]-bouncyLim[0])+bouncyLim[0]);
+    //A->set_colour({std::rand()/(double)RAND_MAX,std::rand()/(double)RAND_MAX,std::rand()/(double)RAND_MAX,1.0});
 
     std::array<double,2> xLim = {-universe->width/2+A->radius, universe->width/2-A->radius};
     std::array<double,2> yLim = {-universe->height/2+A->radius, universe->height/2-A->radius};
     do{
-        A->set_position((std::rand()/(double)RAND_MAX)*(xLim[1]-xLim[0])+xLim[0], (std::rand()/(double)RAND_MAX)*(yLim[1]-yLim[0])+yLim[0]);
-    }
+        // Get a new position which is not close to the player, if it exists
+        if ( boundPlayer != NULL ) {
+            do {
+                A->set_position((std::rand()/(double)RAND_MAX)*(xLim[1]-xLim[0])+xLim[0], (std::rand()/(double)RAND_MAX)*(yLim[1]-yLim[0])+yLim[0]);
+            }
+            while (universe->physics.distance_between(A, boundPlayer) < AVOID_RADIUS);
+        }
+        else {
+            // Otherwise just prevent a collision
+            A->set_position((std::rand()/(double)RAND_MAX)*(xLim[1]-xLim[0])+xLim[0], (std::rand()/(double)RAND_MAX)*(yLim[1]-yLim[0])+yLim[0]);
+        }
 
-    while(CollidesWithAny(A, universe));
+    }
+    while(collidesWithAny(A, universe));
     universe->add_object(A);
 
 }
 
 void addRandomObjects(Universe* universe, unsigned seed, int objectAmount) {
     for(int ii = 0; ii < objectAmount; ii++){
-        addRandomObject(universe, seed+ii);
+        addRandomObject(universe, seed+ii*1234);
     }
 }
 
-bool CollidesWithAny(Object* obj, Universe* uni) {
+bool collidesWithAny(Object* obj, Universe* uni) {
     for(int ii = 0; ii < uni->objects.size(); ii++){
         if(uni->objects[ii] != obj){
             if(uni->physics.distance_between(uni->objects[ii],obj) < (uni->objects[ii]->radius + obj->radius) ){

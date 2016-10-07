@@ -10,34 +10,34 @@
 // Generate a window that fits the universe
 Window::Window(Universe* uni, double pixelRatio){
     pixRatio = pixelRatio;
-    winHeight = uni->height*pixRatio;
+    winHeight = uni->height*pixRatio;           // Set window to fit universe with current pixRatio
     winWidth = uni->width*pixRatio;
-    winWtHratio = (double)winWidth/winHeight;
-    boundUniverse = uni;
-    activeFlag = vis::AUTO_SIZE_UNIVERSE;
-    stdInitWindow();
+    winWtHratio = (double)winWidth/winHeight;   // Precalculate winWtHratio for later use
+    boundUniverse = uni;                        // bind the universe to this window
+    activeFlag = vis::AUTO_SIZE_UNIVERSE;   // Set flag to auto size universe
+    stdInitWindow();    // use standard initiation
 }
 // Generate a window of width by height without a universe bound to it
 Window::Window(int width, int  height, const unsigned flag){
     winHeight = height;
     winWidth = width;
-    winWtHratio = (double)width/height;
-    boundUniverse = NULL;
-    activeFlag = flag;
-    stdInitWindow();
+    winWtHratio = (double)width/height;     // Precalculate winWtHratio for later use
+    boundUniverse = NULL;                   // do not bind a universe to the current window
+    activeFlag = flag;  // pass flag
+    stdInitWindow();   // use standard initiation
 }
 // Generate a window of width by height with a bound universe
 Window::Window(int width, int height, Universe* uni, double pixelRatio, const unsigned flag){
     winHeight = height;
     winWidth = width;
-    winWtHratio = (double)width/height;
+    winWtHratio = (double)width/height;     // Precalculate winWtHratio for later use
     pixRatio = pixelRatio;
-    boundUniverse = uni;
+    boundUniverse = uni;                    // Bind the universe to this window
     if(flag == vis::AUTO_SIZE_UNIVERSE && boundUniverse!=NULL){
-        boundUniverse->resize(width,height);
+        boundUniverse->resize(width,height);    // Resize universe to fit this window if AUTO_SIZE is on
     }
-    activeFlag = flag;
-    stdInitWindow();
+    activeFlag = flag;  // pass flag
+    stdInitWindow();   // use standard initiation
 }
 
 void Window::stdInitWindow(){
@@ -74,7 +74,7 @@ void Window::stdInitWindow(){
         glfwTerminate();
     }
 
-    // Set the working space of gl to window
+    // Set the working space of gl to this window
     glfwMakeContextCurrent(GLFWpointer);
 
     ///// Initialize GLEW
@@ -88,8 +88,10 @@ void Window::stdInitWindow(){
     ///// Toggle the input mode.
     glfwSetInputMode(GLFWpointer, GLFW_STICKY_KEYS, GL_TRUE);
 
+    // Set a blend modus based on the alpha channel
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // This function means it adds the colours of the background multiplied by 1-alpha of overlay to the overlay;
+
     // Couple the pointer to this Window to that of the GLFW window pointer
     // This will be used in WindowResizeStaticCallback (see .h class definition)
     glfwSetWindowUserPointer(GLFWpointer, this);
@@ -97,7 +99,9 @@ void Window::stdInitWindow(){
     // Call th function WindowResizeStaticCallback (which refers to window_size_callback)
     // when the window gets rescaled.
     glfwSetWindowSizeCallback(GLFWpointer, WindowResizeStaticCallback);
+    // Give the curser position an initial value
     cursorPos = {0,0};
+    // Call the function cursor_position_callback when the mouse is moved (this refers to the overloaded function in class Window)
     glfwSetCursorPosCallback(GLFWpointer, cursor_position_callback);
 
 }
@@ -107,38 +111,47 @@ void Window::pace_frame() {
     // Check how much time we have left
     double delta = glfwGetTime() - lastTime;
     if (delta < 1/fps) {
+        // Pause program for the time that is left over
         usleep(unsigned((1/fps - delta)*1E6));
 
+        // Debug message:
+        /*
         if (delta/(1.0/fps) > 0.75) {
             std::cerr << "WARNING at 75% of CPU time per frame" << std::endl;
         }
+         */
     }
+    // Debug message:
+    /*
     else{
         std::cerr << "CANNOT REACH TARGET FPS" << std::endl;
     }
-
-    lastTime = glfwGetTime();
-
+     */
+    lastTime = glfwGetTime();  // store current time for next iteration
 }
 
 void Window::bindUniverse(Universe *uni) {
-    boundUniverse = uni;
+    boundUniverse = uni;    // pass universe pointer
+    // Apply necessary changes to universe
     if(boundUniverse!=NULL) {
         if (activeFlag == vis::AUTO_SIZE_UNIVERSE) {
-            boundUniverse->resize(winWidth, winHeight);
+            boundUniverse->resize(winWidth, winHeight); // Fit universe to window if AUTO_SIZE is on
         }
+        // store universe size to window size ratio.
         uniToWinRatio = {boundUniverse->width * pixRatio / winWidth, boundUniverse->height * pixRatio / winHeight};
-        window_size_callback(winWidth, winHeight);
+        window_size_callback(winWidth, winHeight);  // Call the window size callback to process any necessary changes to bound universe
     }
 }
 
 void Window::Resize(int width, int height){
+    // small safety feature to for external use
     if(width<1){
         width = winWidth;
     }
     if(height<1){
         height = winHeight;
     }
+    // use window_size_callback to properly process;
     window_size_callback(width,height);
 }
 
@@ -146,15 +159,17 @@ void Window::changeResizeFlag(unsigned flag){
     if(boundUniverse == NULL){
         std::cerr << "[WARN]: tried to change windows resize flag while no Universe was bound. Did not recalculate ratio of universe to window" << std::endl;
     }else{
+        // reset the uniToWinRatio so the flag properties are bound to the current window/universe state
         uniToWinRatio = {boundUniverse->width*pixRatio/winWidth, boundUniverse->height*pixRatio/winHeight};
     }
+    // Cannot change to or from NO_RESIZE
     if(activeFlag == vis::NO_RESIZE && flag != vis::NO_RESIZE){
-        std::cerr << "[WARN]: Cannot change property 'GLFW_RESIZABLE' to 'GL_TRUE' after initialization." << std::endl;
+        std::cerr << "[WARN]: Cannot change property 'GLFW_RESIZABLE' to 'GL_TRUE' after initialization of Window." << std::endl;
     }else if(flag == vis::NO_RESIZE){
-        std::cerr << "[WARN]: Cannot change property 'GLFW_RESIZABLE' to 'GL_FALSE' after initialization." << std::endl;
+        std::cerr << "[WARN]: Cannot change property 'GLFW_RESIZABLE' to 'GL_FALSE' after initialization of Window." << std::endl;
     }
-    activeFlag = flag;
-    window_size_callback(winWidth,winHeight);
+    activeFlag = flag; // pass flag
+    window_size_callback(winWidth,winHeight);   // Apply current possible changes to universe
 }
 
 /*
@@ -203,6 +218,7 @@ void Window::drawGrid(int stepSize){
  * Because r is normalized to height, we need screen screenWtHratio to get the x positions
  * The function is a modification of http://slabode.exofire.net/circle_draw.shtml#
  */
+//// Circle drawing without shaders
 void Window::drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, std::array<double,4> Colour){
     // !! r needs to be normalized to screen HEIGHT !!
     //// Define constants/parameters for calculations
@@ -241,14 +257,21 @@ void Window::drawFilledCircle(vec2d &pos, GLdouble &r, int num_segments, std::ar
     // end drawing
     glEnd();
 }
+
 /*
  * Function to draw all Objects from an object list to the current window
  */
+// Draws Objects from the bound universe
 void Window::drawObjectList(CircleShader* circleShader) {
-    this->drawObjectList(this->boundUniverse->objects, circleShader);
+    if(this->boundUniverse==NULL){
+        std::cerr << "[WARN]: could not drawobjectlist, bound universe is missing (NULL)" << std::endl;
+    }else {
+        this->drawObjectList(this->boundUniverse->objects, circleShader);   // pass the bounduniverse objects to the drawobjectlist function
+    }
 }
 
 void Window::drawObjectList(std::vector<Object*> &objects, CircleShader* circleShader){
+    // If there is no shader this function uses the drawFilledCircle function defined above else it'll use the shader
     if(circleShader == NULL) {
         for (int ii = 0; ii < objects.size(); ii++) {
             // Normalize the radius from universe to height [-1, 1];
@@ -268,9 +291,13 @@ void Window::drawObjectList(std::vector<Object*> &objects, CircleShader* circleS
             // Normalize the position from universe to [-1, 1];
             position[0] *= pixRatio * 2.0 / winWidth;
             position[1] *= pixRatio * 2.0 / winHeight;
-            circleShader->tMatrixReset();
-            circleShader->tMatrixScale((vec2d){radius/winWtHratio,radius});
-            circleShader->tMatrixTranslate(position);
+            // create a scale and translation matrix
+            circleShader->transformationMatrix = {
+                    radius/winWtHratio, 0, position[0],
+                    0,             radius, position[1],
+                    0,                  0,           1
+            };
+            // set shader colour
             circleShader->colour = objects[ii]->get_colour_glm();
             // Draw the circle at the position
             circleShader->draw();
@@ -323,21 +350,23 @@ void Window::window_size_callback(int width, int height){
                 break;
         }
     }
+    // Resize 'drawing canvas' to screen size
     glViewport(0,0, width, height);
 }
 void Window::cursor_position_callback(double xpos, double ypos){
+    // Store the cursor position in normalized coordinates (-1 to 1)
     cursorPos = {2*xpos/winWidth -1, -2*ypos/winHeight +1};
 }
 vec2d Window::windowSize() {return {(double)winWidth,(double)winHeight};}
 vec2d Window::px_to_length(vec2d px) {
     vec2d l = {0};
-
+    // Change offset of x and y coordinates and scale to pixRatio
     l[0] = (px[0] - (winWidth/2.0)) / pixRatio;
     l[1] = (-px[1] + (winHeight/2.0)) / pixRatio;
 
     return l;
 }
-
+//TODO Decide if px_to_length and length_to_pix are necessary
 vec2d Window::length_to_px(vec2d length) {
 
     // It no works yet :(
@@ -354,12 +383,12 @@ vec2d Window::cursorPosition(){
  * Shaders section
  */
 Shader::Shader(const char *vertexShader, const char *fragmentShader, const char *vertexName, const char *tMatrixName) {
-    transformationMatrix = glm::mat3(1.0f);
-    programID = LoadShaders(vertexShader, fragmentShader);
-    vertexPositionID = glGetAttribLocation(programID, vertexName);
+    transformationMatrix = glm::mat3(1.0f);                         // set to a identity matrix
+    programID = LoadShaders(vertexShader, fragmentShader);          // use LoadShaders to build GLSL program and get the programID
+    vertexPositionID = glGetAttribLocation(programID, vertexName);  // get the location of the vertexName parameter
 
     if(tMatrixName!=NULL){
-        tMatrixID = glGetUniformLocation(programID, tMatrixName);
+        tMatrixID = glGetUniformLocation(programID, tMatrixName);   // If there is a matrix location provided add this parameter
         tMatrixOn = true;
     } else{
         tMatrixOn = false;
@@ -370,20 +399,20 @@ Shader::Shader(const char *vertexShader, const char *fragmentShader, const char 
             -1.0f,1.0f,
             1.0f,1.0f,
             1.0f,-1.0f
-    };
+    };  // Fill the buffer with vertices for a drawcommand to fill the screen.
 
-    vertexCount = sizeof(vertices)/(sizeof(GLfloat)*2);
+    vertexCount = sizeof(vertices)/(sizeof(GLfloat)*2); // Store amount off vertices in buffer
 
-    glGenBuffers(1, &vertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glGenBuffers(1, &vertexBuffer);                                             // Generate a buffer and store its location ID in vertexBuffer
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);                                // Make the vertex buffer active (current)
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);  // Write the vertices to bufferdata vertexBuffer and set the access type of this buffer
 }
 Shader::~Shader(){
-    glDeleteBuffers(1, &vertexBuffer);
-    glDeleteProgram(programID);
+    glDeleteBuffers(1, &vertexBuffer);  // Free the vertexBuffer
+    glDeleteProgram(programID);         // Delete the shader program
 }
 void Shader::tMatrixReset(){
-    transformationMatrix = glm::mat3(1.0f);
+    transformationMatrix = glm::mat3(1.0f); // Set transformation matrix to Identity matrix
 }
 void Shader::tMatrixRotate(GLfloat angle) {
     const GLfloat c = cos(angle);
@@ -392,14 +421,14 @@ void Shader::tMatrixRotate(GLfloat angle) {
             c, -s, 0,
             s,  c, 0,
             0,  0, 1
-    );
+    );  // Multiply the transformation matrix with a rotation matrix
 }
 void Shader::tMatrixScale(vec2d scale) {
     transformationMatrix *= glm::mat3(
             scale[0], 0, 0,
             0, scale[1], 0,
             0,        0, 1
-    );
+    ); // Multiply the transformation matrix with a scaling matrix
 }
 void Shader::tMatrixTranslate(vec2d position) {
     transformationMatrix *= glm::mat3(
@@ -409,9 +438,9 @@ void Shader::tMatrixTranslate(vec2d position) {
     );
 }
 void Shader::setNewVertices(GLuint arraySize, const GLfloat *vertexArray) {
-    vertexCount = arraySize/2;
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, vertexArray, GL_STATIC_DRAW);
+    vertexCount = arraySize/2;  // Safe the vertex count
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);                                           // Make the buffer active
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, vertexArray, GL_STATIC_DRAW); // Rewrite the buffer with new vertices
 }
 void Shader::draw(){
     glUseProgram(programID);
