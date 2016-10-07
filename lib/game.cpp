@@ -541,7 +541,7 @@ void generateStandardUniverse (Window* window) {
     // Add a player
     Player* player = new Player();
     player->set_colour({1.0, 0., 0., 1.});
-    player->set_bouncyness(0.5);
+    player->set_bounciness(0.5);
     window->boundUniverse->add_object(player);
 
     boundPlayer = player;
@@ -566,7 +566,7 @@ void addRandomObject(Universe* universe, unsigned seed) {
     A->set_mass((std::rand()/(double)RAND_MAX)*(massLim[1]-massLim[0])+massLim[0]);
     A->set_velocity((std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0],(std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0]);
     A->set_radius((std::rand()/(double)RAND_MAX)*(radiusLim[1]-radiusLim[0])+radiusLim[0]);
-    A->set_bouncyness((std::rand()/(double)RAND_MAX)*(bouncyLim[1]-bouncyLim[0])+bouncyLim[0]);
+    A->set_bounciness((std::rand()/(double)RAND_MAX)*(bouncyLim[1]-bouncyLim[0])+bouncyLim[0]);
     //A->set_colour({std::rand()/(double)RAND_MAX,std::rand()/(double)RAND_MAX,std::rand()/(double)RAND_MAX,1.0});
 
     std::array<double,2> xLim = {-universe->width/2+A->radius, universe->width/2-A->radius};

@@ -30,8 +30,8 @@ bool Physics::check_collision(Object* A, Object* B) {
  * Do a physically acceptable object collision between objects A and B.
  */
 void Physics::resolve_collision(Object* A, Object* B) {
-    // Use the average bouncyness coefficient
-    double coeff = (A->bouncyness + B->bouncyness)/2.0;
+    // Use the average bounciness coefficient
+    double coeff = (A->bounciness + B->bounciness)/2.0;
 
     // The expression which calculates the new velocity! It is the equation on Wikipedia using
     // vector notation of resolving a collision: https://en.wikipedia.org/wiki/Elastic_collision

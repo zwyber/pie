@@ -33,7 +33,7 @@ private:
     double _radius = 1;
 
     // Coefficient of resitution factor between 0 and (including) 1
-    double _bouncyness = 1;
+    double _bounciness = 1;
 
     // Colour vector of this object {red, green, blue, alpha}. All values are between 1 and 0
     std::array<double, 4> _colour = {{(double)std::rand()/RAND_MAX,(double)std::rand()/RAND_MAX,(double)std::rand()/RAND_MAX,1.0}};
@@ -44,7 +44,7 @@ public:
     Object();
 
     // Read-only references to object properties
-    const double &bouncyness;
+    const double &bounciness;
     const double &mass;
     const double &radius;
     const vec2d &position;
@@ -55,7 +55,7 @@ public:
     void set_position(double new_x, double new_y);
     void set_position(vec2d new_pos);
 
-    void set_bouncyness(double bouncyness);
+    void set_bounciness(double bounciness);
 
     void set_velocity(double new_vx, double new_vy);
     void set_velocity(vec2d new_v);

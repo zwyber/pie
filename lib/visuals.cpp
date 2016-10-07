@@ -358,22 +358,6 @@ void Window::cursor_position_callback(double xpos, double ypos){
     cursorPos = {2*xpos/winWidth -1, -2*ypos/winHeight +1};
 }
 vec2d Window::windowSize() {return {(double)winWidth,(double)winHeight};}
-vec2d Window::px_to_length(vec2d px) {
-    vec2d l = {0};
-    // Change offset of x and y coordinates and scale to pixRatio
-    l[0] = (px[0] - (winWidth/2.0)) / pixRatio;
-    l[1] = (-px[1] + (winHeight/2.0)) / pixRatio;
-
-    return l;
-}
-//TODO Decide if px_to_length and length_to_pix are necessary
-vec2d Window::length_to_px(vec2d length) {
-
-    // It no works yet :(
-    std::cerr << "length_to_px not implemented yet";
-
-    return length;
-}
 
 vec2d Window::cursorPosition(){
     return cursorPos;
@@ -443,46 +427,46 @@ void Shader::setNewVertices(GLuint arraySize, const GLfloat *vertexArray) {
     glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, vertexArray, GL_STATIC_DRAW); // Rewrite the buffer with new vertices
 }
 void Shader::draw(){
-    glUseProgram(programID);
+    glUseProgram(programID);    // Activate the Shader Program as current shader
 
-    if(tMatrixOn) glUniformMatrix3fv(tMatrixID, 1, GL_FALSE, &transformationMatrix[0][0]);
+    if(tMatrixOn) glUniformMatrix3fv(tMatrixID, 1, GL_FALSE, &transformationMatrix[0][0]);  // Pass the transformation matrix to GLSL program if available
 
-    glEnableVertexAttribArray(vertexPositionID);
+    glEnableVertexAttribArray(vertexPositionID);    // Enable the GLSL attribute vertice positions
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
     glVertexAttribPointer(
-            vertexPositionID,  // The attribute we want to configure
+            vertexPositionID,  // The vertex attribute
             2,                            // size
             GL_FLOAT,                     // type
             GL_FALSE,                     // normalized?
             0,                            // stride
-            (void*)0                      // array buffer offset
+            (void*)0                      // array buffer offset (incase you have multiple attribute elements in one buffer) not used
     );
 
-    glDrawArrays(GL_TRIANGLE_FAN, 0,vertexCount);
+    glDrawArrays(GL_TRIANGLE_FAN, 0,vertexCount);   // Draw the stored buffer
 
-    glDisableVertexAttribArray(vertexPositionID);
-    glUseProgram(0);
+    glDisableVertexAttribArray(vertexPositionID);   // Disable the attribute
+    glUseProgram(0);                                // Reset program to none
 }
 
-TextureShader::TextureShader(GLuint texture_) : Shader("shaders/texture.glvs", "shaders/texture.glfs", "PositionVec", "MVP"){
-    texture = texture_;
-    vertexUVID = glGetAttribLocation(programID, "vertexUV");
-    textureID  = glGetUniformLocation(programID, "tex");
+TextureShader::TextureShader(GLuint texture_) : Shader("shaders/texture.glvs", "shaders/texture.glfs", "PositionVec", "MVP"){ // Build the inherited class with the following constructor parameters
+    texture = texture_;                                         // Pass the texture location
+    vertexUVID = glGetAttribLocation(programID, "vertexUV");    // Get the location of the UV buffer from the GLSL
+    textureID  = glGetUniformLocation(programID, "tex");        // Get the location of texture sampler from GLSL
 
     static const GLfloat texcoords[] = {
             0.0f,1.0f,
             0.0f,0.0f,
             1.0f,0.0f,
             1.0f,1.0f
-    };
+    };  // Store the UV buffer all most outer points from the texture matched to the UV points in Shader class
 
-    glGenBuffers(1, &uvBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);
+    glGenBuffers(1, &uvBuffer);                 // Generate a buffer for and store the location ID in uvBuffer
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);    // Make the buffer the current working buffer
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);    // Write the UV coordinates to the buffer
 
 }
 void TextureShader::setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray) {
-    unsigned uvCount = arraySize/2;
+    unsigned uvCount = arraySize/2;     // Amount of UV coordinates
     if(uvCount != vertexCount){
         if(uvCount > vertexCount) {
             std::cout << "[Warn]: in setNewUVCoordinates, there were given too many coordinates. Cut UV off at "
@@ -496,82 +480,84 @@ void TextureShader::setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray
                       << std::endl;
             vertexCount = arraySize / 2;
         }
-    }
-    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*vertexCount*2, uvArray, GL_STATIC_DRAW);
+    } // Only print a warning if there is a mismatch between the UV and vertex coordinates, (drawing will not work correctly until the other the mismatch is Fixed!)
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);    // Make the buffer current (edit it)
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*vertexCount*2, uvArray, GL_STATIC_DRAW);  // Write the UV Array to the buffer
 }
 void TextureShader::setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray, const GLfloat *vertexArray){
-    vertexCount = arraySize/2;
+    // Set both UV and vertex coordinates
+    vertexCount = arraySize/2;  // update the vertexcount
 
-    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, uvArray, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);    // Make UV buffer current
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, uvArray, GL_STATIC_DRAW); // Write the UV array to the UV buffer
 
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, vertexArray, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);    // Make the vertex buffer current
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, vertexArray, GL_STATIC_DRAW);  // Write the vertex array to the vertexbuffer
 }
 TextureShader::~TextureShader(){
-    glDeleteBuffers(1, &uvBuffer);
-    glDeleteTextures(1, &textureID);
+    glDeleteBuffers(1, &uvBuffer);      // Remove the buffer reservation
+    glDeleteTextures(1, &textureID);    // Remove the texture reservation
 }
 void TextureShader::draw(unsigned texNum){
-    glUseProgram(programID);
-    glUniformMatrix3fv(tMatrixID, 1, GL_FALSE, &transformationMatrix[0][0]);
+    glUseProgram(programID);    // Activate the GLSL program
+    glUniformMatrix3fv(tMatrixID, 1, GL_FALSE, &transformationMatrix[0][0]);    // pass the trasnformation matrix to the program
 
     // Bind our texture in Texture Unit 0
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
 
-    glUniform1i(textureID, 0);
+    glUniform1i(textureID, 0);  // Give the texture sampler (from the GLSL program) the location  to sample: Texture unit 0
 
-    glEnableVertexAttribArray(vertexPositionID);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glEnableVertexAttribArray(vertexPositionID);    // Enable the GLSL vertex attribute
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);    // Make the vertex buffer current
+    // Bind the vertex position of the GLSL program to the vertex buffer.
     glVertexAttribPointer(
-            vertexPositionID,  // The attribute we want to configure
-            2,                            // size
+            vertexPositionID,  // The vertex attribute
+            2,                            // size per vertex
             GL_FLOAT,                     // type
             GL_FALSE,                     // normalized?
             0,                            // stride
-            (void*)0                      // array buffer offset
+            (void*)0                      // array buffer offset (incase you have multiple attribute elements in one buffer) not used
     );
 
-    glEnableVertexAttribArray(vertexUVID);
-    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+    glEnableVertexAttribArray(vertexUVID);      // Enable the GLSL UV attribute
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);    // make the UV buffer current
+    // Bind the UV coordinates of the GLSL program to the uv Buffer
     glVertexAttribPointer(
-            vertexUVID,                   // The attribute we want to configure
-            2,                            // size : U+V => 2
+            vertexUVID,                   // The UV attribute
+            2,                            // size per UV coordinate
             GL_FLOAT,                     // type
             GL_FALSE,                     // normalized?
             0,                            // stride
-            (void*)0                      // array buffer offset
+            (void*)0                      // array buffer offset (incase you have multiple attribute elements in one buffer) not used
     );
 
-    glDrawArrays(GL_TRIANGLE_FAN, texNum*4,4);
+    glDrawArrays(GL_TRIANGLE_FAN, texNum*4,4); // Draw a part of the texture (part number texNum)
 
-    glDisableVertexAttribArray(vertexPositionID);
-    glDisableVertexAttribArray(vertexUVID);
-    glUseProgram(0);
+    glDisableVertexAttribArray(vertexPositionID);   // Disable the vertex position in the program
+    glDisableVertexAttribArray(vertexUVID);         // Disable the UV coordinates in the program
+    glUseProgram(0);    // Disable the Program and set it the used program to none
 }
 
-
-CircleShader::CircleShader(glm::vec4 colour_) : Shader("shaders/circle.glvs", "shaders/circle.glfs", "inPosition", "projection"){
-    colour = colour_;
-    vertexUVID = glGetAttribLocation(programID, "inTexcoord");
-    colourID  = glGetUniformLocation(programID, "disc_color");
+CircleShader::CircleShader(glm::vec4 colour_) : Shader("shaders/circle.glvs", "shaders/circle.glfs", "inPosition", "projection"){ // Build the inherited class with the following constructor parameters
+    colour = colour_;   // Pass a standard colour
+    vertexUVID = glGetAttribLocation(programID, "inTexcoord");  // Get the UV location in the GLSL program
+    colourID  = glGetUniformLocation(programID, "disc_color");  // Get the colour location in the GLSL program
 
     static const GLfloat texcoords[] = {
             0.0f,0.0f,
             0.0f,1.0f,
             1.0f,1.0f,
             1.0f,0.0f
-    };
+    };  // Store the UV buffer all most outer points from the texture matched to the UV points in Shader class
 
-    glGenBuffers(1, &uvBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);
+    glGenBuffers(1, &uvBuffer);                 // Generate a buffer for and store the location ID in uvBuffer
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);    // Make the buffer the current working buffer
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);    // Write the UV coordinates to the buffer
 
 }
 void CircleShader::setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray) {
-    unsigned uvCount = arraySize/2;
+    unsigned uvCount = arraySize/2;     // Amount of UV coordinates
     if(uvCount != vertexCount){
         if(uvCount > vertexCount) {
             std::cout << "[Warn]: in setNewUVCoordinates, there were given too many coordinates. Cut UV off at "
@@ -585,72 +571,76 @@ void CircleShader::setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray)
                       << std::endl;
             vertexCount = arraySize / 2;
         }
-    }
-    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*vertexCount*2, uvArray, GL_STATIC_DRAW);
+    } // Only print a warning if there is a mismatch between the UV and vertex coordinates, (drawing will not work correctly until the other the mismatch is Fixed!)
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);    // Make the buffer current (edit it)
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*vertexCount*2, uvArray, GL_STATIC_DRAW);  // Write the UV Array to the buffer
 }
 void CircleShader::setNewUVCoordinates(GLuint arraySize, const GLfloat *uvArray, const GLfloat *vertexArray){
-    vertexCount = arraySize/2;
+    // Set both UV and vertex coordinates
+    vertexCount = arraySize/2;  // update the vertexcount
 
-    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, uvArray, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);    // Make UV buffer current
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, uvArray, GL_STATIC_DRAW); // Write the UV array to the UV buffer
 
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, vertexArray, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);    // Make the vertex buffer current
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat)*arraySize, vertexArray, GL_STATIC_DRAW);  // Write the vertex array to the vertexbuffer
 }
 CircleShader::~CircleShader(){
-    glDeleteBuffers(1, &uvBuffer);
+    glDeleteBuffers(1, &uvBuffer);      // Remove the buffer reservation
 }
 void CircleShader::draw(){
-    glUseProgram(programID);
-    glUniformMatrix3fv(tMatrixID, 1, GL_FALSE, &transformationMatrix[0][0]);
+    glUseProgram(programID);    // Activate the GLSL program
+    glUniformMatrix3fv(tMatrixID, 1, GL_FALSE, &transformationMatrix[0][0]);    // pass the trasnformation matrix to the program
 
-    glUniform4f(colourID, colour.r, colour.g, colour.b, colour.a);
+    glUniform4f(colourID, colour.r, colour.g, colour.b, colour.a);  // Pass the colour vector
 
-    glEnableVertexAttribArray(vertexPositionID);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    glEnableVertexAttribArray(vertexPositionID);    // Enable the GLSL vertex attribute
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);    // Make the vertex buffer current
+    // Bind the vertex position of the GLSL program to the vertex buffer.
     glVertexAttribPointer(
-            vertexPositionID,  // The attribute we want to configure
-            2,                            // size
+            vertexPositionID,  // The vertex attribute
+            2,                            // size per vertex
             GL_FLOAT,                     // type
             GL_FALSE,                     // normalized?
             0,                            // stride
-            (void*)0                      // array buffer offset
+            (void*)0                      // array buffer offset (incase you have multiple attribute elements in one buffer) not used
     );
 
-    glEnableVertexAttribArray(vertexUVID);
-    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
+    glEnableVertexAttribArray(vertexUVID);      // Enable the GLSL UV attribute
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);    // make the UV buffer current
+    // Bind the UV coordinates of the GLSL program to the uv Buffer
     glVertexAttribPointer(
-            vertexUVID,                   // The attribute we want to configure
-            2,                            // size : U+V => 2
+            vertexUVID,                   // The UV attribute
+            2,                            // size per UV coordinate
             GL_FLOAT,                     // type
             GL_FALSE,                     // normalized?
             0,                            // stride
-            (void*)0                      // array buffer offset
+            (void*)0                      // array buffer offset (incase you have multiple attribute elements in one buffer) not used
     );
 
-    glDrawArrays(GL_TRIANGLE_FAN, 0,vertexCount);
+    glDrawArrays(GL_TRIANGLE_FAN, 0,vertexCount);   // Draw the vertices (square) to fill with a circle
 
-    glDisableVertexAttribArray(vertexPositionID);
-    glDisableVertexAttribArray(vertexUVID);
-    glUseProgram(0);
+    glDisableVertexAttribArray(vertexPositionID);   // Disable the vertex position in the program
+    glDisableVertexAttribArray(vertexUVID);         // Disable the UV coordinates in the program
+    glUseProgram(0);    // Disable the Program and set it the used program to none
 }
 
-TextShader::TextShader(const char* trueTypePath, int numOfChars) : Shader("shaders/text.glvs", "shaders/text.glfs", "VertexPos", "projection"){
-    if (FT_Init_FreeType(&ft))
-    std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+TextShader::TextShader(const char* trueTypePath, int numOfChars) : Shader("shaders/text.glvs", "shaders/text.glfs", "VertexPos", "projection"){ // Build the inherited class with the following constructor parameters
+    if (FT_Init_FreeType(&ft))  // Initiate a freetype library to ft
+        std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
 
-    if (FT_New_Face(ft, trueTypePath, 0, &face))
+    if (FT_New_Face(ft, trueTypePath, 0, &face))    // initiate a Face of the specified font to face
         std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
-    pixSize = 72;
-    FT_Set_Pixel_Sizes(face, 0, pixSize);
-    colour = glm::vec4(1.0f);
+
+    pixSize = 72; // A pixel size to draw the fonts
+    FT_Set_Pixel_Sizes(face, 0, pixSize);   // Set the size of the character to the Face
+    colour = glm::vec4(1.0f);   // Store a white colour in colour
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
 
 
     for (GLubyte c = 0; c < numOfChars; c++)
     {
-        // Load character glyph
+        // Load character glyph (render it)
         if (FT_Load_Char(face, c, FT_LOAD_RENDER))
         {
             std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
@@ -660,6 +650,7 @@ TextShader::TextShader(const char* trueTypePath, int numOfChars) : Shader("shade
         GLuint texture;
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
+        // Write the texture as single colour channel (alpha) from the bitmap buffer generated in the face.
         glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
@@ -671,11 +662,13 @@ TextShader::TextShader(const char* trueTypePath, int numOfChars) : Shader("shade
                 GL_UNSIGNED_BYTE,
                 face->glyph->bitmap.buffer
         );
-        // Set texture options
+
+        // Set texture options (wrap around and scaling)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
         // Now store character for later use
         Character character = {
                 texture,
@@ -683,48 +676,53 @@ TextShader::TextShader(const char* trueTypePath, int numOfChars) : Shader("shade
                 glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
                 face->glyph->advance.x
         };
-        Characters.insert(std::pair<GLchar, Character>(c, character));
+        Characters.insert(std::pair<GLchar, Character>(c, character)); // add a character char part
     }
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);    // remove the binding
 
-    FT_Done_Face(face);
-    FT_Done_FreeType(ft);
+    FT_Done_Face(face);     // Clear face resources
+    FT_Done_FreeType(ft);   // Clear FreeType libray resources
 
     static const GLfloat texcoords[] = {
             0.0f,1.0f,
             0.0f,0.0f,
             1.0f,0.0f,
             1.0f,1.0f
-    };
+    };    // Store the UV buffer all most outer points from the texture matched to the UV points in Shader class
 
-    glGenBuffers(1, &uvBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);
+    glGenBuffers(1, &uvBuffer);                 // Generate a buffer for and store the location ID in uvBuffer
+    glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);    // Make the buffer the current working buffer
+    glBufferData(GL_ARRAY_BUFFER, sizeof(texcoords), texcoords, GL_STATIC_DRAW);    // Write the UV coordinates to the buffer
 
-    vertexUVID = glGetAttribLocation(programID, "vertexUV");
-    textureID  = glGetUniformLocation(programID, "text");
-    textColorID = glGetUniformLocation(programID, "textColor");
+    vertexUVID = glGetAttribLocation(programID, "vertexUV");    // Get the location of the UV coordinates in the GLSL program
+    textureID  = glGetUniformLocation(programID, "text");       // Get the location of the texture (character) in the GLSL program
+    textColorID = glGetUniformLocation(programID, "textColor"); // Get the location of the colour in the GLSL program
 
 }
 TextShader::~TextShader(){
-    glDeleteBuffers(1, &uvBuffer);
+    glDeleteBuffers(1, &uvBuffer);  // Clear the buffer reservation
     for (map<char,Character>::iterator c = Characters.begin(); c != Characters.end(); c++){
-        glDeleteTextures(1,&(*c).second.textureID);
+        glDeleteTextures(1,&(*c).second.textureID); // Clear the texture reservation for each character
     }
 }
 void TextShader::draw(std::string text, vec2d position, unsigned alignment,vec2d screenDims, double height){
-    // Activate corresponding render state
-    glUseProgram(programID);
-    glUniform3f(textColorID, colour.x, colour.y, colour.z);
-    glActiveTexture(GL_TEXTURE0);
-    glUniform1f(textureID, 0);
+
+    glUseProgram(programID);    // activate the correct shader program
+    glUniform3f(textColorID, colour.x, colour.y, colour.z); // pass the text colour
+    glActiveTexture(GL_TEXTURE0);   // make texture unit 0 active
+    glUniform1f(textureID, 0);      // make the GLSL texture sampler look at texture unit 0
+
+    // Create a scale corresponding to the rendered scale and input height
     double yScale = 2 * height / pixSize;
     double xScale = yScale;
+
     if(screenDims[0] && screenDims[1])
         xScale *= screenDims[1]/screenDims[0];
 
+    // The stepScale needs to be defined (approx space between characters)
     double stepScale = xScale*2;
-    // Iterate through all characters
+
+    // Iterate through all characters to get the the width of the total line of text
     std::string::const_iterator c;
     double lineSize=0;
     if (alignment!=DRAWTEXT::ALIGN_LEFT){
@@ -732,11 +730,15 @@ void TextShader::draw(std::string text, vec2d position, unsigned alignment,vec2d
             lineSize+=(Characters[*c].Advance >> 6) * stepScale;
         }
     }
+    // make the lineSize centre of the line if required
     if(alignment==DRAWTEXT::ALIGN_CENTER){
         lineSize/=2;
     }
+    // Create the initial write position of the cursor
     GLfloat x = position[0]-lineSize;
     GLfloat y = position[1]-height*2;
+
+    // Enable the vertexPosition in the GLSL program and bind the vertexbuffer to it
     glEnableVertexAttribArray(vertexPositionID);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
     glVertexAttribPointer(
@@ -748,6 +750,7 @@ void TextShader::draw(std::string text, vec2d position, unsigned alignment,vec2d
             (void*)0                      // array buffer offset
     );
 
+    // Enable the UV coordinates in the GLSL program and bind the vertexbuffer to it
     glEnableVertexAttribArray(vertexUVID);
     glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
     glVertexAttribPointer(
@@ -758,21 +761,18 @@ void TextShader::draw(std::string text, vec2d position, unsigned alignment,vec2d
             0,                            // stride
             (void*)0                      // array buffer offset
     );
+    // Iterate through the line of text and render each glyph on the right position
     for (c = text.begin(); c != text.end(); c++)
     {
-        Character ch = Characters[*c];
+        Character ch = Characters[*c];  // the character is used a lot, it's useful to store it in a seperate parameter
 
-        GLfloat xpos = x + (ch.Size.x/2.0 + ch.Bearing.x) * xScale;
-        GLfloat ypos = y - (ch.Size.y - ch.Bearing.y*2.0) * yScale;
+        // Alter the transformation matrix to have the correct scale, and postion.
+        transformationMatrix[0].x = ch.Size.x * xScale;
+        transformationMatrix[0].z = x + (ch.Size.x/2.0 + ch.Bearing.x) * xScale;
+        transformationMatrix[1].y = ch.Size.y * yScale;
+        transformationMatrix[1].z = y - (ch.Size.y - ch.Bearing.y*2.0) * yScale;
 
-        GLfloat w = ch.Size.x * xScale;
-        GLfloat h = ch.Size.y * yScale;
-
-        transformationMatrix[0].x = w;
-        transformationMatrix[0].z = xpos;
-        transformationMatrix[1].y = h;
-        transformationMatrix[1].z = ypos;
-
+        // Pass the transformation matrix
         glUniformMatrix3fv(tMatrixID,1,GL_FALSE,&transformationMatrix[0][0]);
 
         // Render glyph texture over quad
@@ -783,8 +783,8 @@ void TextShader::draw(std::string text, vec2d position, unsigned alignment,vec2d
         // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
         x += (ch.Advance >> 6) * stepScale; // Bitshift by 6 to get value in pixels (2^6 = 64)
     }
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glUseProgram(0);
+    glBindVertexArray(0);   // Unbind the vertex array
+    glBindTexture(GL_TEXTURE_2D, 0);    // Unbind the texture
+    glUseProgram(0);        // Remove the bound program
 }
 
