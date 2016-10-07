@@ -171,10 +171,6 @@ public:
     // For frame pacing
     void pace_frame();
 
-    // Convert from px to universe length scale
-    vec2d px_to_length (vec2d px);
-    vec2d length_to_px (vec2d length);
-
     //Get window size or cursor position
     vec2d windowSize();
     vec2d cursorPosition();
