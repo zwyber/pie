@@ -7,22 +7,22 @@
 #endif
 
 // Set the bindings from private _key to public reference key
-Object::Object () : mass(_mass), bouncyness(_bouncyness), radius(_radius), position(_position), velocity(_velocity), colour(_colour) {
+Object::Object () : mass(_mass), bounciness(_bounciness), radius(_radius), position(_position), velocity(_velocity), colour(_colour) {
 
 }
 
 /*
- * set_bouncyness()
+ * set_bounciness()
  *
- * Set the private bouncyness property to a value between 0 and including 1
+ * Set the private bounciness property to a value between 0 and including 1
  */
-void Object::set_bouncyness(double bouncyness) {
-    if ( bouncyness > 0 && bouncyness <= 1 ) {
-        this->_bouncyness = bouncyness;
+void Object::set_bounciness(double bounciness) {
+    if ( bounciness > 0 && bounciness <= 1 ) {
+        this->_bounciness = bounciness;
     }
     else {
         // Invalid value given
-        std::cerr << "[WARN] Invalid bouncyness entered, must be between 0 and including 1" << std::endl;
+        std::cerr << "[WARN] Invalid bounciness entered, must be between 0 and including 1" << std::endl;
     }
 
 }
