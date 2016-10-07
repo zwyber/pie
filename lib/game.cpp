@@ -543,7 +543,8 @@ void generateStandardUniverse (Window* window) {
 
 void addRandomObject(Universe* universe, unsigned seed) {
     if(!seed){
-        srand(time(NULL));
+        srand(time(NULL)*1234);
+        std::cout << "Srand seed: " << time(NULL) <<std::endl;
     }else{
         srand(seed);
     }
@@ -559,7 +560,7 @@ void addRandomObject(Universe* universe, unsigned seed) {
     A->set_velocity((std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0],(std::rand()/(double)RAND_MAX)*(velocityLim[1]-velocityLim[0])+velocityLim[0]);
     A->set_radius((std::rand()/(double)RAND_MAX)*(radiusLim[1]-radiusLim[0])+radiusLim[0]);
     A->set_bouncyness((std::rand()/(double)RAND_MAX)*(bouncyLim[1]-bouncyLim[0])+bouncyLim[0]);
-
+    //A->set_colour({std::rand()/(double)RAND_MAX,std::rand()/(double)RAND_MAX,std::rand()/(double)RAND_MAX,1.0});
 
     std::array<double,2> xLim = {-universe->width/2+A->radius, universe->width/2-A->radius};
     std::array<double,2> yLim = {-universe->height/2+A->radius, universe->height/2-A->radius};
@@ -584,7 +585,7 @@ void addRandomObject(Universe* universe, unsigned seed) {
 
 void addRandomObjects(Universe* universe, unsigned seed, int objectAmount) {
     for(int ii = 0; ii < objectAmount; ii++){
-        addRandomObject(universe, seed+ii*100);
+        addRandomObject(universe, seed+ii*1234);
     }
 }
 
