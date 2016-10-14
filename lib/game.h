@@ -22,8 +22,8 @@ const int SCENE_INGAME = 12;
 const int SCENE_PAUSE = 13;
 const int SCENE_DIED = 14;
 
-// Screen ratio
-double initScreenRatio = 4.0/3.0;
+// Menu measured screen ratio
+double initScreenRatio = 1200/900;
 
 // Main game loop
 void maingame(int startScene = SCENE_MENU);
