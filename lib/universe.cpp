@@ -46,16 +46,21 @@
  */
 Universe::Universe() : height(_height), width(_width), score(_score) {
     // Without input arguments use the defaults
+
     this->_width = 640;
     this->_height = 480;
+
+
 
     // Start a steady_clock
     this->begin_time = std::chrono::steady_clock::now();
 }
 
 Universe::Universe(double width, double height) : height(_height), width(_width), score(_score) {
+
     this->_width = width;
     this->_height = height;
+
 
     // Start a steady_clock
     this->begin_time = std::chrono::steady_clock::now();

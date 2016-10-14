@@ -128,7 +128,7 @@ double Physics::distance_between(Object* X, Object* Y) {
 
 
 
-
+// Calculates the acceleration of an object towards another object's gravitational force
 
 vec2d Physics::acceleration (Object* X, Object* Y){
     double dist = this->distance_between (X , Y);

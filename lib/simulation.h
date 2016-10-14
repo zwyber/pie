@@ -120,7 +120,7 @@ private:
 public:
     // Constructor functions
     Universe();
-    Universe(double width, double weight);
+    Universe(double width, double height);
 
     // Destructor
     ~Universe();
