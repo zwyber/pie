@@ -111,9 +111,17 @@ void Object::set_colour(std::array<double, 4> colour){
  *
  * Return the colour of this object as a glm::vec4 object.
  */
+
+#ifndef PIE_ONLY_BACKEND
 glm::vec4 Object::get_colour_glm(){
     return glm::vec4(_colour[0],_colour[1],_colour[2],_colour[3]);
 }
+#endif
+#ifdef PIE_ONLY_BACKEND
+void Object::get_colour_glm(){
+    // Nothing here
+}
+#endif
 
 
 /*
@@ -149,6 +157,7 @@ void Player::on_collide (Object* target, Physics &physics) {
  * Player has a different handler for accelerations, because it can respond to keyboard input. It basically
  * injects an acceleration superimposed on the attractive forces due to the other objects.
  */
+#ifndef PIE_ONLY_BACKEND
 std::array<vec2d, 2> Player::calc_new_pos_vel (std::vector<Object*> &objects, Physics &physics) {
 
     vec2d acceleration = physics.net_acceleration(objects, this);
@@ -189,3 +198,11 @@ std::array<vec2d, 2> Player::calc_new_pos_vel (std::vector<Object*> &objects, Ph
 
     return physics.de_solver(acceleration, this);
 };
+#endif // PIE_ONLY_BACKEND
+#ifdef PIE_ONLY_BACKEND
+std::array<vec2d, 2> Player::calc_new_pos_vel (std::vector<Object*> &objects, Physics &physics) {
+    // Same code as for an object, because won't be able to use keyboard input
+    vec2d acceleration = physics.net_acceleration(objects, this);
+    return physics.de_solver(acceleration, this);
+};
+#endif // PIE_ONLY_BACKEND

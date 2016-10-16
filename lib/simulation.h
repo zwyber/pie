@@ -65,7 +65,13 @@ public:
     void set_radius(double r);
 
     void set_colour(std::array<double, 4> Colour);
+
+#ifndef PIE_ONLY_BACKEND
     glm::vec4 get_colour_glm();
+#endif // PIE_ONLY_BACKEND
+#ifdef PIE_ONLY_BACKEND
+    void get_colour_glm();
+#endif
 
     // Calculate new position and velocity function, called by Universe::physics_runtime_iteration
     virtual std::array<vec2d, 2> calc_new_pos_vel (std::vector<Object*> &objects, Physics &physics);
@@ -160,7 +166,12 @@ class Player : public Object {
 
 public:
     // Defalt joystick
+#ifndef PIE_ONLY_BACKEND
     bool joystick = glfwJoystickPresent(GLFW_JOYSTICK_1);
+#endif
+#ifdef PIE_ONLY_BACKEND
+    bool joystick = false;
+#endif
 
     // Thruster force exerted when player moves
     double thruster_force = 20;
