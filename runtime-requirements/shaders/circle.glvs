@@ -1,17 +1,21 @@
 // Circle Drawing based of http://www.geeks3d.com/20130705/shader-library-circle-disc-fake-sphere-in-glsl-opengl-glslhacker/3/
 #version 120
 
+//Receive vertex positions and UVs
 attribute vec2 inPosition;
 attribute vec2 inTexcoord;
 
+// Send UVs to fragment shader
 varying vec2 texCoord;
 
+// Recieve a transformation matrix
 uniform mat3 projection;
 
 void main()
 {
-    vec3 xyPos = projection * vec3(inPosition,1.0);
-    gl_Position = vec4(xyPos.xy+vec2(projection[0].z,projection[1].z),0.0,1.0);
-    texCoord = inTexcoord;
+
+    vec3 xyPos = projection * vec3(inPosition,1.0);                             // apply transformation
+    gl_Position = vec4(xyPos.xy+vec2(projection[0].z,projection[1].z),0.0,1.0); // set the position (with offset that doesnt seem to work in previous step)
+    texCoord = inTexcoord;//Pass UV
 
 }

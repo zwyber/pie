@@ -1,10 +1,13 @@
+//based on the opengl_tutorial
 #version 120
-
+// Get UV from vertexshader
 varying vec2 UV;
 
+// Get texture
 uniform sampler2D tex;
 
 void main()
 {
+    // Sample a color at the UV coordinate of this texture (takes into account interpolation as defined for this texture)
     gl_FragColor = texture2D(tex, UV);
 }

@@ -8,7 +8,7 @@ The project has two parts: the back-end and the front-end. The back-end is not d
 
 To demonstrate our knowledge of C++ the back-end is most important. There the useage of classes, inhertiance, etc is shown. The OpenGL front-end really makes the game great, but also makes building the project much more complicated.
 
-Normally CMake is used to build the project. It will configure the compiler to use the correct linking etc, which really reduces the amount of effort for building. If (e.g. for grading) this is unwanted, it should be possible to build the back-end by hand using a simple compiler only. Linking in the OpenGL (and related libraries) is a pain to do by hand, which is why CMake is useful. (Also CMake is the default building environment of our IDE CLion, so that explains why we have it in the first place)
+Normally CMake is used to build the project. It will configure the compiler to use the correct linking etc, which really reduces the amount of effort for building. If (e.g. for grading) this is unwanted and a very "pure" project is required, it should be possible to build the back-end by hand using a simple compiler only. Linking in the OpenGL (and related libraries) is a pain to do by hand, hence this is only supported when compiling with CMake.
 
 **Building with CMake**
 
@@ -22,3 +22,28 @@ On Linux (should be similar for Windows and other OS):
 
 **Building by hand**
 
+Important to realise is that **it is not supported to build the actual game by hand**. Instead you can build the back-end libraries and use the physics engine and related functions for simulations. You can remove the need for any external library (e.g. OpenGL) by defining `PIE_ONLY_BACKEND` before including the `framework.h` file. For example:
+
+```
+#define PIE_ONLY_BACKEND
+#include "framework.h"
+
+// Create a universe
+    Universe universe;
+
+    // Add an object
+    Object* A = universe.add_object();
+
+    // Set parameters
+    A->set_position(3, 0);
+
+    universe.simulate_one_time_unit(60);
+```
+
+This will compile without the need of CMake, by just using `g++` compiler:
+
+1. Go to the root directory
+2. Run compiler `g++ -std=c++11 main.cpp`
+3. Execute the program `./a.out`
+
+That will allow using the back-end portion of the game. Realise that many functions are missing, for example a neat function which outputs the positions of objects. All of this was done with the front-end and hence not supported for back-end compilation only.
