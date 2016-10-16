@@ -1,14 +1,13 @@
 // Created by paul on 7/15/16.
 //
 
+#define PIE_ONLY_BACKEND
 
-// #define PIE_ONLY_BACKEND
 #include "framework.h"
-#include "lib/game.h"
 
 int main() {
-    maingame();
-/*
+    //maingame();
+
     // Create a universe
     Universe universe;
 
@@ -31,7 +30,5 @@ int main() {
     B->set_radius(1);
     B->set_colour({0, 0, 1, 1}); // Blue
 
-    universe.simulate_one_time_unit(60);
-
-    return 0; */
+    return 0;
 }
