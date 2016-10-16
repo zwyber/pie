@@ -64,7 +64,7 @@ void Window::stdInitWindow(){
 
     ///// Create the actual window
     // Open a window and create its OpenGL context
-    GLFWpointer = glfwCreateWindow(winWidth, winHeight, "!!! Space debris debugger window !!!", NULL, NULL);
+    GLFWpointer = glfwCreateWindow(winWidth, winHeight, "Space Debris Evaders", NULL, NULL);
 
 
     // Return error if window did not get created

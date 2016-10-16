@@ -1,9 +1,18 @@
-#version 120
+#if __VERSION__ >= 130
+
+in vec2 PositionVec;
+in vec2 vertexUV;
+
+out vec2 UV;
+
+#else
 
 attribute vec2 PositionVec;
 attribute vec2 vertexUV;
 
 varying vec2 UV;
+
+#endif
 
 uniform mat3 MVP;
 

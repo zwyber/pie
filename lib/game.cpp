@@ -121,7 +121,9 @@ void maingame(int startScene) {
             diedText << "You hit something! Press the ESC key to return to the menu";
             aboutText.draw(diedText.str(), {0,0}, DRAWTEXT::ALIGN_CENTER, window.windowSize(), 0.02);
 
-
+            int joyCount;
+            const unsigned char* joyButtons;
+            bool hitButton=false;
             glfwSetKeyCallback(window.GLFWpointer,escape_key_callback);
             glfwSwapBuffers(window.GLFWpointer);
             do {
@@ -130,6 +132,17 @@ void maingame(int startScene) {
 
                 if(glfwWindowShouldClose(window.GLFWpointer) != 0){
                     break;
+                }
+                if(Joystick){
+                    joyButtons = glfwGetJoystickButtons(GLFW_JOYSTICK_1,&joyCount);
+                    for(int ii =0; ii<joyCount; ii++){
+                        if(joyButtons[ii]==GLFW_PRESS){
+                            glfwSetKeyCallback(window.GLFWpointer,NULL);
+                            hitButton = true;
+                            break;
+                        }
+                    }
+                    if(hitButton)break;
                 }
                 if(keyHandler.size() ){
                     glfwSetKeyCallback(window.GLFWpointer,NULL);
@@ -157,7 +170,6 @@ void maingame(int startScene) {
     }
     glfwTerminate();
 }
-
 int show_ingame (Window* window, CircleShader* circleShader, TextShader* textShader, TextureShader* background) {
     int exitFlag = SCENE_INGAME;
 
@@ -263,7 +275,7 @@ int show_about (Window* window, TextShader* newText) {
     do {
         // keep reseting the keyhandler and poll events to store to the key handler
         keyHandler ={};
-        glfwPollEvents();
+        glfwWaitEvents();
         // If program needs to be terminated, quit
         if(glfwWindowShouldClose(window->GLFWpointer) != 0){
             exitFlag = SCENE_QUIT;
@@ -377,8 +389,9 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
     // parameters to store data for the Joystick check
     const float* axisStates;
     const unsigned char* buttonStates;
+    glfwSetTime(0);
     int joyCount;
-
+    double lastTime = 0;
     while(exitFlag == SCENE_MENU){
         // reset buttonhit
         buttonHit = false;
@@ -393,16 +406,21 @@ int show_menu(Window* window, TextureShader * menuMultiTex, std::vector<glm::mat
 
         // If a joystick was present while entering the menu check the buttons and the first axis
         // change highlighted button and button hit accordingly
+
         if(Joystick){
             axisStates = glfwGetJoystickAxes(GLFW_JOYSTICK_1,&joyCount);
-            if  ( axisStates[0] > 0.5   ) {
-                if(--highlightedButton <=0){
-                    highlightedButton = 3;
-                };
-            }else if(axisStates[0] < -0.5){
-                if(++highlightedButton >3){
-                    highlightedButton = 1;
-                };
+            if(glfwGetTime() -lastTime >0.1 && joyCount>1) {
+                if (axisStates[1] > 0.9) {
+                    if (++highlightedButton > 3) {
+                        highlightedButton = 1;
+                    };
+                    lastTime = glfwGetTime();
+                } else if (axisStates[1] < -0.9) {
+                    if (--highlightedButton <= 0) {
+                        highlightedButton = 3;
+                    };
+                    lastTime = glfwGetTime();
+                }
             }
             buttonStates =glfwGetJoystickButtons(GLFW_JOYSTICK_1,&joyCount);
             for(int ii = 0; ii <joyCount; ii++){

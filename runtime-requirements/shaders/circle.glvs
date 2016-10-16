@@ -1,9 +1,18 @@
-#version 120
+#if __VERSION__ >= 130
+
+in vec2 inPosition;
+in vec2 inTexcoord;
+
+out vec2 texCoord;
+
+#else
 
 attribute vec2 inPosition;
 attribute vec2 inTexcoord;
 
 varying vec2 texCoord;
+
+#endif
 
 uniform mat3 projection;
 
