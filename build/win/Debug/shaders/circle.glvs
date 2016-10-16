@@ -1,18 +1,10 @@
-#if __VERSION__ >= 130
-
-in vec2 inPosition;
-in vec2 inTexcoord;
-
-out vec2 texCoord;
-
-#else
+// Circle Drawing based of http://www.geeks3d.com/20130705/shader-library-circle-disc-fake-sphere-in-glsl-opengl-glslhacker/3/
+#version 120
 
 attribute vec2 inPosition;
 attribute vec2 inTexcoord;
 
 varying vec2 texCoord;
-
-#endif
 
 uniform mat3 projection;
 

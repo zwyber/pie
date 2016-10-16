@@ -1,13 +1,5 @@
-#if __VERSION__ >= 130
-
-in vec2 TexCoords;
-out vec4 gl_FragColor;
-
-#else
-
+#version 120
 varying vec2 TexCoords;
-
-#endif
 
 uniform sampler2D text;
 uniform vec3 textColor;

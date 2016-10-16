@@ -1,13 +1,6 @@
-#if __VERSION__ >= 130
-
-in vec2 UV;
-out gl_FragColor;
-
-#else
+#version 120
 
 varying vec2 UV;
-
-#endif
 
 uniform sampler2D tex;
 

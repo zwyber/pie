@@ -1,17 +1,9 @@
-#if __VERSION__ >= 130
-
-in vec2 VertexPos;
-in vec2 vertexUV;
-out vec2 TexCoords;
-
-#else
+#version 120
 
 attribute vec2 VertexPos;
 attribute vec2 vertexUV;
 
 varying vec2 TexCoords;
-
-#endif
 
 uniform mat3 projection;
 

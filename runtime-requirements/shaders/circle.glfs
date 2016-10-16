@@ -1,14 +1,8 @@
 // Circle Drawing based of http://www.geeks3d.com/20130705/shader-library-circle-disc-fake-sphere-in-glsl-opengl-glslhacker/3/
-#if __VERSION__ >= 130
-
-in vec2 texCoord;
-out vec4 gl_FragColor;
-
-#else
+// Uses element only found together in GLSL1.20
+#version 120
 
 varying vec2 texCoord;
-
-#endif
 
 uniform vec4 disc_color; // vec4(1.0, 1.0, 1.0, 1.0)
 uniform mat3 projection;
