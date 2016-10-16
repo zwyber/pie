@@ -150,7 +150,7 @@ void maingame(int startScene) {
                 }
 
                 // Wait 100ms
-                usleep(1E5);
+                window.pace_frame();
             }
             while(true);
 
@@ -290,9 +290,6 @@ int show_about (Window* window, TextShader* newText) {
             glfwSetKeyCallback(window->GLFWpointer,NULL);
             return exitFlag;
         }
-
-        // Wait 100ms
-        usleep(1E5);
     }
     while (true);
 

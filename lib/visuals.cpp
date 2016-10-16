@@ -113,7 +113,6 @@ void Window::pace_frame() {
     unsigned sleep_ms = unsigned((1/fps - delta)*1E3);
 
     if (sleep_ms > (1/fps) * 1E3 ) {
-        std::cerr << "something weird with pace_frame()\n";
         sleep_ms = unsigned((1/fps) * 1E3);
     }
 
