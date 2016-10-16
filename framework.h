@@ -20,6 +20,7 @@
 #include<cstdlib>
 #include<ctime>
 #include<chrono>
+#include<thread>
 #include<unistd.h>
 #include<string>
 

@@ -110,9 +110,18 @@ void Window::pace_frame() {
 
     // Check how much time we have left
     double delta = glfwGetTime() - lastTime;
+    unsigned sleep_ms = unsigned((1/fps - delta)*1E3);
+
+    if (sleep_ms > (1/fps) * 1E3 ) {
+        std::cerr << "something weird with pace_frame()\n";
+        sleep_ms = unsigned((1/fps) * 1E3);
+    }
+
     if (delta < 1/fps) {
         // Pause program for the time that is left over
-        usleep(unsigned((1/fps - delta)*1E6));
+        // Function from http://stackoverflow.com/questions/10918206/cross-platform-sleep-function-for-c
+        std::this_thread::sleep_for(std::chrono::milliseconds(sleep_ms));
+        //usleep(unsigned((1/fps - delta)*1E6));
 
         // Debug message:
         /*
