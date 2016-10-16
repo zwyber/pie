@@ -1,15 +1,20 @@
+//based on the opengl_tutorial
 #version 120
 
+//Receive vertex positions and UVs
 attribute vec2 PositionVec;
 attribute vec2 vertexUV;
 
+// Send UVs to fragment shader
 varying vec2 UV;
 
+// Recieve a transformation matrix
 uniform mat3 MVP;
 
 void main()
 {
-    vec3 xyPos = MVP * vec3(PositionVec,1.0);
-    gl_Position = vec4(xyPos.xy+vec2(MVP[0].z,MVP[1].z),0.0,1.0);
-    UV = vertexUV;
+
+    vec3 xyPos = MVP * vec3(PositionVec,1.0);                       // apply transformation
+    gl_Position = vec4(xyPos.xy+vec2(MVP[0].z,MVP[1].z),0.0,1.0);   // set the position (with offset that doesnt seem to work in previous step)
+    UV = vertexUV;//Pass UV
 }

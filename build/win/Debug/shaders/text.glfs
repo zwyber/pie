@@ -1,11 +1,14 @@
 #version 120
+// Get the UV coordinates from the vertex shader
 varying vec2 TexCoords;
 
+// Get Texture and text colour
 uniform sampler2D text;
 uniform vec3 textColor;
 
 void main()
 {
+    // Sample a color at the UV coordinate of this texture (takes into account interpolation as defined for this texture)
     vec4 sampled = texture2D(text, TexCoords);
-    gl_FragColor = vec4(textColor, sampled.r);
+    gl_FragColor = vec4(textColor, sampled.r);  // Since the texture only consists of a red channel we convert that to a alpha
 }
