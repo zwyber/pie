@@ -264,7 +264,7 @@ int show_about (Window* window, TextShader* newText) {
     newText->draw("'Programming in Engineering' at the University of Twente", {0, 0.7}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
     newText->draw("The goal is to learn C++ by developing a game.", {0, 0.6}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
     newText->draw("Authors:", {0, 0.4}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
-    newText->draw("Arash Edresi", {0, 0.3}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
+    newText->draw("Arash Edrisi", {0, 0.3}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
     newText->draw("Yvan Klaver", {0, 0.2}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
     newText->draw("Paul van Swinderen", {0, 0.1}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
     newText->draw("Press ESC to return to the menu", {0, -0.4}, DRAWTEXT::ALIGN_CENTER, window->windowSize(), 0.02);
