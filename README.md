@@ -46,4 +46,4 @@ This will compile without the need of CMake, by just using `g++` compiler:
 2. Run compiler `g++ -std=c++11 main.cpp`
 3. Execute the program `./a.out`
 
-That will allow using the back-end portion of the game.
+That will allow using the back-end portion of the game. Realise that many functions are missing, for example a neat function which outputs the positions of objects. All of this was done with the front-end and hence not supported for back-end compilation only.
