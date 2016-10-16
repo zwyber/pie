@@ -2,7 +2,7 @@
 #if __VERSION__ >= 130
 
 in vec2 texCoord;
-out gl_FragColor;
+out vec4 gl_FragColor;
 
 #else
 
